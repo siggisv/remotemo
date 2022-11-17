@@ -1,10 +1,14 @@
-# remotemo
+# ReMoTeMo
 Retro Monochrome Text Monitor - a library for building applications with a
-really old school looking user interface.
+really old-school looking user interface.
 
-By old school, we mean late 70s - beginning of the 80s. A fixed size monochrome
-text only monitor with keyboard only user input (ASCII only, not even extended ASCII).
+By really old-school, we mean late 70s - beginning of the 80s. A monochrome, fixed size, 
+text-only monitor with keyboard-only user input (and restricted to ASCII only, not even extended ASCII).
+
+Optionally the text gets displayed at a slow rate to recreate the feeling of being connected over a slow connection.
 
 ## WARNING
-This is work-in-progress that has not even reached beta status. Anything might
-be changed
+This is work-in-progress that has not even reached beta status.
+
+Almost nothing works yet and anything might
+get changed at any time.
