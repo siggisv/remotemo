@@ -95,7 +95,7 @@ int test_init()
 #else
     const char PATH_SEP = '/';
 #endif
-    resImagePath = resImagePath  "res" + PATH_SEP + "img" + PATH_SEP;
+    resImagePath = resImagePath + "res" + PATH_SEP + "img" + PATH_SEP;
     SDL_Log("resImagePath: %s\n", resImagePath.c_str());
 
     auto screenTexture = loadTexture(renderer,
