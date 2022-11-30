@@ -1,6 +1,6 @@
 # ReMoTeMo API design - 1st draft
 
-## Warning! Work in progress.
+## Warning! Work in progress
 
 **Both** the design and the implementation are work-in-progress.
 
@@ -96,7 +96,7 @@ those can not be changed after the object has been created:
     at the time with a slight delay between.
   - inverse: off
     \
-    Setting this on makes text to be displayed with the background color and
+    Set this on for text to be displayed with the background color and
     the foreground color switched.
     \
     Changing this doesn't affect text that has already been printed to the
@@ -115,10 +115,42 @@ those can not be changed after the object has been created:
     word) or `word` (text wraps to the next line, if possible at the last
     whitespace before getting to the right border).
 
+```C++
+remotemo::Temo::~Temo()
+```
 
+The destructor, in charge of deleting/closing textures, the renderer, the
+window and quitting SDL (unless the `remotemo::Temo`-object was configured to
+not handle some of those, e.g. if you want to create the window yourself so it
+can display some menu before and after having ReMoTeMo taking control of the
+window).
 
+```C++
+remotemo::Temo::Temo(const remotemo::Config &config)
+```
+Non-default constructor.
+
+To change from the default settings, create a `remotemo::Config`-object,
+change the settings it contains by calling its setters and then call
+this constructor to create and initialize everything with those settings.
 
 ```C++
 remotemo::Config::Config()
 ```
+
+Creates a `remotemo::Config`-object with the default settings.
+
+Call its setters to change those settings you want.
+
+The setters can be chained, e.g.:
+
+```C++
+remotemo::Config myconfig;
+myconfig.setWindowWidth(1920).setWindowHeight(1080)
+        .setBackgroundFile("background.png")
+        .setBackgroundMinArea(200, 120, 1000, 700);
+remotemo::Temo textMonitor(myconfig);
+```
+
+TODO: List all the setters (and getters?) of this class.
 
