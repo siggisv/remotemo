@@ -6,29 +6,124 @@
 
 ## Creation, initialization and cleanup
 
+### The simple, easy way
+
+The easiest way to start using ReMoTeMo is to simply call
+`remotemo::Temo::create()`, check its return status and then you can start
+calling the text-input/output methods of the object created.
+
 ```C++
-remotemo::Temo::Temo()
+#include <cstdlib>
+#include <remotemo/remotemo.hpp>
+
+int main(int argc, char *argv[])
+{
+    std::pair<remotemo::Temo, bool> tM = remotemo::Temo::create();
+    if (!tM.second) {
+        std::exit(EXIT_FAILURE);
+    }
+
+    remotemo::Temo textMonitor = tM.first;
+
+    textMonitor.setCursorXY(10, 2);
+    textMonitor.print("Hello world!!!");
+
+    textMonitor.pause(250);
+
+    textMonitor.setInverse(true);
+    textMonitor.printAt(5, 15, "Push any key to quit");
+    textMonitor.setInverse(false);
+    textMonitor.print("\n");
+
+    while (textMonitor.getKey() == 'n') {
+        textMonitor.print("Actually no! Any key except that key :P\n");
+    }
+}
 ```
-The default constructor.
 
-Creates a window showing a text monitor and then returns an object
-representing that window and that text monitor.
+**TODO:** Make thread safe? Or just explain that just like most of the
+underlying SDL2 framework, this object should only be used from within the
+thread where it was initialized?
 
-Creates and initializes everything with the default settings. Unless noted,
-those can not be changed after the object has been created:
-- Initializes SDL and sets it as being handled by this object (meaning that
+### Creation
+
+```C++
+std::pair<remotemo::Temo, bool> remotemo::Temo::create();
+std::pair<remotemo::Temo, bool> remotemo::Temo::create(const remotemo::Config &config);
+```
+
+A static method that will create and initialize an object representing a text
+monitor, the window showing it and their properties (along with the needed
+properties of the underlying SDL-library).
+
+If successful, it will return a `std::pair<remotemo::Temo, bool>` containing
+the object and the boolean set to `true`. It will also create an internal
+list of the resources that it did set up so that whenever/however the
+`remotemo::Temo` object gets deleted, its destructor can take care of cleaning
+them up.
+
+If unsuccessful, it will log an error using `SDL_Log()`, free/release all
+resources it had successed setting up and then return a `std::pair` containing
+a `remotemo::NoopTemo` object (a subclass of `remotemo::Temo`, where all
+methods are overwriten to do nothing except log an error - just in case you
+didn't check the status of the returned boolean) and the boolean set to
+`false`.
+
+When invoked without any parameters, it will set up the underlying
+SDL2-library and create a window for you with the default settings (including
+loading a background texture and the font-bitmap from their default
+locations). Most of the settings can not be changed after creation.
+
+To change from the default settings, create a `remotemo::Config` object,
+change the settings it contains by calling its setters and then call
+`remotemo::Temo::create(const remotemo::Config &config)` to create and
+initialize everything with those settings.
+
+```C++
+remotemo::Config::Config();
+
+```
+
+Creates a `remotemo::Config` object with the default settings.
+
+Call its setters to change those of its settings you want to change.
+
+The setters can be chained, e.g.:
+
+```C++
+remotemo::Config myconfig;
+myconfig.setWindowWidth(1920).setWindowHeight(1080)
+        .setBackgroundFile("background.png")
+        .setBackgroundMinArea(200, 120, 1000, 700);
+std::pair<remotemo::Temo, bool> tM = remotemo::Temo::create(myconfig);
+```
+
+**TODO:** List all the setters (and getters?) of this class.
+
+
+
+
+
+### Default settings
+
+Unless noted, the settings can not be changed after the `remotemo::Temo`
+object has been created:
+- Initialize SDL: `true`
+  \
+  If `true`, this also sets it as being handled by this object (meaning that
   the destructor will be in charge of calling `SDL_Quit();`).
-- Creates a `SDL_window` with the following settings.
-  Note that although most of those settings can be changed later, usually it
-  should be better to just let the library handle them (which would happen
-  whenever the user drags or resizes the window):
+- Create a `SDL_window`: `true`
+  \
+  If true, sets it as being owned by this object (meaning the destructor will
+  be in charge of destroying it) and create it with the following settings.
+  Note that although those settings can be changed later, usually it should be
+  better to just let the library handle them (which would happen e.g. when the
+  user drags or resizes the window):
   - width: 1280 _(can be changed later)_
   - height: 720 _(can be changed later)_
   - position: undefined _(can be changed later)_
   - resizable: true _(can be changed later)_
   - fullscreen: false _(can be changed later)_
-  - sets it as being owned by this object (meaning the destructor will be in
-    charge of destroying it).
 - Also sets the following properties tied to the window:
   - sets `F11` as being the key used to switch between fullscreen and windowed
     mode _(can be changed later)_
@@ -120,7 +215,7 @@ remotemo::Temo::~Temo()
 ```
 
 The destructor, in charge of deleting/closing textures, the renderer, the
-window and quitting SDL (unless the `remotemo::Temo`-object was configured to
+window and quitting SDL (unless the `remotemo::Temo` object was configured to
 not handle some of those, e.g. if you want to create the window yourself so it
 can display some menu before and after having ReMoTeMo taking control of the
 window).
@@ -129,28 +224,3 @@ window).
 remotemo::Temo::Temo(const remotemo::Config &config)
 ```
 Non-default constructor.
-
-To change from the default settings, create a `remotemo::Config`-object,
-change the settings it contains by calling its setters and then call
-this constructor to create and initialize everything with those settings.
-
-```C++
-remotemo::Config::Config()
-```
-
-Creates a `remotemo::Config`-object with the default settings.
-
-Call its setters to change those settings you want.
-
-The setters can be chained, e.g.:
-
-```C++
-remotemo::Config myconfig;
-myconfig.setWindowWidth(1920).setWindowHeight(1080)
-        .setBackgroundFile("background.png")
-        .setBackgroundMinArea(200, 120, 1000, 700);
-remotemo::Temo textMonitor(myconfig);
-```
-
-TODO: List all the setters (and getters?) of this class.
-
