@@ -12,13 +12,13 @@ _1st draft_
   - [Cleanup](#cleanup)
 
 
-###### [Back to top](#remotemo-api-design)
+<sup>[Back to top](#remotemo-api-design)</sup>
 ## Initialization, settings and cleanup
-***TODO?*** Make thread safe? Or just explain that just like most of the
+**TODO?** Make thread safe? Or just explain that just like most of the
 underlying SDL2 framework, this object should only be used from within the
 thread where it was initialized?
 
-###### [Back to top](#remotemo-api-design)
+<sup>[Back to top](#remotemo-api-design)</sup>
 ### Initialization
 
 ```C++
@@ -41,7 +41,7 @@ needed properties of the underlying SDL-library).
   `false`.
 \
 \
-***TODO?*** On failure return a `remotemo::NoopTemo` object, a subclass of
+**TODO?** On failure return a `remotemo::NoopTemo` object, a subclass of
 `remotemo::Temo`, where all methods are overwritten to do nothing except log
 an error - just in case you didn't check the status of the returned boolean.
 
@@ -75,9 +75,9 @@ myconfig.setWindowWidth(1920).setWindowHeight(1080)
 std::pair<remotemo::Temo, bool> tM = remotemo::Temo::create(myconfig);
 ```
 
-***TODO?*** List all the setters of the config class.
+**TODO?** List all the setters of the config class.
 
-###### [Back to top](#remotemo-api-design)
+<sup>[Back to top](#remotemo-api-design)</sup>
 ### Default settings
 
 The following are the default settings with a short explanation for each one.
@@ -204,7 +204,7 @@ been created:
     word) or `word` (text wraps to the next line, if possible at the last
     whitespace before getting to the right border).
 
-###### [Back to top](#remotemo-api-design)
+<sup>[Back to top](#remotemo-api-design)</sup>
 ### Cleanup
 ```C++
 remotemo::Temo::~Temo()
@@ -216,4 +216,5 @@ not handle some of those, e.g. if you want to create the window yourself so it
 can display some menu before and after having ReMoTeMo taking control of the
 window).
 
-###### [Back to top](#remotemo-api-design)
+<sup>[Back to top](#remotemo-api-design)</sup>
+
