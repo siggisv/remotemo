@@ -108,33 +108,33 @@ created:
   Note that although those settings can be changed later, usually it should be
   better to just let the library handle them (which would happen e.g. when the
   user drags or resizes the window):
+  - title: `Retro Monochrome Text Monitor` _(can be changed later)_
   - width: `1280` _(can be changed later)_
   - height: `720` _(can be changed later)_
   - position: `undefined` _(can be changed later)_
   - resizable: `true` _(can be changed later)_
   - fullscreen: `false` _(can be changed later)_
 
-  No mater if that is set to `nullptr` or not, the following properties tied
-  to the window will be set with the following being the default:
-  - set `F11` as being the key used to switch between fullscreen and windowed
-    mode _(can be changed later)_
-  - set `Ctrl-w` as being the key combination used to close the window _(can
-    be changed later)_
-  - set `Ctrl-q` as being the key combination used to quit the application
-    _(can be changed later)_
-  - set closing window to be the same as quitting to `true` _(can be changed
+  No mater if _the window_ is set to `nullptr` or not, the following
+  properties tied to the window will be set with the following being the
+  default:
+  - Key to switch between fullscreen and windowed mode: `F11` _(can be changed
+    later)_
+  - Key combination to close the window: `Ctrl-w` _(can be changed later)_
+  - Key combination to quit the application: `Ctrl-q` _(can be changed later)_
+  - Closing window is the same as quitting: `true` _(can be changed
     later)_
     \
     Not recommended to change that setting to `false` unless you either really
     want the application to continue running without a window or you have
     taken care of opening another window yourself.
-  - set function-to-call-before-closing-window to `nullptr` _(can be changed
-    later)_
+  - Function to call before closing window: `nullptr` _(can be changed later)_
     \
     If set, that function can be used to e.g. offer the user the option to
-    cancel that action or to save before continuing.
+    cancel that action or to save before continuing. That function must return
+    a `bool`. Returning `false` will cancel closing the window.
 
-  Finally, if that was set to `nullptr` **OR** if it is pointing to a
+  Finally, if _the window_ was set to `nullptr` **OR** if it is pointing to a
   `SDL_Window` that doesn't have a renderer then a `SDL_Renderer` will be
   created (either tied to that newly created window or to the one pointed to)
   and that renderer set as being owned by this object (meaning the destructor
@@ -205,7 +205,7 @@ created:
     The size of the texture, in pixels, is calculated from the font size and
     the text area size in characters (The texture will then be scaled to fit
     the area of the background where the text is to be drawn).
-  - blend mode: `ADD` _(can be changed later)_
+  - blend mode: `remo::BlendMode::add` _(can be changed later)_
   - color mod: `red: 89, green: 221, blue: 0` _(can be changed later)_
     \
     Note that this setting controls the color of **all** the text, both the
