@@ -240,15 +240,32 @@ been created:
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Cleanup
+
+ReMoTeMo follows the philosophy that it handles cleaning up those resources
+that it did set up but leaves to you the responsibility of cleaning up those
+resources that you passed to it.
+
+For most uses, allowing the destructor to handle cleaning up those resources
+when the `remotemo::Temo` object gets destroyed (whether manually or
+automatically e.g. when going out of scope).
+
 ```C++
 remotemo::Temo::~Temo()
 ```
 
 The destructor, in charge of deleting/closing textures, the renderer, the
 window and quitting SDL (unless the `remotemo::Temo` object was configured to
-not handle some of those, e.g. if you want to create the window yourself so it
-can display some menu before and after having ReMoTeMo taking control of the
-window).
+not handle some of those, e.g. if you wanted to create the window yourself so
+it can display some menu before and after having ReMoTeMo taking control of
+the window).
+
+If, for some reason, you want to clean up sooner, you can call:
+
+```C++
+void remotemo::Temo::quit()
+```
+
+Just make sure not to touch any of the object's methods after that.
 
 <sup>[Back to top](#remotemo-api-design)</sup>
   <!-- TODO continue working on text from here -->
