@@ -153,13 +153,13 @@ been created:
 
     When changing this setting, you could use the constant
     `remotemo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
-    operationg system) for the path separator when creating the path, if you
+    operating system) for the path separator when creating the path, if you
     care about it being cross-platform.
 
     If this setting is set to a string starting with the path separator (or a
     drive letter, e.g. "D:", if on Windows) then the path is an absolute path.
 
-    Othervice the path is relative to your executable program file.
+    Otherwise the path is relative to your executable program file.
 
   No mater if set to `nullptr` or not, the following settings will be used
   (Note that x and y are counted from the top-left corner, both starting at
@@ -186,13 +186,13 @@ been created:
 
     When changing this setting, you could use the constant
     `remotemo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
-    operationg system) for the path separator when creating the path, if you
+    operating system) for the path separator when creating the path, if you
     care about it being cross-platform.
 
     If this setting is set to a string starting with the path separator (or a
     drive letter, e.g. "D:", if on Windows) then the path is an absolute path.
 
-    Othervice the path is relative to your executable program file.
+    Otherwise the path is relative to your executable program file.
 
   No mater if set to `nullptr` or not, the following settings will be used:
   - Font size: `width: 7, height: 18`
