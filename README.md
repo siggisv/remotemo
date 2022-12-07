@@ -28,12 +28,12 @@ calling the text-input/output methods of the object created.
 
 int main(int argc, char *argv[])
 {
-    std::pair<remotemo::Temo, bool> tM = remotemo::Temo::create();
+    std::pair<remo::Temo, bool> tM = remo::Temo::create();
     if (!tM.second) {
         return -1;
     }
 
-    remotemo::Temo textMonitor = tM.first;
+    remo::Temo textMonitor = tM.first;
 
     textMonitor.setCursorXY(10, 2);
     textMonitor.print("Hello world!!!");

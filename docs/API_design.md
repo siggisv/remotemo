@@ -22,28 +22,27 @@ thread where it was initialized?
 ### Initialization
 
 ```C++
-std::pair<remotemo::Temo, bool> remotemo::Temo::create();
-std::pair<remotemo::Temo, bool> remotemo::Temo::create(const remotemo::Config &config);
+std::pair<remo::Temo, bool> remo::Temo::create();
+std::pair<remo::Temo, bool> remo::Temo::create(const remo::InitConfig &config);
 ```
 
 This is a static method that will create and initialize an object representing
 a text monitor, the window showing it and their properties (along with the
 needed properties of the underlying SDL2-library).
 
-- If successful, it will return a `std::pair<remotemo::Temo, bool>` containing
-  the object and the boolean set to `true`. It will also create an internal
-  list of the resources that it did set up so that whenever/however the
-  `remotemo::Temo` object gets deleted, its destructor can take care of
-  cleaning them up.
+- If successful, it will return a `std::pair<remo::Temo, bool>` containing the
+  object and the boolean set to `true`. It will also create an internal list
+  of the resources that it did set up so that whenever/however the `remo::Temo`
+  object gets deleted, its destructor can take care of cleaning them up.
 - If unsuccessful, it will log an error using `SDL_Log()`, free/release all
   resources it had succeeded setting up and then return a `std::pair`
-  containing an uninitialized `remotemo::Temo` object and the boolean set to
+  containing an uninitialized `remo::Temo` object and the boolean set to
   `false`.
 \
 \
-**TODO?** On failure return a `remotemo::NoopTemo` object, a subclass of
-`remotemo::Temo`, where all methods are overwritten to do nothing except log
-an error - just in case you didn't check the status of the returned boolean.
+**TODO?** On failure return a `remo::Noop` object, a subclass of `remo::Temo`,
+where all methods are overwritten to do nothing except log an error - just in
+case you didn't check the status of the returned boolean.
 
 When invoked without any parameters, it will set up the underlying
 SDL2-library and create a window for you with the default settings (including
@@ -51,28 +50,28 @@ loading a background texture and the font-bitmap from their default
 locations). Most of the settings can not be changed after creation.
 
 To initialize with other settings than the default ones, first create a
-`remotemo::Config` object:
+`remo::InitConfig` object:
 
 ```C++
-remotemo::Config::Config();
+remo::InitConfig::InitConfig();
 
 ```
 
-_The constructor that creates a `remotemo::Config` object._
+_The constructor that creates a `remo::InitConfig` object._
 
-When created, it will contains the default settings. You can then pick which
-settings to change by calling its setters. Then call
-`remotemo::Temo::create(const remotemo::Config &config)` to create and
-initialize everything with the changed settings.
+When created, it will contains the default initialization settings. You can
+then pick which settings to change by calling its setters. Then call
+`remo::Temo::create(const remo::InitConfig &config)` to create and initialize
+everything with the changed settings.
 
 The setters can be chained, e.g.:
 
 ```C++
-remotemo::Config myconfig;
+remo::InitConfig myconfig;
 myconfig.setWindowWidth(1920).setWindowHeight(1080)
         .setBackgroundFile("background.png")
         .setBackgroundMinArea(200, 120, 1000, 700);
-std::pair<remotemo::Temo, bool> tM = remotemo::Temo::create(myconfig);
+std::pair<remo::Temo, bool> tM = remo::Temo::create(myconfig);
 ```
 
 **TODO?** List all the setters of the config class.
@@ -81,12 +80,12 @@ std::pair<remotemo::Temo, bool> tM = remotemo::Temo::create(myconfig);
 ### Default settings
 
 The following are the default settings with a short explanation for each one.
-Unless noted, they can not be changed after the `remotemo::Temo` object has
-been created:
+Unless noted, they can not be changed after the `remo::Temo` object has been
+created:
 - Is SDL initialized: `false`
 
   If `false`, then SDL will be initialized when calling the `create()` method
-  AND the destructor of the `remotemo::Temo` object will handle cleaning it up
+  AND the destructor of the `remo::Temo` object will handle cleaning it up
   (meaning that the destructor will be in charge of calling `SDL_Quit();`).
 
   If `true`, then you must handle both setting up SDL before calling the
@@ -129,8 +128,8 @@ been created:
     Not recommended to change that setting to `false` unless you either really
     want the application to continue running without a window or you have
     taken care of opening another window yourself.
-  - set function-to-call-before-closing-window to `nullptr` _(can and
-    **should** be changed later)_
+  - set function-to-call-before-closing-window to `nullptr` _(can be changed
+    later)_
     \
     If set, that function can be used to e.g. offer the user the option to
     cancel that action or to save before continuing.
@@ -152,7 +151,7 @@ been created:
     (or `res\img\terminal_screen.png` depending on the operating system).
 
     When changing this setting, you could use the constant
-    `remotemo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
+    `remo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
     operating system) for the path separator when creating the path, if you
     care about it being cross-platform.
 
@@ -185,7 +184,7 @@ been created:
     (or `res\img\font_bitmap.png` depending on the operating system).
 
     When changing this setting, you could use the constant
-    `remotemo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
+    `remo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
     operating system) for the path separator when creating the path, if you
     care about it being cross-platform.
 
@@ -212,25 +211,25 @@ been created:
     Note that this setting controls the color of **all** the text, both the
     text that has already been printed to the screen and the text that is
     going to be printed to the screen.
-- The following properties will have the initial values shown here _(those
-  can all be changed later)_:
+- The following properties control the behaviour of the text output and will
+  have the initial values shown here _(those can all be changed later)_:
   - delay between chars: `60` (milliseconds)
     \
     Whenever text is printed to the monitor, it gets displayed one character
     at the time with a slight delay between.
-  - inverse: `off`
+  - inverse: `false`
     \
-    Set this on for text to be displayed with the background color and
-    the foreground color switched.
+    Set this to `true` to print text with the background color and the
+    foreground color switched.
     \
     Changing this doesn't affect text that has already been printed to the
     screen.
   - cursor position, counted from the top-left corner:
     `column: 0, line: 0`
-  - scrolling of text: `on`
+  - scrolling of text: `true`
     \
-    If set on, the content of the screen scrolls up one line when the cursor
-    goes below the bottom line.
+    If set to `true`, the content of the screen scrolls up one line when the
+    cursor goes below the bottom line.
   - text wrapping: `off`
     \
     This can be set to `off` (text printed beyond the right border gets lost),
@@ -246,15 +245,15 @@ that it did set up but leaves to you the responsibility of cleaning up those
 resources that you passed to it.
 
 For most uses, allowing the destructor to handle cleaning up those resources
-when the `remotemo::Temo` object gets destroyed (whether manually or
-automatically e.g. when going out of scope).
+when the `remo::Temo` object gets destroyed (whether manually or automatically
+e.g. when going out of scope).
 
 ```C++
-remotemo::Temo::~Temo()
+remo::Temo::~Temo();
 ```
 
 The destructor, in charge of deleting/closing textures, the renderer, the
-window and quitting SDL (unless the `remotemo::Temo` object was configured to
+window and quitting SDL (unless the `remo::Temo` object was configured to
 not handle some of those, e.g. if you wanted to create the window yourself so
 it can display some menu before and after having ReMoTeMo taking control of
 the window).
@@ -262,7 +261,7 @@ the window).
 If, for some reason, you want to clean up sooner, you can call:
 
 ```C++
-void remotemo::Temo::quit()
+void remo::Temo::quit();
 ```
 
 Just make sure not to touch any of the object's methods after that.
