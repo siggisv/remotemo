@@ -68,13 +68,18 @@ then pick which settings to change by calling its setters. Then call
 `remo::Temo::create(const remo::InitConfig &config)` to create and initialize
 everything with the changed settings.
 
-The setters can be chained, e.g.:
+~~The setters can be chained, e.g.:~~ Nope! At least some (if not all) of them
+need to be able to gracefully report back that an error occurred.
 
 ```C++
 remo::InitConfig myconfig;
-myconfig.setWindowWidth(1920).setWindowHeight(1080)
-        .setBackgroundFile("background.png")
-        .setBackgroundMinArea(200, 120, 1000, 700);
+if (myconfig.setWindowSize(1920, 1080) == false) { /* handle error */ }
+if (myconfig.setBackgroundFile("background.png") == false) {
+    /* handle error */
+}
+if (myconfig.setBackgroundMinArea(200, 120, 1000, 700) == false) {
+    /* handle error */
+}
 std::pair<remo::Temo, bool> tM = remo::Temo::create(myconfig);
 ```
 
@@ -277,23 +282,23 @@ Just make sure not to touch any of the object's methods after that.
 ```C++
 struct remo::Point {int x; int y;};
 
-remo::Temo &remo::Temo::moveCursor(int x, int y);
-remo::Temo &remo::Temo::moveCursor(const remo::Point &move);
-remo::Temo &remo::Temo::setCursor(int column, int line);
-remo::Temo &remo::Temo::setCursor(const remo::Point &position);
-remo::Temo &remo::Temo::setCursorColumn(int column);
-remo::Temo &remo::Temo::setCursorLine(int line);
-remo::Temo &remo::Temo::setCursorX(int column);
-remo::Temo &remo::Temo::setCursorY(int line);
+int remo::Temo::moveCursor(int x, int y);
+int remo::Temo::moveCursor(const remo::Point &move);
+int remo::Temo::setCursor(int column, int line);
+int remo::Temo::setCursor(const remo::Point &position);
+int remo::Temo::setCursorColumn(int column);
+int remo::Temo::setCursorLine(int line);
+int remo::Temo::setCursorX(int column);
+int remo::Temo::setCursorY(int line);
 remo::Point remo::Temo::getCursorPosition();
-remo::Temo &remo::Temo::pause(int pause);
-remo::Temo &remo::Temo::clear();
+int remo::Temo::pause(int pause);
+int remo::Temo::clear();
 char remo::Temo::getKey();
 std::string remo::Temo::getInput(int maxLength);
-remo::Temo &remo::Temo::print(conts std::string &text);
-remo::Temo &remo::Temo::printAt(int column, int line,
+int remo::Temo::print(conts std::string &text);
+int remo::Temo::printAt(int column, int line,
         const std::string &text);
-remo::Temo &remo::Temo::printAt(const remo::Point &position,
+int remo::Temo::printAt(const remo::Point &position,
         const std::string &text);
 ```
 
@@ -303,11 +308,11 @@ remo::Temo &remo::Temo::printAt(const remo::Point &position,
 ```C++
 enum class remo::Wrapping {off, char, word};
 
-remo::Temo &remo::Temo::setTextDelay(int delay);
-remo::Temo &remo::Temo::setTextSpeed(int speed);
-remo::Temo &remo::Temo::setScrolling(bool scrolling);
-remo::Temo &remo::Temo::setWrapping(remo::Wrapping wrapping);
-remo::Temo &remo::Temo::setInverse(bool inverse);
+int remo::Temo::setTextDelay(int delay);
+int remo::Temo::setTextSpeed(int speed);
+int remo::Temo::setScrolling(bool scrolling);
+int remo::Temo::setWrapping(remo::Wrapping wrapping);
+int remo::Temo::setInverse(bool inverse);
 
 int remo::Temo::getTextDelay();
 int remo::Temo::getTextSpeed();
@@ -323,15 +328,15 @@ bool remo::Temo::getInverse();
 enum class remo::BlendMode {none, blend, add, mod};
 struct remo::Color {int red; int green; int blue;};
 
-remo::Temo &remo::Temo::setTextAreaSize(int columns, int lines);
-remo::Temo &remo::Temo::setTextAreaSize(const remo::Point &size);
+int remo::Temo::setTextAreaSize(int columns, int lines);
+int remo::Temo::setTextAreaSize(const remo::Point &size);
 int remo::Temo::getTextAreaColumns();
 int remo::Temo::getTextAreaLines();
 remo::Point remo::Temo::getTextAreaSize();
-remo::Temo &remo::Temo::setTextBlendMode(remo::BlendMode mode);
+int remo::Temo::setTextBlendMode(remo::BlendMode mode);
 remo::BlendMode remo::Temo::getTextBlendMode();
-remo::Temo &remo::Temo::setTextColor(int red, int green, int blue);
-remo::Temo &remo::Temo::setTextColor(const remo::Color &color);
+int remo::Temo::setTextColor(int red, int green, int blue);
+int remo::Temo::setTextColor(const remo::Color &color);
 remo::Color remo::Temo::getTextColor();
 ```
 
@@ -343,34 +348,33 @@ enum class remo::FKey {
         none, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12};
 enum class remo::ModKeys {
         none = 0x0000, shift = 0x0001, ctrl = 0x0002, alt = 0x0004};
-remo::Temo &remo::Temo::setWindowTitle(const std::string &title);
+int remo::Temo::setWindowTitle(const std::string &title);
 std::string remo::Temo::getWindowTitle();
-remo::Temo &remo::Temo::setWindowSize(int width, int height);
-remo::Temo &remo::Temo::setWindowSize(const remo::Point &size);
+int remo::Temo::setWindowSize(int width, int height);
+int remo::Temo::setWindowSize(const remo::Point &size);
 remo::Point remo::Temo::getWindowSize();
-remo::Temo &remo::Temo::setWindowPosition(int x, int y);
-remo::Temo &remo::Temo::setWindowPosition(const remo::Point &position);
+int remo::Temo::setWindowPosition(int x, int y);
+int remo::Temo::setWindowPosition(const remo::Point &position);
 remo::Point remo::Temo::getWindowPosition();
-remo::Temo &remo::Temo::setWindowResizable(bool resizable);
+int remo::Temo::setWindowResizable(bool resizable);
 bool remo::Temo::getWindowResizable();
-remo::Temo &remo::Temo::setWindowFullscreen(bool fullscreen);
+int remo::Temo::setWindowFullscreen(bool fullscreen);
 bool remo::Temo::getWindowFullscreen();
-remo::Temo &remo::Temo::setKeyFullscreen(remo::ModKeys modKey, remo::FKey key);
-remo::Temo &remo::Temo::setKeyFullscreen(remo::ModKeys modKey, char key);
+int remo::Temo::setKeyFullscreen(remo::ModKeys modKey, remo::FKey key);
+int remo::Temo::setKeyFullscreen(remo::ModKeys modKey, char key);
 std::tuple<remo::ModKey, remo::FKey, char> remo::Temo::getKeyFullscreen();
-remo::Temo &remo::Temo::setKeyCloseWindow(remo::ModKeys modKey, remo::FKey key);
-remo::Temo &remo::Temo::setKeyCloseWindow(remo::ModKeys modKey, char key);
+int remo::Temo::setKeyCloseWindow(remo::ModKeys modKey, remo::FKey key);
+int remo::Temo::setKeyCloseWindow(remo::ModKeys modKey, char key);
 std::tuple<remo::ModKey, remo::FKey, char> remo::Temo::getKeyCloseWindow();
-remo::Temo &remo::Temo::setKeyQuit(remo::ModKeys modKey, remo::FKey key);
-remo::Temo &remo::Temo::setKeyQuit(remo::ModKeys modKey, char key);
+int remo::Temo::setKeyQuit(remo::ModKeys modKey, remo::FKey key);
+int remo::Temo::setKeyQuit(remo::ModKeys modKey, char key);
 std::tuple<remo::ModKey, remo::FKey, char> remo::Temo::getKeyQuit();
-remo::Temo &remo::Temo::setClosingSameAsQuit(bool closingSameAsQuit);
+int remo::Temo::setClosingSameAsQuit(bool closingSameAsQuit);
 bool remo::Temo::getClosingSameAsQuit();
-remo::Temo &remo::Temo::setFunctionPreQuit(std::function<bool()> func);
-remo::Temo &remo::Temo::setFunctionPreQuit(std::function<bool(
+int remo::Temo::setFunctionPreQuit(std::function<bool()> func);
+int remo::Temo::setFunctionPreQuit(std::function<bool(
         remo::Temo*)> func);
 ```
 
-  <!-- TODO continue working on text from here -->
 <sup>[Back to top](#remotemo-api-design)</sup>
 
