@@ -10,7 +10,11 @@ _1st draft_
   - [Initialization](#initialization)
   - [Default settings](#default-settings)
   - [Cleanup](#cleanup)
-
+- [Using ReMoTeMo](#using-remotemo)
+  - [Interact with the monitor](#interact-with-the-monitor)
+  - [Change text output behaviour](#change-text-output-behaviour)
+  - [Change text area settings](#change-text-area-settings)
+  - [Change window settings](#change-window-settings)
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ## Initialization, settings and cleanup
@@ -267,5 +271,106 @@ void remo::Temo::quit();
 Just make sure not to touch any of the object's methods after that.
 
 <sup>[Back to top](#remotemo-api-design)</sup>
+## Using ReMoTeMo
+### Interact with the monitor
+
+```C++
+struct remo::Point {int x; int y;};
+
+remo::Temo &remo::Temo::moveCursor(int x, int y);
+remo::Temo &remo::Temo::moveCursor(const remo::Point &move);
+remo::Temo &remo::Temo::setCursor(int column, int line);
+remo::Temo &remo::Temo::setCursor(const remo::Point &position);
+remo::Temo &remo::Temo::setCursorColumn(int column);
+remo::Temo &remo::Temo::setCursorLine(int line);
+remo::Temo &remo::Temo::setCursorX(int column);
+remo::Temo &remo::Temo::setCursorY(int line);
+remo::Point remo::Temo::getCursorPosition();
+remo::Temo &remo::Temo::pause(int pause);
+remo::Temo &remo::Temo::clear();
+char remo::Temo::getKey();
+std::string remo::Temo::getInput(int maxLength);
+remo::Temo &remo::Temo::print(conts std::string &text);
+remo::Temo &remo::Temo::printAt(int column, int line,
+        const std::string &text);
+remo::Temo &remo::Temo::printAt(const remo::Point &position,
+        const std::string &text);
+```
+
+<sup>[Back to top](#remotemo-api-design)</sup>
+### Change text output behaviour
+
+```C++
+enum class remo::Wrapping {off, char, word};
+
+remo::Temo &remo::Temo::setTextDelay(int delay);
+remo::Temo &remo::Temo::setTextSpeed(int speed);
+remo::Temo &remo::Temo::setScrolling(bool scrolling);
+remo::Temo &remo::Temo::setWrapping(remo::Wrapping wrapping);
+remo::Temo &remo::Temo::setInverse(bool inverse);
+
+int remo::Temo::getTextDelay();
+int remo::Temo::getTextSpeed();
+bool remo::Temo::getScrolling();
+remo::Wrapping remo::Temo::getWrapping();
+bool remo::Temo::getInverse();
+```
+
+<sup>[Back to top](#remotemo-api-design)</sup>
+### Change text area settings
+
+```C++
+enum class remo::BlendMode {none, blend, add, mod};
+struct remo::Color {int red; int green; int blue;};
+
+remo::Temo &remo::Temo::setTextAreaSize(int columns, int lines);
+remo::Temo &remo::Temo::setTextAreaSize(const remo::Point &size);
+int remo::Temo::getTextAreaColumns();
+int remo::Temo::getTextAreaLines();
+remo::Point remo::Temo::getTextAreaSize();
+remo::Temo &remo::Temo::setTextBlendMode(remo::BlendMode mode);
+remo::BlendMode remo::Temo::getTextBlendMode();
+remo::Temo &remo::Temo::setTextColor(int red, int green, int blue);
+remo::Temo &remo::Temo::setTextColor(const remo::Color &color);
+remo::Color remo::Temo::getTextColor();
+```
+
+<sup>[Back to top](#remotemo-api-design)</sup>
+### Change window settings
+
+```C++
+enum class remo::FKey {
+        none, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12};
+enum class remo::ModKeys {
+        none = 0x0000, shift = 0x0001, ctrl = 0x0002, alt = 0x0004};
+remo::Temo &remo::Temo::setWindowTitle(const std::string &title);
+std::string remo::Temo::getWindowTitle();
+remo::Temo &remo::Temo::setWindowSize(int width, int height);
+remo::Temo &remo::Temo::setWindowSize(const remo::Point &size);
+remo::Point remo::Temo::getWindowSize();
+remo::Temo &remo::Temo::setWindowPosition(int x, int y);
+remo::Temo &remo::Temo::setWindowPosition(const remo::Point &position);
+remo::Point remo::Temo::getWindowPosition();
+remo::Temo &remo::Temo::setWindowResizable(bool resizable);
+bool remo::Temo::getWindowResizable();
+remo::Temo &remo::Temo::setWindowFullscreen(bool fullscreen);
+bool remo::Temo::getWindowFullscreen();
+remo::Temo &remo::Temo::setKeyFullscreen(remo::ModKeys modKey, remo::FKey key);
+remo::Temo &remo::Temo::setKeyFullscreen(remo::ModKeys modKey, char key);
+std::tuple<remo::ModKey, remo::FKey, char> remo::Temo::getKeyFullscreen();
+remo::Temo &remo::Temo::setKeyCloseWindow(remo::ModKeys modKey, remo::FKey key);
+remo::Temo &remo::Temo::setKeyCloseWindow(remo::ModKeys modKey, char key);
+std::tuple<remo::ModKey, remo::FKey, char> remo::Temo::getKeyCloseWindow();
+remo::Temo &remo::Temo::setKeyQuit(remo::ModKeys modKey, remo::FKey key);
+remo::Temo &remo::Temo::setKeyQuit(remo::ModKeys modKey, char key);
+std::tuple<remo::ModKey, remo::FKey, char> remo::Temo::getKeyQuit();
+remo::Temo &remo::Temo::setClosingSameAsQuit(bool closingSameAsQuit);
+bool remo::Temo::getClosingSameAsQuit();
+remo::Temo &remo::Temo::setFunctionPreQuit(std::function<bool()> func);
+remo::Temo &remo::Temo::setFunctionPreQuit(std::function<bool(
+        remo::Temo*)> func);
+```
+
   <!-- TODO continue working on text from here -->
+<sup>[Back to top](#remotemo-api-design)</sup>
 
