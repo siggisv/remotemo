@@ -83,7 +83,40 @@ if (myconfig.setBackgroundMinArea(200, 120, 1000, 700) == false) {
 std::pair<remo::Temo, bool> tM = remo::Temo::create(myconfig);
 ```
 
-**TODO?** List all the setters of the config class.
+```C++
+int remo::InitConfig::setIsSDLinitialized(bool SDLisInitialized);
+int remo::InitConfig::setTheWindow(const SDL_Window const *window);
+int remo::InitConfig::setWindowTitle(const std::string &title);
+int remo::InitConfig::setWindowSize(int width, int height);
+int remo::InitConfig::setWindowSize(const remo::Point &size);
+int remo::InitConfig::setWindowPosition(int x, int y);
+int remo::InitConfig::setWindowPosition(const remo::Point &position);
+int remo::InitConfig::setWindowResizable(bool resizable);
+int remo::InitConfig::setWindowFullscreen(bool fullscreen);
+int remo::InitConfig::setKeyFullscreen(remo::ModKeys modKey, remo::FKey key);
+int remo::InitConfig::setKeyFullscreen(remo::ModKeys modKey, char key);
+int remo::InitConfig::setKeyCloseWindow(remo::ModKeys modKey, remo::FKey key);
+int remo::InitConfig::setKeyCloseWindow(remo::ModKeys modKey, char key);
+int remo::InitConfig::setKeyQuit(remo::ModKeys modKey, remo::FKey key);
+int remo::InitConfig::setKeyQuit(remo::ModKeys modKey, char key);
+int remo::InitConfig::setClosingSameAsQuit(bool closingSameAsQuit);
+int remo::InitConfig::setFunctionPreQuit(std::function<bool()> func);
+int remo::InitConfig::setFunctionPreQuit(std::function<bool(remo::Temo*)> func);
+int remo::InitConfig::setBackground(const SDL_Texture const *background);
+int remo::InitConfig::setBackgroundFilePath(const std::string &filePath);
+int remo::InitConfig::setBackgroundMinArea(int x, int y, int w, int h);
+int remo::InitConfig::setBackgroundTextArea(float x, float y, float width,
+        float height);
+int remo::InitConfig::setFontBitmap(const SDL_Texture const *fontBitmap);
+int remo::InitConfig::setFontBitmapFilePath(const std::string &filePath);
+int remo::InitConfig::setFontSize(int width, int height);
+int remo::InitConfig::setFontSize(const remo::Point &size);
+int remo::InitConfig::setTextAreaSize(int columns, int lines);
+int remo::InitConfig::setTextAreaSize(const remo::Point &size);
+int remo::InitConfig::setTextBlendMode(remo::BlendMode mode);
+int remo::InitConfig::setTextColor(int red, int green, int blue);
+int remo::InitConfig::setTextColor(const remo::Color &color);
+```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Default settings
@@ -102,8 +135,11 @@ created:
 - The window: `nullptr`
 
   If NOT set to `nullptr` then it must be a pointer to a valid `SDL_Window`.
+  Note that it will then be your responsability to both keep that pointed window
+  valid until you quit ReMoTeMo and to clean up after use.
+  \
   Also, if that window has a renderer associated with it, then that renderer
-  must have the `SDL_RENDERER_TARGETTEXTURE` flag.
+  must have the `SDL_RENDERER_TARGETTEXTURE` flag set.
   
   Note that when changing this setting from being `nullptr` then 'Is SDL
   initialized' **will** at the same time be changed to `true` (since you would
@@ -115,7 +151,7 @@ created:
   destructor will be in charge of destroying it).
   \
   Note that although those settings can be changed later, usually it should be
-  better to just let the library handle them (which would happen e.g. when the
+  better to just let the library handle that (which would happen e.g. when the
   user drags or resizes the window):
   - title: `Retro Monochrome Text Monitor` _(can be changed later)_
   - width: `1280` _(can be changed later)_
@@ -151,7 +187,9 @@ created:
 - Background texture: `nullptr`
 
   If not set to `nullptr` then it must point to an `SDL_Texture` containing
-  the desired background image.
+  the desired background image.  Note that it will then be your responsability
+  to both keep that pointed texture valid until you quit ReMoTeMo and to clean
+  up after use.
 
   If set to `nullptr` then the background texture will be loaded from the
   following file and set as being owned by this object (meaning the destructor
@@ -184,7 +222,9 @@ created:
 - Font-bitmap texture: `nullptr`
 
   If not set to `nullptr` then it must point to an `SDL_Texture` containing
-  the desired font-bitmap image.
+  the desired font-bitmap image.  Note that it will then be your
+  responsability to both keep that pointed texture valid until you quit
+  ReMoTeMo and to clean up after use.
 
   If set to `nullptr` then the font-bitmap texture will be loaded from the
   following file and set as being owned by this object (meaning the destructor
@@ -296,10 +336,8 @@ int remo::Temo::clear();
 char remo::Temo::getKey();
 std::string remo::Temo::getInput(int maxLength);
 int remo::Temo::print(conts std::string &text);
-int remo::Temo::printAt(int column, int line,
-        const std::string &text);
-int remo::Temo::printAt(const remo::Point &position,
-        const std::string &text);
+int remo::Temo::printAt(int column, int line, const std::string &text);
+int remo::Temo::printAt(const remo::Point &position, const std::string &text);
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
@@ -372,8 +410,7 @@ std::tuple<remo::ModKey, remo::FKey, char> remo::Temo::getKeyQuit();
 int remo::Temo::setClosingSameAsQuit(bool closingSameAsQuit);
 bool remo::Temo::getClosingSameAsQuit();
 int remo::Temo::setFunctionPreQuit(std::function<bool()> func);
-int remo::Temo::setFunctionPreQuit(std::function<bool(
-        remo::Temo*)> func);
+int remo::Temo::setFunctionPreQuit(std::function<bool(remo::Temo*)> func);
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
