@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
     remo::Temo textMonitor = tM.first;
 
-    textMonitor.setCursorXY(10, 2);
+    textMonitor.setCursor(10, 2);
     textMonitor.print("Hello world!!!");
 
     textMonitor.pause(250);
