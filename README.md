@@ -16,3 +16,39 @@ This is work-in-progress that has not even reached beta status.
 
 Almost nothing works yet and anything might
 get changed at any time.
+
+## Quick start
+
+The easiest way to start using ReMoTeMo is to simply call
+`remotemo::Temo::create()`, check its return status and then you can start
+calling the text-input/output methods of the object created.
+
+```C++
+#include <remotemo/remotemo.hpp>
+
+int main(int argc, char *argv[])
+{
+    std::pair<remo::Temo, bool> tM = remo::Temo::create();
+    if (!tM.second) {
+        return -1;
+    }
+
+    remo::Temo textMonitor = tM.first;
+
+    textMonitor.setCursor(10, 2);
+    textMonitor.print("Hello world!!!");
+
+    textMonitor.pause(250);
+
+    textMonitor.setInverse(true);
+    textMonitor.printAt(5, 15, "Push any key to quit");
+    textMonitor.setInverse(false);
+    textMonitor.print("\n");
+
+    while (textMonitor.getKey() == 'n') {
+        textMonitor.print("Actually no! Any key except that key :P\n");
+    }
+}
+```
+
+For further instruction check out [the API design](docs/API_design.md).
