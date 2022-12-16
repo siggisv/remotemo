@@ -1,4 +1,4 @@
-# ReMoTeMo
+# remoTemo
 Retro Monochrome Text Monitor - a library for building applications with a
 really old-school looking user interface.
 
@@ -19,8 +19,8 @@ get changed at any time.
 
 ## Quick start
 
-The easiest way to start using ReMoTeMo is to simply call
-`remotemo::Temo::create()`, check its return status and then you can start
+The easiest way to start using remoTemo is to simply call
+`remotemo::create()`, check its return status and then you can start
 calling the text-input/output methods of the object created.
 
 ```C++
@@ -28,12 +28,12 @@ calling the text-input/output methods of the object created.
 
 int main(int argc, char *argv[])
 {
-    std::pair<remo::Temo, bool> tM = remo::Temo::create();
+    std::pair<remotemo::Temo, bool> tM = remotemo::create();
     if (!tM.second) {
         return -1;
     }
 
-    remo::Temo textMonitor = tM.first;
+    remotemo::Temo textMonitor = tM.first;
 
     textMonitor.setCursor(10, 2);
     textMonitor.print("Hello world!!!");
