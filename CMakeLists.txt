@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16..3.25)
 
 project(remotemo
     VERSION 0.0.1
@@ -8,6 +8,9 @@ project(remotemo
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+option(REMOTEMO_BUILD_TESTS "Enable building the tests" OFF)
+option(REMOTEMO_BUILD_SAMPLES "Enable building the samples" OFF)
 
 find_package(SDL2 REQUIRED)
 
@@ -46,11 +49,17 @@ add_custom_target(copy_resources ALL
     COMMENT "Copying resources into build directory"
 )
 
-add_executable(hello_sample src/hello_sample.cpp)
-target_include_directories(hello_sample PUBLIC
-    include
-)
-target_link_libraries(hello_sample PRIVATE
-    remotemo
-)
-add_dependencies(hello_sample copy_resources)
+IF (REMOTEMO_BUILD_SAMPLES)
+    add_executable(hello_sample src/hello_sample.cpp)
+    target_include_directories(hello_sample PUBLIC
+        include
+    )
+    target_link_libraries(hello_sample PRIVATE
+        remotemo
+    )
+    add_dependencies(hello_sample copy_resources)
+endif()
+
+if (REMOTEMO_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
