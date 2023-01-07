@@ -76,12 +76,6 @@ jobs:
 
       - name: Install SDL2
         run: |
-          brew update
-          brew unlink python
-          brew unlink python@3
-          brew unlink python@3.10
-          brew unlink python@3.11
-          brew upgrade
           brew install sdl2 sdl2_image
 
       - name: Configure CMake
