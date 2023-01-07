@@ -76,9 +76,6 @@ jobs:
 
       - name: Install SDL2
         run: |
-          brew pin python
-          brew update
-          brew upgrade
           brew install sdl2 sdl2_image
 
       - name: Configure CMake
