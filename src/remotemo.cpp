@@ -7,7 +7,7 @@ const int WINDOW_HEIGHT = 720;
 
 const char *screenImageFile = "terminal_screen.png";
 const SDL_Point SCREEN_TEXTURE_SIZE = {946, 732};
-const SDL_Rect backgroundMinArea {.x = 118, .y = 95, .w = 700, .h = 540};
+const SDL_Rect backgroundMinArea {118, 95, 700, 540};
 
 
 SDL_Texture *loadTexture(SDL_Renderer *renderer, const std::string &file)
@@ -151,6 +151,7 @@ int test_init()
             default:
               break;
           }
+          break;
         case SDL_WINDOWEVENT:
           switch (event.window.event) {
             case SDL_WINDOWEVENT_SIZE_CHANGED:
@@ -161,6 +162,7 @@ int test_init()
             default:
               break;
           }
+          break;
         default:
           break;
       }
