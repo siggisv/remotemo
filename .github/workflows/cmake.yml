@@ -77,26 +77,30 @@ jobs:
       - name: Install SDL2
         run: |
           brew update
-          ls -al /usr/local/bin
+          ls -al /usr/local/bin | grep "Python.framework"
           brew unlink python@3
-          ls -al /usr/local/bin
-          brew upgrade python@3.10
-          brew unlink python@3
+          ls -al /usr/local/bin | grep "Python.framework"
+          brew unlink python@3.10
+          ls -al /usr/local/bin | grep "Python.framework"
           brew unlink python@3.11
-          brew upgrade python@3.11
-          brew install sdl2 sdl2_image
+          ls -al /usr/local/bin | grep "Python.framework"
+          brew upgrade python@3.10
+#          brew unlink python@3
+#          brew unlink python@3.11
+#          brew upgrade python@3.11
+#          brew install sdl2 sdl2_image
 
-      - name: Configure CMake
-        run: >
-          cmake -B ${{github.workspace}}/build
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-          -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
+#      - name: Configure CMake
+#        run: >
+#          cmake -B ${{github.workspace}}/build
+#          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+#          -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
 
-      - name: Build
-        run: >
-          cmake --build ${{github.workspace}}/build
-          --config ${{env.BUILD_TYPE}}
+#      - name: Build
+#        run: >
+#          cmake --build ${{github.workspace}}/build
+#          --config ${{env.BUILD_TYPE}}
 
-      - name: Test
-        working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{env.BUILD_TYPE}}
+#      - name: Test
+#        working-directory: ${{github.workspace}}/build
+#        run: ctest -C ${{env.BUILD_TYPE}}
