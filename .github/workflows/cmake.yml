@@ -87,8 +87,6 @@ jobs:
           rm '/usr/local/bin/pydoc3.11'
           rm '/usr/local/bin/python3.11'
           rm '/usr/local/bin/python3.11-config'
-#          brew upgrade python@3.10
-#          brew upgrade python@3.11
           brew install sdl2 sdl2_image
 
       - name: Configure CMake
