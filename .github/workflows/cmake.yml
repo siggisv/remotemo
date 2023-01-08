@@ -77,8 +77,6 @@ jobs:
       - name: Install SDL2
         run: |
           brew update
-          ls -al /usr/local/bin | grep "Python.framework"
-          echo "========================"
           rm '/usr/local/bin/2to3'
           rm '/usr/local/bin/idle3'
           rm '/usr/local/bin/pydoc3'
@@ -89,27 +87,21 @@ jobs:
           rm '/usr/local/bin/pydoc3.11'
           rm '/usr/local/bin/python3.11'
           rm '/usr/local/bin/python3.11-config'
-          ls -al /usr/local/bin | grep "Python.framework"
-          echo "========================"
-          brew upgrade python@3.10
-          ls -al /usr/local/bin | grep "Python.framework"
-          echo "========================"
-          brew upgrade python@3.11
-          ls -al /usr/local/bin | grep "Python.framework"
-          echo "========================"
+#          brew upgrade python@3.10
+#          brew upgrade python@3.11
           brew install sdl2 sdl2_image
 
-#      - name: Configure CMake
-#        run: >
-#          cmake -B ${{github.workspace}}/build
-#          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-#          -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
+      - name: Configure CMake
+        run: >
+          cmake -B ${{github.workspace}}/build
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+          -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
 
-#      - name: Build
-#        run: >
-#          cmake --build ${{github.workspace}}/build
-#          --config ${{env.BUILD_TYPE}}
+      - name: Build
+        run: >
+          cmake --build ${{github.workspace}}/build
+          --config ${{env.BUILD_TYPE}}
 
-#      - name: Test
-#        working-directory: ${{github.workspace}}/build
-#        run: ctest -C ${{env.BUILD_TYPE}}
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C ${{env.BUILD_TYPE}}
