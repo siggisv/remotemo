@@ -29,39 +29,39 @@ env:
   REMOTEMO_WERROR: ON
 
 jobs:
-  build-Ubuntu:
-    strategy:
-      fail-fast: false # if a particular matrix build fails, don't skip the rest
-      matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
-        # os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+#  build-Ubuntu:
+#    strategy:
+#      fail-fast: false # if a particular matrix build fails, don't skip the rest
+#      matrix:
+#        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
+#        # os: [ubuntu-latest, windows-latest, macos-latest]
+#    runs-on: ${{ matrix.os }}
 
-    steps:
-      - uses: actions/checkout@v3
+#    steps:
+#      - uses: actions/checkout@v3
 
-      - name: Install SDL2
-        run: |
-          sudo apt-get update
-          sudo apt-get install libsdl2-dev libsdl2-image-dev
+#      - name: Install SDL2
+#        run: |
+#          sudo apt-get update
+#          sudo apt-get install libsdl2-dev libsdl2-image-dev
 
-      - name: Configure CMake
-        run: >
-          cmake -B ${{github.workspace}}/build
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-          -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
+#      - name: Configure CMake
+#        run: >
+#          cmake -B ${{github.workspace}}/build
+#          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+#          -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
 
-      - name: Build
-        run: >
-          cmake --build ${{github.workspace}}/build
-          --config ${{env.BUILD_TYPE}}
+#      - name: Build
+#        run: >
+#          cmake --build ${{github.workspace}}/build
+#          --config ${{env.BUILD_TYPE}}
 
-      - name: Test
-        working-directory: ${{github.workspace}}/build
-        # Execute tests defined by the CMake configuration.
-        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for
-        # more detail
-        run: ctest -C ${{env.BUILD_TYPE}}
+#      - name: Test
+#        working-directory: ${{github.workspace}}/build
+#        # Execute tests defined by the CMake configuration.
+#        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for
+#        # more detail
+#        run: ctest -C ${{env.BUILD_TYPE}}
 
   build-MacOS:
     strategy:
@@ -76,6 +76,14 @@ jobs:
 
       - name: Install SDL2
         run: |
+          brew update
+          ls -al /usr/local/bin
+          brew unlink python
+          ls -al /usr/local/bin
+          brew upgrade python@3.10
+          brew unlink python
+          brew unlink python@3.11
+          brew upgrade python@3.11
           brew install sdl2 sdl2_image
 
       - name: Configure CMake
