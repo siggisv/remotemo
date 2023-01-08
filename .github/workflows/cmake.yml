@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
         # os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
 
@@ -74,8 +74,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # `brew install sdl2 sdl2_image` when run after `brew update` triggers
+      # upgrade of python which fails unless conflicting symlinks are deleted.
+      # See:
+      # https://github.com/actions/setup-python/issues/577
       - name: Install SDL2
         run: |
+          brew update
+          rm '/usr/local/bin/2to3'
+          rm '/usr/local/bin/idle3'
+          rm '/usr/local/bin/pydoc3'
+          rm '/usr/local/bin/python3'
+          rm '/usr/local/bin/python3-config'
+          rm '/usr/local/bin/2to3-3.11'
+          rm '/usr/local/bin/idle3.11'
+          rm '/usr/local/bin/pydoc3.11'
+          rm '/usr/local/bin/python3.11'
+          rm '/usr/local/bin/python3.11-config'
           brew install sdl2 sdl2_image
 
       - name: Configure CMake
