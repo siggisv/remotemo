@@ -78,10 +78,10 @@ jobs:
         run: |
           brew update
           ls -al /usr/local/bin
-          brew unlink python
+          brew unlink python@3
           ls -al /usr/local/bin
           brew upgrade python@3.10
-          brew unlink python
+          brew unlink python@3
           brew unlink python@3.11
           brew upgrade python@3.11
           brew install sdl2 sdl2_image
