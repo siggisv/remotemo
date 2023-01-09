@@ -28,6 +28,10 @@ set(werror_compile_option
     $<$<OR:${is_gcc},${is_clang}>:-Werror>
     $<${is_msvc}:/WX>
 )
+set(w_compile_options
+    $<$<CONFIG:Debug>:${debug_compile_options}>
+    $<${is_werror}:${werror_compile_option}>
+)
 
 find_package(SDL2 REQUIRED)
 
@@ -59,8 +63,7 @@ target_include_directories(remotemo SYSTEM INTERFACE include/)
 # Note. Since CMake 3.19, the following can be set in a preset
 # file (i.e. CMakePresets.json)
 target_compile_options(remotemo PRIVATE
-    $<$<CONFIG:Debug>:${debug_compile_options}>
-    $<${is_werror}:${werror_compile_option}>
+    ${w_compile_options}
 )
 target_compile_definitions(remotemo PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 
@@ -84,6 +87,10 @@ IF (REMOTEMO_BUILD_SAMPLES)
     target_link_libraries(hello_sample PRIVATE
         remotemo
     )
+    target_compile_options(hello_sample PRIVATE
+        ${w_compile_options}
+    )
+    target_compile_definitions(hello_sample PRIVATE $<$<CONFIG:Debug>:DEBUG>)
     add_dependencies(hello_sample copy_resources)
 endif()
 
