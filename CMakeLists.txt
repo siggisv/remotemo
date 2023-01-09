@@ -8,6 +8,9 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(REMOTEMO_BUILD_TESTS "Enable building the tests" OFF)
+option(REMOTEMO_BUILD_SAMPLES "Enable building the samples" OFF)
+
 set(is_gcc $<CXX_COMPILER_ID:GNU>)
 set(is_clang $<CXX_COMPILER_ID:Clang,AppleClang>)
 set(is_msvc $<CXX_COMPILER_ID:MSVC>)
@@ -76,15 +79,21 @@ add_custom_target(copy_resources ALL
     COMMENT "Copying resources into build directory"
 )
 
-add_executable(hello_sample src/hello_sample.cpp)
-target_include_directories(hello_sample PUBLIC
-    include
-)
-target_link_libraries(hello_sample PRIVATE
-    remotemo
-)
-target_compile_options(hello_sample PRIVATE
-    ${w_compile_options}
-)
-target_compile_definitions(hello_sample PRIVATE $<$<CONFIG:Debug>:DEBUG>)
-add_dependencies(hello_sample copy_resources)
+IF (REMOTEMO_BUILD_SAMPLES)
+    add_executable(hello_sample src/hello_sample.cpp)
+    target_include_directories(hello_sample PUBLIC
+        include
+    )
+    target_link_libraries(hello_sample PRIVATE
+        remotemo
+    )
+    target_compile_options(hello_sample PRIVATE
+        ${w_compile_options}
+    )
+    target_compile_definitions(hello_sample PRIVATE $<$<CONFIG:Debug>:DEBUG>)
+    add_dependencies(hello_sample copy_resources)
+endif()
+
+if (REMOTEMO_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
