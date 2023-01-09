@@ -1,6 +1,6 @@
-#include <catch2/catch_test_macros.hpp>
-
 #include <cstdint>
+
+#include <catch2/catch_test_macros.hpp>
 
 // Dummy test that includes mocking just to see if everything
 // is correctly setup for using Catch2
