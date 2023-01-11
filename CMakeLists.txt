@@ -4,7 +4,7 @@ project(remotemo
     VERSION 0.0.1
     LANGUAGES CXX
 )
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -81,9 +81,6 @@ add_custom_target(copy_resources ALL
 
 IF (REMOTEMO_BUILD_SAMPLES)
     add_executable(hello_sample src/hello_sample.cpp)
-    target_include_directories(hello_sample PUBLIC
-        include
-    )
     target_link_libraries(hello_sample PRIVATE
         remotemo
     )

@@ -28,25 +28,23 @@ calling the text-input/output methods of the object created.
 
 int main(int argc, char *argv[])
 {
-    std::pair<remotemo::Temo, bool> tM = remotemo::create();
-    if (!tM.second) {
+    auto textMonitor = remotemo::create();
+    if (!textMonitor) {
         return -1;
     }
 
-    remotemo::Temo textMonitor = tM.first;
+    textMonitor->setCursor(10, 2);
+    textMonitor->print("Hello world!!!");
 
-    textMonitor.setCursor(10, 2);
-    textMonitor.print("Hello world!!!");
+    textMonitor->pause(250);
 
-    textMonitor.pause(250);
+    textMonitor->setInverse(true);
+    textMonitor->printAt(5, 15, "Push any key to quit");
+    textMonitor->setInverse(false);
+    textMonitor->print("\n");
 
-    textMonitor.setInverse(true);
-    textMonitor.printAt(5, 15, "Push any key to quit");
-    textMonitor.setInverse(false);
-    textMonitor.print("\n");
-
-    while (textMonitor.getKey() == 'n') {
-        textMonitor.print("Actually no! Any key except that key :P\n");
+    while (textMonitor->getKey() == 'n') {
+        textMonitor->print("Actually no! Any key except that key :P\n");
     }
 }
 ```

@@ -26,8 +26,8 @@ thread where it was initialized?
 ### Initialization
 
 ```C++
-std::pair<remoTemo::Temo, bool> remoTemo::create();
-std::pair<remoTemo::Temo, bool> remoTemo::create(
+std::optional<remoTemo::Temo> remoTemo::create();
+std::optional<remoTemo::Temo> remoTemo::create(
         const remoTemo::InitConfig &config);
 ```
 
@@ -35,21 +35,15 @@ This is a static method that will create and initialize an object representing
 a text monitor, the window showing it and their properties (along with the
 needed properties of the underlying SDL2-library).
 
-- If successful, it will return a `std::pair<remoTemo::Temo, bool>` containing
-  the object and the boolean set to `true`. It will also create an internal
-  list of the resources that it did set up so that whenever/however the
-  `remoTemo::Temo` object gets deleted, its destructor can take care of cleaning
-  them up.
+- If successful, it will return a `std::optional<remoTemo::Temo>` containing
+  the object. It will also create an internal list of the resources that it
+  did set up so that whenever/however the `remoTemo::Temo` object gets
+  deleted, its destructor can take care of cleaning them up.
 - If unsuccessful, it will log an error using `SDL_Log()`, free/release all
-  resources it had succeeded setting up and then return a `std::pair`
-  containing an uninitialized `remoTemo::Temo` object and the boolean set to
-  `false`.
+  resources it had succeeded setting up and then return an empty
+  `std::optional` object.
 \
 \
-**TODO?** On failure return a `remoTemo::Noop` object, a subclass of
-`remoTemo::Temo`, where all methods are overwritten to do nothing except log
-an error - just in case you didn't check the status of the returned boolean.
-
 When invoked without any parameters, it will set up the underlying
 SDL2-library and create a window for you with the default settings (including
 loading a background texture and the font-bitmap from their default
@@ -72,6 +66,8 @@ everything with the changed settings.
 
 ~~The setters can be chained, e.g.:~~ Nope! At least some (if not all) of them
 need to be able to gracefully report back that an error occurred.
+
+**TODO** Go through all functions and reconsider their return types. 
 
 ```C++
 remoTemo::InitConfig myconfig;
