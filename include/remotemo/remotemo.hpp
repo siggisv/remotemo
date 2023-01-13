@@ -2,4 +2,4 @@
 
 #include <iostream>
 
-int test_init();
+int dummy_sample();

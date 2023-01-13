@@ -5,12 +5,12 @@
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
-const char *screenImageFile = "terminal_screen.png";
+const char* screenImageFile = "terminal_screen.png";
 const SDL_Point SCREEN_TEXTURE_SIZE = {946, 732};
 const SDL_Rect backgroundMinArea {118, 95, 700, 540};
 
 
-SDL_Texture *loadTexture(SDL_Renderer *renderer, const std::string &file)
+SDL_Texture* loadTexture(SDL_Renderer* renderer, const std::string& file)
 {
   auto texture = IMG_LoadTexture(renderer, file.c_str());
   if (texture == nullptr) {
@@ -22,8 +22,8 @@ SDL_Texture *loadTexture(SDL_Renderer *renderer, const std::string &file)
 }
 
 void getClipping(const int win_w, const int win_h, const int texture_w,
-    const int texture_h, const SDL_Rect &minArea, float *scale,
-    SDL_Rect *target)
+    const int texture_h, const SDL_Rect& minArea, float* scale,
+    SDL_Rect* target)
 {
   target->h = texture_h;
   target->w = texture_w;
@@ -37,7 +37,7 @@ void getClipping(const int win_w, const int win_h, const int texture_w,
   target->x = border_w - minArea.x;
 }
 
-int test_init()
+int dummy_sample()
 {
   if (SDL_Init(SDL_INIT_VIDEO) == -1) {
     SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
@@ -70,7 +70,7 @@ int test_init()
     return 2;
   }
 
-  char *basePath = SDL_GetBasePath();
+  char* basePath = SDL_GetBasePath();
   if (basePath == nullptr) {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

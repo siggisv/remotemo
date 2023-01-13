@@ -3,10 +3,14 @@ BasedOnStyle: LLVM
 AlignAfterOpenBracket: DontAlign
 AlignConsecutiveMacros: true
 AllowShortBlocksOnASingleLine: true
-BreakBeforeBraces: Linux
+AllowShortFunctionsOnASingleLine: Inline
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
 ColumnLimit: 78
 IndentCaseLabels: true
 MaxEmptyLinesToKeep: 2
+PointerAlignment: Left
 SortIncludes: false
 SpaceAfterTemplateKeyword: false
 SpaceBeforeCpp11BracedList: true

@@ -6,18 +6,17 @@
 
 // Dummy test that includes mocking just to see if everything
 // is correctly setup for using Catch2 and trompeloeil
-class Interface
-{
+class Interface {
 public:
   virtual ~Interface() = default;
-  virtual bool foo(int, std::string &s) = 0; // NOLINT
+  virtual bool foo(int, std::string& s) = 0; // NOLINT
   virtual bool bar(int) = 0;
   virtual bool bar(std::string) = 0;
 };
 
-void interface_func(Interface *); // function to test
+void interface_func(Interface*); // function to test
 
-void interface_func(Interface *intface)
+void interface_func(Interface* intface)
 {
   // Comment out the body of this function to make the test fail
   bool test = intface->bar(22);
@@ -31,10 +30,9 @@ void interface_func(Interface *intface)
   intface->foo(5, test_str);
 }
 
-class Mock : public Interface
-{
+class Mock : public Interface {
 public:
-  MAKE_MOCK2(foo, bool(int, std::string &), override);
+  MAKE_MOCK2(foo, bool(int, std::string&), override);
   MAKE_MOCK1(bar, bool(int), override);
   MAKE_MOCK1(bar, bool(std::string), override);
   MAKE_MOCK0(baz, void()); // not from Interface
