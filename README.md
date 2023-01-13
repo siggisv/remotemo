@@ -26,25 +26,25 @@ calling the text-input/output methods of the object created.
 ```C++
 #include <remotemo/remotemo.hpp>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-    auto textMonitor = remotemo::create();
-    if (!textMonitor) {
+    auto text_monitor = remotemo::create();
+    if (!text_monitor) {
         return -1;
     }
 
-    textMonitor->setCursor(10, 2);
-    textMonitor->print("Hello world!!!");
+    text_monitor->set_cursor(10, 2);
+    text_monitor->print("Hello world!!!");
 
-    textMonitor->pause(250);
+    text_monitor->pause(250);
 
-    textMonitor->setInverse(true);
-    textMonitor->printAt(5, 15, "Push any key to quit");
-    textMonitor->setInverse(false);
-    textMonitor->print("\n");
+    text_monitor->set_inverse(true);
+    text_monitor->print_at(5, 15, "Push any key to quit");
+    text_monitor->set_inverse(false);
+    text_monitor->print("\n");
 
-    while (textMonitor->getKey() == 'n') {
-        textMonitor->print("Actually no! Any key except that key :P\n");
+    while (text_monitor->get_key() == remoTemo::Key::K_n) {
+        text_monitor->print("Actually no! Any key except that key :P\n");
     }
 }
 ```

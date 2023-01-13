@@ -1,5 +1,5 @@
 # remoTemo API design
-_1st draft_
+_2nd draft_
 
 ## Warning! Work in progress
 
@@ -28,12 +28,12 @@ thread where it was initialized?
 ```C++
 std::optional<remoTemo::Temo> remoTemo::create();
 std::optional<remoTemo::Temo> remoTemo::create(
-        const remoTemo::InitConfig &config);
+        const remoTemo::Config& config);
 ```
 
-This is a static method that will create and initialize an object representing
+This non-member function will create and initialize an object representing
 a text monitor, the window showing it and their properties (along with the
-needed properties of the underlying SDL2-library).
+needed properties for the underlying SDL2-library).
 
 - If successful, it will return a `std::optional<remoTemo::Temo>` containing
   the object. It will also create an internal list of the resources that it
@@ -50,74 +50,80 @@ loading a background texture and the font-bitmap from their default
 locations). Most of the settings can not be changed after creation.
 
 To initialize with other settings than the default ones, first create a
-`remoTemo::InitConfig` object:
+`remoTemo::Config` object:
 
 ```C++
-remoTemo::InitConfig::InitConfig();
+remoTemo::Config::Config();
 
 ```
 
-_The constructor that creates a `remoTemo::InitConfig` object._
+_The constructor that creates a `remoTemo::Config` object._
 
 When created, it will contains the default initialization settings. You can
 then pick which settings to change by calling its setters. Then call
-`remoTemo::create(const remoTemo::InitConfig &config)` to create and initialize
-everything with the changed settings.
-
-~~The setters can be chained, e.g.:~~ Nope! At least some (if not all) of them
-need to be able to gracefully report back that an error occurred.
+`remoTemo::create(const remoTemo::Config& config)` to create and initialize
+everything with the settings you wanted.
 
 **TODO** Go through all functions and reconsider their return types. 
 
+**TODO** Consider using `std::string_view` instead of `std::string const&` in
+parameters (See: [stackoverflow answer about
+std::string_view](https://stackoverflow.com/a/40129198/4766261)).
+
+**NOTE to self:** too much `const`?
+
 ```C++
-remoTemo::InitConfig myconfig;
-if (myconfig.setWindowSize(1920, 1080) == false) { /* handle error */ }
-if (myconfig.setBackgroundFile("background.png") == false) {
+remoTemo::Config my_config;
+if (my_config.set_window_size(1920, 1080) == false) { /* handle error */ }
+if (my_config.set_background_file("background.png") == false) {
     /* handle error */
 }
-if (myconfig.setBackgroundMinArea(200, 120, 1000, 700) == false) {
+if (my_config.set_background_min_area(200, 120, 1000, 700) == false) {
     /* handle error */
 }
-std::pair<remoTemo::Temo, bool> tM = remoTemo::create(myconfig);
+std::optional<remoTemo::Temo> tM = remoTemo::create(my_config);
 ```
 
 ```C++
-int remoTemo::InitConfig::setIsSDLinitialized(bool SDLisInitialized);
-int remoTemo::InitConfig::setTheWindow(const SDL_Window const *window);
-int remoTemo::InitConfig::setWindowTitle(const std::string &title);
-int remoTemo::InitConfig::setWindowSize(int width, int height);
-int remoTemo::InitConfig::setWindowSize(const remoTemo::Point &size);
-int remoTemo::InitConfig::setWindowPosition(int x, int y);
-int remoTemo::InitConfig::setWindowPosition(const remoTemo::Point &position);
-int remoTemo::InitConfig::setWindowResizable(bool resizable);
-int remoTemo::InitConfig::setWindowFullscreen(bool fullscreen);
-int remoTemo::InitConfig::setKeyFullscreen(remoTemo::ModKeys modKey,
-        remoTemo::FKey key);
-int remoTemo::InitConfig::setKeyFullscreen(remoTemo::ModKeys modKey, char key);
-int remoTemo::InitConfig::setKeyCloseWindow(remoTemo::ModKeys modKey,
-        remoTemo::FKey key);
-int remoTemo::InitConfig::setKeyCloseWindow(remoTemo::ModKeys modKey, char key);
-int remoTemo::InitConfig::setKeyQuit(remoTemo::ModKeys modKey,
-        remoTemo::FKey key);
-int remoTemo::InitConfig::setKeyQuit(remoTemo::ModKeys modKey, char key);
-int remoTemo::InitConfig::setClosingSameAsQuit(bool closingSameAsQuit);
-int remoTemo::InitConfig::setFunctionPreQuit(std::function<bool()> func);
-int remoTemo::InitConfig::setFunctionPreQuit(
+int remoTemo::Config::set_is_SDL_initialized(bool is_SDL_initialized);
+int remoTemo::Config::set_the_window(const SDL_Window* const window);
+int remoTemo::Config::set_window_title(const std::string& title);
+int remoTemo::Config::set_window_size(int width, int height);
+int remoTemo::Config::set_window_size(const SDL_Point& size);
+int remoTemo::Config::set_window_position(int x, int y);
+int remoTemo::Config::set_window_position(const SDL_Point& position);
+int remoTemo::Config::set_window_resizable(bool is_resizable);
+int remoTemo::Config::set_window_fullscreen(bool is_fullscreen);
+int remoTemo::Config::set_key_fullscreen(SDL_Keymod modifier_keys,
+        remoTemo::F_key key);
+int remoTemo::Config::set_key_fullscreen(SDL_Keymod modifier_keys,
+        remoTemo::Key key);
+int remoTemo::Config::set_key_close_window(SDL_Keymod modifier_keys,
+        remoTemo::F_key key);
+int remoTemo::Config::set_key_close_window(SDL_Keymod modifier_keys,
+        remoTemo::Key key);
+int remoTemo::Config::set_key_quit(SDL_Keymod modifier_keys,
+        remoTemo::F_key key);
+int remoTemo::Config::set_key_quit(SDL_Keymod modifier_keys,
+        remoTemo::Key key);
+int remoTemo::Config::set_closing_same_as_quit(bool is_closing_same_as_quit);
+int remoTemo::Config::set_function_pre_quit(std::function<bool()> func);
+int remoTemo::Config::set_function_pre_quit(
         std::function<bool(remoTemo::Temo*)> func);
-int remoTemo::InitConfig::setBackground(const SDL_Texture const *background);
-int remoTemo::InitConfig::setBackgroundFilePath(const std::string &filePath);
-int remoTemo::InitConfig::setBackgroundMinArea(int x, int y, int w, int h);
-int remoTemo::InitConfig::setBackgroundTextArea(float x, float y, float width,
+int remoTemo::Config::set_background(const SDL_Texture* const background);
+int remoTemo::Config::set_background_file_path(const std::string& file_path);
+int remoTemo::Config::set_background_min_area(int x, int y, int w, int h);
+int remoTemo::Config::set_background_text_area(float x, float y, float width,
         float height);
-int remoTemo::InitConfig::setFontBitmap(const SDL_Texture const *fontBitmap);
-int remoTemo::InitConfig::setFontBitmapFilePath(const std::string &filePath);
-int remoTemo::InitConfig::setFontSize(int width, int height);
-int remoTemo::InitConfig::setFontSize(const remoTemo::Point &size);
-int remoTemo::InitConfig::setTextAreaSize(int columns, int lines);
-int remoTemo::InitConfig::setTextAreaSize(const remoTemo::Point &size);
-int remoTemo::InitConfig::setTextBlendMode(remoTemo::BlendMode mode);
-int remoTemo::InitConfig::setTextColor(int red, int green, int blue);
-int remoTemo::InitConfig::setTextColor(const remoTemo::Color &color);
+int remoTemo::Config::set_font_bitmap(const SDL_Texture* const font_bitmap);
+int remoTemo::Config::set_font_bitmap_file_path(const std::string& file_path);
+int remoTemo::Config::set_font_size(int width, int height);
+int remoTemo::Config::set_font_size(const SDL_Point& size);
+int remoTemo::Config::set_text_area_size(int columns, int lines);
+int remoTemo::Config::set_text_area_size(const SDL_Point& size);
+int remoTemo::Config::set_text_blend_mode(remoTemo::Blend_mode mode);
+int remoTemo::Config::set_text_color(int red, int green, int blue);
+int remoTemo::Config::set_text_color(const remoTemo::Color& color);
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
@@ -256,7 +262,7 @@ created:
     The size of the texture, in pixels, is calculated from the font size and
     the text area size in characters (The texture will then be scaled to fit
     the area of the background where the text is to be drawn).
-  - blend mode: `remoTemo::BlendMode::add` _(can be changed later)_
+  - blend mode: `remoTemo::Blend_mode::add` _(can be changed later)_
   - color mod: `red: 89, green: 221, blue: 0` _(can be changed later)_
     \
     Note that this setting controls the color of **all** the text, both the
@@ -322,27 +328,25 @@ Just make sure not to touch any of the object's methods after that.
 ### Interact with the monitor
 
 ```C++
-struct remoTemo::Point {int x; int y;};
-
-int remoTemo::Temo::moveCursor(int x, int y);
-int remoTemo::Temo::moveCursor(const remoTemo::Point &move);
-int remoTemo::Temo::setCursor(int column, int line);
-int remoTemo::Temo::setCursor(const remoTemo::Point &position);
-int remoTemo::Temo::setCursorColumn(int column);
-int remoTemo::Temo::setCursorLine(int line);
-int remoTemo::Temo::setCursorX(int column);
-int remoTemo::Temo::setCursorY(int line);
-remoTemo::Point remoTemo::Temo::getCursorPosition();
+int remoTemo::Temo::move_cursor(int x, int y);
+int remoTemo::Temo::move_cursor(const SDL_Point& move);
+int remoTemo::Temo::set_cursor(int column, int line);
+int remoTemo::Temo::set_cursor(const SDL_Point& position);
+int remoTemo::Temo::set_cursor_column(int column);
+int remoTemo::Temo::set_cursor_line(int line);
+int remoTemo::Temo::set_cursor_x(int column);
+int remoTemo::Temo::set_cursor_y(int line);
+SDL_Point remoTemo::Temo::get_cursor_position();
 
 int remoTemo::Temo::pause(int pause);
 int remoTemo::Temo::clear();
-char remoTemo::Temo::getKey();
-std::string remoTemo::Temo::getInput(int maxLength);
+remoTemo::Key remoTemo::Temo::get_key();
+std::string remoTemo::Temo::get_input(int max_length);
 
-int remoTemo::Temo::print(conts std::string &text);
-int remoTemo::Temo::printAt(int column, int line, const std::string &text);
-int remoTemo::Temo::printAt(const remoTemo::Point &position,
-        const std::string &text);
+int remoTemo::Temo::print(conts std::string& text);
+int remoTemo::Temo::print_at(int column, int line, const std::string& text);
+int remoTemo::Temo::print_at(const SDL_Point& position,
+        const std::string& text);
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
@@ -351,80 +355,87 @@ int remoTemo::Temo::printAt(const remoTemo::Point &position,
 ```C++
 enum class remoTemo::Wrapping {off, char, word};
 
-int remoTemo::Temo::setTextDelay(int delay);
-int remoTemo::Temo::setTextSpeed(int speed);
-int remoTemo::Temo::setScrolling(bool scrolling);
-int remoTemo::Temo::setWrapping(remoTemo::Wrapping wrapping);
-int remoTemo::Temo::setInverse(bool inverse);
+int remoTemo::Temo::set_text_delay(int delay);
+int remoTemo::Temo::set_text_speed(int speed);
+int remoTemo::Temo::set_scrolling(bool scrolling);
+int remoTemo::Temo::set_wrapping(remoTemo::Wrapping wrapping);
+int remoTemo::Temo::set_inverse(bool inverse);
 
-int remoTemo::Temo::getTextDelay();
-int remoTemo::Temo::getTextSpeed();
-bool remoTemo::Temo::getScrolling();
-remoTemo::Wrapping remoTemo::Temo::getWrapping();
-bool remoTemo::Temo::getInverse();
+int remoTemo::Temo::get_text_delay();
+int remoTemo::Temo::get_text_speed();
+bool remoTemo::Temo::get_scrolling();
+remoTemo::Wrapping remoTemo::Temo::get_wrapping();
+bool remoTemo::Temo::get_inverse();
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Change text area settings
 
 ```C++
-enum class remoTemo::BlendMode {none, blend, add, mod};
+enum class remoTemo::Blend_mode {none, blend, add, mod};
 struct remoTemo::Color {int red; int green; int blue;};
 
-int remoTemo::Temo::setTextAreaSize(int columns, int lines);
-int remoTemo::Temo::setTextAreaSize(const remoTemo::Point &size);
-int remoTemo::Temo::getTextAreaColumns();
-int remoTemo::Temo::getTextAreaLines();
-remoTemo::Point remoTemo::Temo::getTextAreaSize();
+int remoTemo::Temo::set_text_area_size(int columns, int lines);
+int remoTemo::Temo::set_text_area_size(const SDL_Point& size);
+int remoTemo::Temo::get_text_area_columns();
+int remoTemo::Temo::get_text_area_lines();
+SDL_Point remoTemo::Temo::get_text_area_size();
 
-int remoTemo::Temo::setTextBlendMode(remoTemo::BlendMode mode);
-remoTemo::BlendMode remoTemo::Temo::getTextBlendMode();
+int remoTemo::Temo::set_text_blend_mode(remoTemo::Blend_mode mode);
+remoTemo::Blend_mode remoTemo::Temo::get_text_blend_mode();
 
-int remoTemo::Temo::setTextColor(int red, int green, int blue);
-int remoTemo::Temo::setTextColor(const remoTemo::Color &color);
-remoTemo::Color remoTemo::Temo::getTextColor();
+int remoTemo::Temo::set_text_color(int red, int green, int blue);
+int remoTemo::Temo::set_text_color(const remoTemo::Color& color);
+remoTemo::Color remoTemo::Temo::get_text_color();
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Change window settings
 
 ```C++
-enum class remoTemo::FKey {
-        none, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12};
-enum class remoTemo::ModKeys {
-        none = 0x0000, shift = 0x0001, ctrl = 0x0002, alt = 0x0004};
+enum class remoTemo::F_key {
+    none, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12};
+enum class remoTemo::Key {
+    K_esc, K_backquote, K_1, K_2, ... , K_0, K_minus, K_equal, K_backspace,
+    K_tab, K_q, K_w, ... K_p, K_left_bracket, K_right_bracket, K_backslash,
+    ...
+    ...
+    K_space};
+    /* Basically all the keys on a regular keyboard, except F-keys, the
+       keypad and modifier keys */
 
-int remoTemo::Temo::setWindowTitle(const std::string &title);
-std::string remoTemo::Temo::getWindowTitle();
-int remoTemo::Temo::setWindowSize(int width, int height);
-int remoTemo::Temo::setWindowSize(const remoTemo::Point &size);
-remoTemo::Point remoTemo::Temo::getWindowSize();
-int remoTemo::Temo::setWindowPosition(int x, int y);
-int remoTemo::Temo::setWindowPosition(const remoTemo::Point &position);
-remoTemo::Point remoTemo::Temo::getWindowPosition();
-int remoTemo::Temo::setWindowResizable(bool resizable);
-bool remoTemo::Temo::getWindowResizable();
-int remoTemo::Temo::setWindowFullscreen(bool fullscreen);
-bool remoTemo::Temo::getWindowFullscreen();
+int remoTemo::Temo::set_window_title(const std::string& title);
+std::string remoTemo::Temo::get_window_title();
+int remoTemo::Temo::set_window_size(int width, int height);
+int remoTemo::Temo::set_window_size(const SDL_Point& size);
+SDL_Point remoTemo::Temo::get_window_size();
+int remoTemo::Temo::set_window_position(int x, int y);
+int remoTemo::Temo::set_window_position(const SDL_Point& position);
+SDL_Point remoTemo::Temo::get_window_position();
+int remoTemo::Temo::set_window_resizable(bool is_resizable);
+bool remoTemo::Temo::get_window_resizable();
+int remoTemo::Temo::set_window_fullscreen(bool is_fullscreen);
+bool remoTemo::Temo::get_window_fullscreen();
 
-int remoTemo::Temo::setKeyFullscreen(remoTemo::ModKeys modKey,
-        remoTemo::FKey key);
-int remoTemo::Temo::setKeyFullscreen(remoTemo::ModKeys modKey, char key);
-std::tuple<remoTemo::ModKey, remoTemo::FKey, char>
-        remoTemo::Temo::getKeyFullscreen();
-int remoTemo::Temo::setKeyCloseWindow(remoTemo::ModKeys modKey,
-        remoTemo::FKey key);
-int remoTemo::Temo::setKeyCloseWindow(remoTemo::ModKeys modKey, char key);
-std::tuple<remoTemo::ModKey, remoTemo::FKey, char>
-        remoTemo::Temo::getKeyCloseWindow();
-int remoTemo::Temo::setKeyQuit(remoTemo::ModKeys modKey, remoTemo::FKey key);
-int remoTemo::Temo::setKeyQuit(remoTemo::ModKeys modKey, char key);
-std::tuple<remoTemo::ModKey, remoTemo::FKey, char> remoTemo::Temo::getKeyQuit();
+int remoTemo::Temo::set_key_fullscreen(SDL_Keymod modifier_keys,
+        remoTemo::F_key key);
+int remoTemo::Temo::set_key_fullscreen(SDL_Keymod modifier_keys, remoTemo::Key key);
+std::tuple<SDL_Keymod, remoTemo::F_key, remoTemo::Key>
+        remoTemo::Temo::get_key_fullscreen();
+int remoTemo::Temo::set_key_close_window(SDL_Keymod modifier_keys,
+        remoTemo::F_key key);
+int remoTemo::Temo::set_key_close_window(SDL_Keymod modifier_keys, remoTemo::Key key);
+std::tuple<SDL_Keymod, remoTemo::F_key, remoTemo::Key>
+        remoTemo::Temo::get_key_close_window();
+int remoTemo::Temo::set_key_quit(SDL_Keymod modifier_keys, remoTemo::F_key key);
+int remoTemo::Temo::set_key_quit(SDL_Keymod modifier_keys, remoTemo::Key key);
+std::tuple<SDL_Keymod, remoTemo::F_key, remoTemo::Key>
+        remoTemo::Temo::get_key_quit();
 
-int remoTemo::Temo::setClosingSameAsQuit(bool closingSameAsQuit);
-bool remoTemo::Temo::getClosingSameAsQuit();
-int remoTemo::Temo::setFunctionPreQuit(std::function<bool()> func);
-int remoTemo::Temo::setFunctionPreQuit(
+int remoTemo::Temo::set_closing_same_as_quit(bool is_closing_same_as_quit);
+bool remoTemo::Temo::get_closing_same_as_quit();
+int remoTemo::Temo::set_function_pre_quit(std::function<bool()> func);
+int remoTemo::Temo::set_function_pre_quit(
         std::function<bool(remoTemo::Temo*)> func);
 ```
 
