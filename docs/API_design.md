@@ -1,9 +1,9 @@
 # remoTemo API design
 _2nd draft_
 
-## Warning! Work in progress
-
-**Both** the design and the implementation are work-in-progress.
+> **Warning**
+>
+> **Both** the design and the implementation are work-in-progress.
 
 ## Table of contents
 - [Initialization, settings and cleanup](#initialization-settings-and-cleanup)
@@ -18,9 +18,9 @@ _2nd draft_
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ## Initialization, settings and cleanup
-**TODO?** Make thread safe? Or just explain that just like most of the
-underlying SDL2 framework, this object should only be used from within the
-thread where it was initialized?
+> **TODO?** Make thread safe? Or just explain that just like most of the
+> underlying SDL2 framework, this object should only be used from within the
+> thread where it was initialized?
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Initialization
@@ -36,21 +36,33 @@ a text monitor, the window showing it and their properties (along with the
 needed properties for the underlying SDL2-library).
 
 - If successful, it will return a `std::optional<remoTemo::Temo>` containing
-  the object. It will also create an internal list of the resources that it
-  did set up so that whenever/however the `remoTemo::Temo` object gets
-  deleted, its destructor can take care of cleaning them up.
-- If unsuccessful, it will log an error using `SDL_Log()`, free/release all
+  the object. It will also create an internal list of the resources that its
+  destructor should take care of cleaning up.
+- On failure, it will log an error using `SDL_Log()`, free/release all
   resources it had succeeded setting up and then return an empty
   `std::optional` object.
-\
-\
+
+  > **Warning**
+  >
+  > On failure, it will clean up all the resources that the `remoTemo::Temo`'s
+  > destructor is supposed to handle. Meaning that:
+  > - If 'Handle SDL_Quit' was set to `true`, it will clean up all the SDL
+  >   subsystems and all resources (both those created by `remoTemo::Create`
+  >   and **also** those passed to it.
+  > - If 'Handle SDL_Quit' was set to `false`, it will **only** clean up
+  >   those resources it did create itself, leaving to you to clean up
+  >   anything you passed to it.
+
 When invoked without any parameters, it will set up the underlying
 SDL2-library and create a window for you with the default settings (including
 loading a background texture and the font-bitmap from their default
-locations). Most of the settings can not be changed after creation.
+locations). Most of those settings can not be changed after creation.
 
-To initialize with other settings than the default ones, first create a
-`remoTemo::Config` object:
+To allow you to initialize using other settings than the default ones, the
+[Named Parameter
+Idiom](https://isocpp.org/wiki/faq/ctors#named-parameter-idiom) is followed,
+providing you with a "config" object that when created, will contains the
+default initialization settings:
 
 ```C++
 remoTemo::Config::Config();
@@ -59,116 +71,135 @@ remoTemo::Config::Config();
 
 _The constructor that creates a `remoTemo::Config` object._
 
-When created, it will contains the default initialization settings. You can
-then pick which settings to change by calling its setters. Then call
+You can then pick which settings to change by calling its setters. Then call
 `remoTemo::create(const remoTemo::Config& config)` to create and initialize
 everything with the settings you wanted.
 
-**TODO** Go through all functions and reconsider their return types. 
+- You can create a `remoTemo::Config` object first, then after using the
+  setters of your choice, pass it to `remoTemo::create()`:
 
-**TODO** Consider using `std::string_view` instead of `std::string const&` in
-parameters (See: [stackoverflow answer about
-std::string_view](https://stackoverflow.com/a/40129198/4766261)).
+  ```C++
+  remoTemo::Config my_config;
+  my_config.window_size(1920, 1080)
+          .background_file("background.png")
+          .background_min_area(200, 120, 1000, 700);
+  auto text_monitor = remoTemo::create(my_config);
+  ```
+  
+- Or you could call `remoTemo::create()` directly with a temporary
+  `remoTemo::Config` object:
+  
+  ```C++
+  auto text_monitor = remoTemo::create(
+          remoTemo::Config()
+                  .window_size(1920, 1080)
+                  .background_file("background.png")
+                  .background_min_area(200, 120, 1000, 700));
+  ```
 
-**NOTE to self:** too much `const`?
+> ~~**TODO** Consider using `std::string_view` instead of `std::string const&`
+> in parameters (See: [stackoverflow answer about
+> std::string_view](https://stackoverflow.com/a/40129198/4766261)).~~
+>
+> **Nope.** Quote: "[...] what you lose by using `std::string_view`. [...] You
+> lose implicit null termination [...]" and we absolutely need that when
+> passing those strings along to the underlying SDL-library that is writen in
+> C.
+
+List of `remoTemo::Config`'s setters:
 
 ```C++
-remoTemo::Config my_config;
-if (my_config.set_window_size(1920, 1080) == false) { /* handle error */ }
-if (my_config.set_background_file("background.png") == false) {
-    /* handle error */
-}
-if (my_config.set_background_min_area(200, 120, 1000, 700) == false) {
-    /* handle error */
-}
-std::optional<remoTemo::Temo> tM = remoTemo::create(my_config);
-```
-
-```C++
-int remoTemo::Config::set_is_SDL_initialized(bool is_SDL_initialized);
-int remoTemo::Config::set_the_window(const SDL_Window* const window);
-int remoTemo::Config::set_window_title(const std::string& title);
-int remoTemo::Config::set_window_size(int width, int height);
-int remoTemo::Config::set_window_size(const SDL_Point& size);
-int remoTemo::Config::set_window_position(int x, int y);
-int remoTemo::Config::set_window_position(const SDL_Point& position);
-int remoTemo::Config::set_window_resizable(bool is_resizable);
-int remoTemo::Config::set_window_fullscreen(bool is_fullscreen);
-int remoTemo::Config::set_key_fullscreen(SDL_Keymod modifier_keys,
-        remoTemo::F_key key);
-int remoTemo::Config::set_key_fullscreen(SDL_Keymod modifier_keys,
-        remoTemo::Key key);
-int remoTemo::Config::set_key_close_window(SDL_Keymod modifier_keys,
-        remoTemo::F_key key);
-int remoTemo::Config::set_key_close_window(SDL_Keymod modifier_keys,
-        remoTemo::Key key);
-int remoTemo::Config::set_key_quit(SDL_Keymod modifier_keys,
-        remoTemo::F_key key);
-int remoTemo::Config::set_key_quit(SDL_Keymod modifier_keys,
-        remoTemo::Key key);
-int remoTemo::Config::set_closing_same_as_quit(bool is_closing_same_as_quit);
-int remoTemo::Config::set_function_pre_quit(std::function<bool()> func);
-int remoTemo::Config::set_function_pre_quit(
+remoTemo::Config& remoTemo::Config::handle_SDL_Quit(bool handle_SDL_Quit);
+remoTemo::Config& remoTemo::Config::the_window(SDL_Window* window);
+remoTemo::Config& remoTemo::Config::window_title(const std::string& title);
+remoTemo::Config& remoTemo::Config::window_size(int width, int height);
+remoTemo::Config& remoTemo::Config::window_size(const SDL_Point& size);
+remoTemo::Config& remoTemo::Config::window_position(int x, int y);
+remoTemo::Config& remoTemo::Config::window_position(const SDL_Point& position);
+remoTemo::Config& remoTemo::Config::window_resizable(bool is_resizable);
+remoTemo::Config& remoTemo::Config::window_fullscreen(bool is_fullscreen);
+remoTemo::Config& remoTemo::Config::key_fullscreen(
+        SDL_Keymod modifier_keys, remoTemo::F_key key);
+remoTemo::Config& remoTemo::Config::key_fullscreen(
+        SDL_Keymod modifier_keys, remoTemo::Key key);
+remoTemo::Config& remoTemo::Config::key_close_window(
+        SDL_Keymod modifier_keys, remoTemo::F_key key);
+remoTemo::Config& remoTemo::Config::key_close_window(
+        SDL_Keymod modifier_keys, remoTemo::Key key);
+remoTemo::Config& remoTemo::Config::key_quit(
+        SDL_Keymod modifier_keys, remoTemo::F_key key);
+remoTemo::Config& remoTemo::Config::key_quit(
+        SDL_Keymod modifier_keys, remoTemo::Key key);
+remoTemo::Config& remoTemo::Config::closing_same_as_quit(
+        bool is_closing_same_as_quit);
+remoTemo::Config& remoTemo::Config::function_pre_quit(
+        std::function<bool()> func);
+remoTemo::Config& remoTemo::Config::function_pre_quit(
         std::function<bool(remoTemo::Temo*)> func);
-int remoTemo::Config::set_background(const SDL_Texture* const background);
-int remoTemo::Config::set_background_file_path(const std::string& file_path);
-int remoTemo::Config::set_background_min_area(int x, int y, int w, int h);
-int remoTemo::Config::set_background_text_area(float x, float y, float width,
-        float height);
-int remoTemo::Config::set_font_bitmap(const SDL_Texture* const font_bitmap);
-int remoTemo::Config::set_font_bitmap_file_path(const std::string& file_path);
-int remoTemo::Config::set_font_size(int width, int height);
-int remoTemo::Config::set_font_size(const SDL_Point& size);
-int remoTemo::Config::set_text_area_size(int columns, int lines);
-int remoTemo::Config::set_text_area_size(const SDL_Point& size);
-int remoTemo::Config::set_text_blend_mode(remoTemo::Blend_mode mode);
-int remoTemo::Config::set_text_color(int red, int green, int blue);
-int remoTemo::Config::set_text_color(const remoTemo::Color& color);
+remoTemo::Config& remoTemo::Config::background(SDL_Texture* background);
+remoTemo::Config& remoTemo::Config::background_file_path(
+        const std::string& file_path);
+remoTemo::Config& remoTemo::Config::background_min_area(int x, int y,
+        int w, int h);
+remoTemo::Config& remoTemo::Config::background_text_area(float x, float y,
+        float width, float height);
+remoTemo::Config& remoTemo::Config::font_bitmap(SDL_Texture* font_bitmap);
+remoTemo::Config& remoTemo::Config::font_bitmap_file_path(
+        const std::string& file_path);
+remoTemo::Config& remoTemo::Config::font_size(int width, int height);
+remoTemo::Config& remoTemo::Config::font_size(const SDL_Point& size);
+remoTemo::Config& remoTemo::Config::text_area_size(int columns, int lines);
+remoTemo::Config& remoTemo::Config::text_area_size(const SDL_Point& size);
+remoTemo::Config& remoTemo::Config::text_blend_mode(SDL_BlendMode mode);
+remoTemo::Config& remoTemo::Config::text_color(Uint8 red, Uint8 green,
+        Uint8 blue);
+remoTemo::Config& remoTemo::Config::text_color(const remoTemo::Color& color);
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Default settings
 
 The following are the default settings with a short explanation for each one.
-Unless noted, they can not be changed after the `remoTemo::Temo` object has been
-created:
-- Is SDL initialized: `false`
+Unless noted, they can not be changed after the `remoTemo::Temo` object has
+been created:
 
-  If `false`, then SDL will be initialized when calling the `create()` method
-  AND the destructor of the `remoTemo::Temo` object will handle cleaning it up
-  (meaning that the destructor will be in charge of calling `SDL_Quit();`).
+- Handle SDL_Quit: `true`
+  - If `true`, then the destructor of the `remoTemo::Temo` object will handle
+    cleaning up all SDL subsystems by calling `SDL_Quit()`.
+    > **Warning**
+    > It will also handle cleaning up any window, renderer and texture it used
+    > (no mater if it did created them itself or they were passed to it).
+  - If `false`, then you must handle cleaning up SDL afterwards yourself.
+    > **Note** that the destructor of the `remoTemo::Temo` object will still
+    > clean up any window, renderer and/or texture it did create (but none of
+    > those passed to it).
 
-  If `true`, then you must handle both setting up SDL before calling the
-  `create()` method AND also cleaning up SDL afterwards.
 - The window: `nullptr`
+  - If set to `nullptr` then `remoTemo::create()` will create the window with
+    the following settings and set it as being owned by this object (meaning
+    the destructor will be in charge of destroying it).
+    - title: `Retro Monochrome Text Monitor` _(can be changed later)_
+    - width: `1280` _(can be changed later)_
+    - height: `720` _(can be changed later)_
+    - position, x: `SDL_WINDOWPOS_UNDEFINED` _(can be changed later)_
+    - position, y: `SDL_WINDOWPOS_UNDEFINED` _(can be changed later)_
+    - resizable: `true` _(can be changed later)_
+    - fullscreen: `false` _(can be changed later)_
 
-  If NOT set to `nullptr` then it must be a pointer to a valid `SDL_Window`.
-  Note that it will then be your responsability to both keep that pointed window
-  valid until you quit remoTemo and to clean up after use.
-  \
-  Also, if that window has a renderer associated with it, then that renderer
-  must have the `SDL_RENDERER_TARGETTEXTURE` flag set.
-  
-  Note that when changing this setting from being `nullptr` then 'Is SDL
-  initialized' **will** at the same time be changed to `true` (since you would
-  not have been able to create a valid `SDL_window` unless you had already set
-  up SDL). Also, you will have to handle closing that window yourself.
+  - If NOT set to `nullptr` then it must be a pointer to a valid `SDL_Window`.
 
-  If set to `nullptr` then the `create()` method will create the window with
-  the following settings and set it as being owned by this object (meaning the
-  destructor will be in charge of destroying it).
-  \
-  Note that although those settings can be changed later, usually it should be
-  better to just let the library handle that (which would happen e.g. when the
-  user drags or resizes the window):
-  - title: `Retro Monochrome Text Monitor` _(can be changed later)_
-  - width: `1280` _(can be changed later)_
-  - height: `720` _(can be changed later)_
-  - position: `undefined` _(can be changed later)_
-  - resizable: `true` _(can be changed later)_
-  - fullscreen: `false` _(can be changed later)_
+    > **Warning** It will be your responsability to keep that pointed window
+    > valid while `remoTemo::Temo` is alive.
+    > 
+    > You also have to take care of closing it afterward (unless 'Handle
+    > SDL_Quit' is set to `true`, in which case `remoTemo::Temo`'s destructor
+    > will handle that).
 
-  No mater if _the window_ is set to `nullptr` or not, the following
+    > **Warning** If that window has a renderer associated with it, then that
+    > renderer must have the `SDL_RENDERER_TARGETTEXTURE` flag set. Otherwise
+    > `remoTemo::create()` will fail.
+
+  No mater if 'the window' is set to `nullptr` or not, the following
   properties tied to the window will be set with the following being the
   default:
   - Key to switch between fullscreen and windowed mode: `F11` _(can be changed
@@ -177,47 +208,52 @@ created:
   - Key combination to quit the application: `Ctrl-q` _(can be changed later)_
   - Closing window is the same as quitting: `true` _(can be changed
     later)_
-    \
-    Not recommended to change that setting to `false` unless you either really
-    want the application to continue running without a window or you have
-    taken care of opening another window yourself.
+    > **Note** Not recommended to change that setting to `false` unless you
+    > either really want the application to continue running without a window
+    > or you have taken care of opening another window yourself.
   - Function to call before closing window: `nullptr` _(can be changed later)_
     \
     If set, that function can be used to e.g. offer the user the option to
     cancel that action or to save before continuing. That function must return
     a `bool`. Returning `false` will cancel closing the window.
 
-  Finally, if _the window_ was set to `nullptr` **OR** if it is pointing to a
+  Finally, if 'the window' was set to `nullptr` **OR** if it is pointing to a
   `SDL_Window` that doesn't have a renderer then a `SDL_Renderer` will be
   created (either tied to that newly created window or to the one pointed to)
   and that renderer set as being owned by this object (meaning the destructor
   will be in charge of destroying it).
+
 - Background texture: `nullptr`
 
-  If not set to `nullptr` then it must point to an `SDL_Texture` containing
-  the desired background image.  Note that it will then be your responsability
-  to both keep that pointed texture valid until you quit remoTemo and to clean
-  up after use.
+  - If set to `nullptr` then the background texture will be loaded from the
+    following file and set as being owned by this object (meaning the
+    destructor will be in charge of destroying it):
+    - Background file path: `res/img/terminal_screen.png`
+      (or `res\img\terminal_screen.png` depending on the operating system).
 
-  If set to `nullptr` then the background texture will be loaded from the
-  following file and set as being owned by this object (meaning the destructor
-  will be in charge of destroying it):
-  - Background file path: `res/img/terminal_screen.png`
-    (or `res\img\terminal_screen.png` depending on the operating system).
+      When changing this setting, you could use the constant
+      `remoTemo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
+      operating system) for the path separator when creating the path, if you
+      care about it being cross-platform.
 
-    When changing this setting, you could use the constant
-    `remoTemo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
-    operating system) for the path separator when creating the path, if you
-    care about it being cross-platform.
+      If this setting is set to a string starting with the path separator (or
+      a drive letter, e.g. "D:", if on Windows) then the path is an absolute
+      path.
 
-    If this setting is set to a string starting with the path separator (or a
-    drive letter, e.g. "D:", if on Windows) then the path is an absolute path.
+      Otherwise the path is relative to your executable program file.
 
-    Otherwise the path is relative to your executable program file.
+  - If NOT set to `nullptr` then it must point to an `SDL_Texture` containing
+    the desired background image.
 
-  No mater if set to `nullptr` or not, the following settings will be used
-  (Note that x and y are counted from the top-left corner, both starting at
-  zero):
+    > **Warning** It will be your responsability to keep that pointed texture
+    > valid while `remoTemo::Temo` is alive.
+    > 
+    > You also have to take care of closing it afterward (unless 'Handle
+    > SDL_Quit' is set to `true`, in which case `remoTemo::Temo`'s destructor
+    > will handle that).
+
+  No mater if set to `nullptr` or not, the following settings will be used,
+  with those defaults:
   - minimum area to be shown:
     `x: 118, y: 95, width: 700, height: 540`
     \
@@ -227,72 +263,88 @@ created:
     (if the ratio of the window is narrower).
   - the area of the background where the text is to be drawn:
     `x: 188.25f, y: 149.25f, w: 560.0f, h: 432.0f`
+  > **Note** x and y are counted from the top-left corner, both starting at
+  > zero.
+
 - Font-bitmap texture: `nullptr`
 
-  If not set to `nullptr` then it must point to an `SDL_Texture` containing
-  the desired font-bitmap image.  Note that it will then be your
-  responsability to both keep that pointed texture valid until you quit
-  remoTemo and to clean up after use.
+  - If set to `nullptr` then the font-bitmap texture will be loaded from the
+    following file and set as being owned by this object (meaning the
+    destructor will be in charge of destroying it):
+    - Font-bitmap path: `res/img/font_bitmap.png`
+      \
+      (or `res\img\font_bitmap.png` depending on the operating system).
 
-  If set to `nullptr` then the font-bitmap texture will be loaded from the
-  following file and set as being owned by this object (meaning the destructor
-  will be in charge of destroying it):
-  - Font-bitmap path: `res/img/font_bitmap.png`
-    (or `res\img\font_bitmap.png` depending on the operating system).
+      When changing this setting, you could use the constant
+      `remoTemo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
+      operating system) for the path separator when creating the path, if you
+      care about it being cross-platform.
 
-    When changing this setting, you could use the constant
-    `remoTemo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
-    operating system) for the path separator when creating the path, if you
-    care about it being cross-platform.
+      > **Note** If this setting is set to a string starting with the path
+      > separator (or a drive letter, e.g. "D:", if on Windows) then the path
+      > is an absolute path.
+      >
+      > Otherwise the path is relative to your executable program file.
 
-    If this setting is set to a string starting with the path separator (or a
-    drive letter, e.g. "D:", if on Windows) then the path is an absolute path.
+  - If NOT set to `nullptr` then it must point to an `SDL_Texture` containing
+    the desired font-bitmap image.
 
-    Otherwise the path is relative to your executable program file.
+    > **Warning** It will be your responsability to keep that pointed texture
+    > valid while `remoTemo::Temo` is alive.
+    > 
+    > You also have to take care of closing it afterward (unless 'Handle
+    > SDL_Quit' is set to `true`, in which case `remoTemo::Temo`'s destructor
+    > will handle that).
 
-  No mater if set to `nullptr` or not, the following settings will be used:
+  No mater if set to `nullptr` or not, the following settings will be used,
+  with those defaults:
   - Font size: `width: 7, height: 18`
     \
-    This is the size, in pixels, of each character as they are in the
+    This is the size, in pixels, of each character as they are drawn in the
     font-bitmap file.
-- A texture where the text will be drawn is created with the following settings:
+
+- The following are the default setting used to create the texture where the
+  text will be drawn before being rendered on top of the background:
   - text area size (in characters):
     `columns: 40, lines: 24` _(can be changed later)_
     \
     The size of the texture, in pixels, is calculated from the font size and
     the text area size in characters (The texture will then be scaled to fit
     the area of the background where the text is to be drawn).
-  - blend mode: `remoTemo::Blend_mode::add` _(can be changed later)_
+
+  - blend mode: `SDL_BLENDMODE_ADD` _(can be changed later)_
   - color mod: `red: 89, green: 221, blue: 0` _(can be changed later)_
     \
-    Note that this setting controls the color of **all** the text, both the
-    text that has already been printed to the screen and the text that is
-    going to be printed to the screen.
-- The following properties control the behaviour of the text output and will
-  have the initial values shown here _(those can all be changed later)_:
-  - delay between chars: `60` (milliseconds)
-    \
-    Whenever text is printed to the monitor, it gets displayed one character
-    at the time with a slight delay between.
-  - inverse: `false`
-    \
-    Set this to `true` to print text with the background color and the
-    foreground color switched.
-    \
-    Changing this doesn't affect text that has already been printed to the
-    screen.
-  - cursor position, counted from the top-left corner:
-    `column: 0, line: 0`
-  - scrolling of text: `true`
-    \
-    If set to `true`, the content of the screen scrolls up one line when the
-    cursor goes below the bottom line.
-  - text wrapping: `off`
-    \
-    This can be set to `off` (text printed beyond the right border gets lost),
-    `char` (text wraps to next line. This might happen in the middle of a
-    word) or `word` (text wraps to the next line, if possible at the last
-    whitespace before getting to the right border).
+    > **Note** This setting controls the color of **all** the text, both the
+    > text that has already been printed to the screen and the text that is
+    > going to be printed to the screen.
+
+The following properties can not be changed before creating the
+`remoTemo::Temo` object. They control the behaviour of the text output and
+will have the initial values shown here _(those can all be changed later)_:
+- delay between chars: `60` (milliseconds)
+  \
+  Whenever text is printed to the monitor, it gets displayed one character
+  at the time with a slight delay between.
+- inverse: `false`
+  \
+  Set this to `true` to print text with the background color and the
+  foreground color switched.
+  \
+  Changing this doesn't affect text that has already been printed to the
+  screen.
+- cursor position, counted from the top-left corner:
+  `column: 0, line: 0`
+- scrolling of text: `true`
+  \
+  If set to `true`, the content of the screen scrolls up one line when the
+  cursor goes below the bottom line.
+- text wrapping: `off`
+  \
+  This can be set to `off` (text printed beyond the right border gets lost),
+  `char` (text wraps to next line. This might happen in the middle of a
+  word) or `word` (text wraps to the next line, if possible at the last
+  whitespace before getting to the right border).
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Cleanup
@@ -321,7 +373,7 @@ If, for some reason, you want to clean up sooner, you can call:
 void remoTemo::Temo::quit();
 ```
 
-Just make sure not to touch any of the object's methods after that.
+Just make sure not to touch any of the object's functions after that.
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ## Using remoTemo
@@ -372,8 +424,7 @@ bool remoTemo::Temo::get_inverse();
 ### Change text area settings
 
 ```C++
-enum class remoTemo::Blend_mode {none, blend, add, mod};
-struct remoTemo::Color {int red; int green; int blue;};
+struct remoTemo::Color {Uint8 red; Uint8 green; Uint8 blue;};
 
 int remoTemo::Temo::set_text_area_size(int columns, int lines);
 int remoTemo::Temo::set_text_area_size(const SDL_Point& size);
@@ -381,10 +432,10 @@ int remoTemo::Temo::get_text_area_columns();
 int remoTemo::Temo::get_text_area_lines();
 SDL_Point remoTemo::Temo::get_text_area_size();
 
-int remoTemo::Temo::set_text_blend_mode(remoTemo::Blend_mode mode);
-remoTemo::Blend_mode remoTemo::Temo::get_text_blend_mode();
+int remoTemo::Temo::set_text_blend_mode(SDL_BlendMode mode);
+SDL_BlendMode remoTemo::Temo::get_text_blend_mode();
 
-int remoTemo::Temo::set_text_color(int red, int green, int blue);
+int remoTemo::Temo::set_text_color(Uint8 red, Uint8 green, Uint8 blue);
 int remoTemo::Temo::set_text_color(const remoTemo::Color& color);
 remoTemo::Color remoTemo::Temo::get_text_color();
 ```
