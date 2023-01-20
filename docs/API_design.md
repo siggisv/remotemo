@@ -5,9 +5,8 @@ _2nd draft_
 >
 > **Both** the design and the implementation are work-in-progress.
 
-    [](ignored)
+[](ignored)
 
-  No mater if 'the window' is set to `nullptr` or not, the following
 > **TODO?** Make thread safe? Or just explain that just like most of the
 > underlying SDL2 framework, this object should only be used from within the
 > thread where SDL was initialized?
