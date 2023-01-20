@@ -5,6 +5,9 @@ _2nd draft_
 >
 > **Both** the design and the implementation are work-in-progress.
 
+    [](ignored)
+
+  No mater if 'the window' is set to `nullptr` or not, the following
 > **TODO?** Make thread safe? Or just explain that just like most of the
 > underlying SDL2 framework, this object should only be used from within the
 > thread where SDL was initialized?
@@ -183,10 +186,12 @@ object has been created:
 
     > **Warning** It will be your responsability to keep that pointed window
     > valid while `remoTemo::Temo` is alive.
-    > 
+    >
     > You also have to take care of closing it afterward (unless 'Cleanup all'
     > is set to `true`, in which case `remoTemo::Temo`'s destructor will
     > handle that).
+
+    [](ignored)
 
     > **Warning** If that window has a renderer associated with it, then that
     > renderer must have the `SDL_RENDERER_TARGETTEXTURE` flag set. Otherwise
@@ -281,7 +286,7 @@ object has been created:
 
     > **Warning** It will be your responsability to keep that pointed texture
     > valid while `remoTemo::Temo` is alive.
-    > 
+    >
     > You also have to take care of closing it afterward (unless 'Cleanup all'
     > is set to `true`, in which case `remoTemo::Temo`'s destructor will
     > handle that).
@@ -337,7 +342,7 @@ object has been created:
 
     > **Warning** It will be your responsability to keep that pointed texture
     > valid while `remoTemo::Temo` is alive.
-    > 
+    >
     > You also have to take care of closing it afterward (unless 'Cleanup all'
     > is set to `true`, in which case `remoTemo::Temo`'s destructor will
     > handle that).
