@@ -2,6 +2,11 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+///////////////////////////////////////////////////////////////////////////////
+// The following is just a dummy test, mainly to test if the build setup
+// was working
+//
+
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 

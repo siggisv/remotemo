@@ -58,7 +58,11 @@ target_include_directories(remotemo PRIVATE
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
 )
-target_include_directories(remotemo SYSTEM INTERFACE include/)
+target_include_directories(remotemo SYSTEM INTERFACE
+    include/
+    ${SDL2_INCLUDE_DIRS}
+    ${SDL2_IMAGE_INCLUDE_DIRS}
+)
 
 # Note. Since CMake 3.19, the following can be set in a preset
 # file (i.e. CMakePresets.json)

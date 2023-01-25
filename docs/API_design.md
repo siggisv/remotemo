@@ -202,30 +202,27 @@ object has been created:
   - Key to switch between fullscreen and windowed mode: `F11` _(can be changed
     later)_
     ```C++
+    remoTemo::Config& remoTemo::Config::key_fullscreen(); // Set to none
     remoTemo::Config& remoTemo::Config::key_fullscreen(
-            remoTemo::F_key key);
+            remoTemo::Mod_keys modifier_keys, remoTemo::F_key key);
     remoTemo::Config& remoTemo::Config::key_fullscreen(
-            SDL_Keymod modifier_keys, remoTemo::F_key key);
-    remoTemo::Config& remoTemo::Config::key_fullscreen(
-            SDL_Keymod modifier_keys, remoTemo::Key key);
+            remoTemo::Mod_keys_strict modifier_keys, remoTemo::Key key);
     ```
   - Key combination to close the window: `Ctrl-w` _(can be changed later)_
     ```C++
+    remoTemo::Config& remoTemo::Config::key_close_window(); // Set to none
     remoTemo::Config& remoTemo::Config::key_close_window(
-            remoTemo::F_key key);
+            remoTemo::Mod_keys modifier_keys, remoTemo::F_key key);
     remoTemo::Config& remoTemo::Config::key_close_window(
-            SDL_Keymod modifier_keys, remoTemo::F_key key);
-    remoTemo::Config& remoTemo::Config::key_close_window(
-            SDL_Keymod modifier_keys, remoTemo::Key key);
+            remoTemo::Mod_keys_strict modifier_keys, remoTemo::Key key);
     ```
   - Key combination to quit the application: `Ctrl-q` _(can be changed later)_
     ```C++
+    remoTemo::Config& remoTemo::Config::key_quit(); // Set to none
     remoTemo::Config& remoTemo::Config::key_quit(
-            remoTemo::F_key key);
+            remoTemo::Mod_keys modifier_keys, remoTemo::F_key key);
     remoTemo::Config& remoTemo::Config::key_quit(
-            SDL_Keymod modifier_keys, remoTemo::F_key key);
-    remoTemo::Config& remoTemo::Config::key_quit(
-            SDL_Keymod modifier_keys, remoTemo::Key key);
+            remoTemo::Mod_keys_strict modifier_keys, remoTemo::Key key);
     ```
   - Closing window is the same as quitting: `true` _(can be changed
     later)_
@@ -401,7 +398,7 @@ will have the initial values shown here _(those can all be changed later)_:
   \
   If set to `true`, the content of the screen scrolls up one line when the
   cursor goes below the bottom line.
-- text wrapping: `off`
+- text wrapping: `char`
   \
   This can be set to `off` (text printed beyond the right border gets lost),
   `char` (text wraps to next line. This might happen in the middle of a
@@ -478,7 +475,7 @@ remoTemo::Color remoTemo::Temo::get_text_color();
 
 ```C++
 enum class remoTemo::F_key {
-    none, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12};
+    F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12};
 enum class remoTemo::Key {
     K_esc, K_backquote, K_1, K_2, ... , K_0, K_minus, K_equal, K_backspace,
     K_tab, K_q, K_w, ... K_p, K_left_bracket, K_right_bracket, K_backslash,
@@ -501,20 +498,26 @@ bool remoTemo::Temo::get_window_resizable();
 int remoTemo::Temo::set_window_fullscreen(bool is_fullscreen);
 bool remoTemo::Temo::get_window_fullscreen();
 
-int remoTemo::Temo::set_key_fullscreen(SDL_Keymod modifier_keys,
+int remoTemo::Temo::set_key_fullscreen(); // Set to none
+int remoTemo::Temo::set_key_fullscreen(remoTemo::Mod_keys modifier_keys,
         remoTemo::F_key key);
-int remoTemo::Temo::set_key_fullscreen(SDL_Keymod modifier_keys, remoTemo::Key key);
-std::tuple<SDL_Keymod, remoTemo::F_key, remoTemo::Key>
-        remoTemo::Temo::get_key_fullscreen();
-int remoTemo::Temo::set_key_close_window(SDL_Keymod modifier_keys,
+int remoTemo::Temo::set_key_fullscreen(remoTemo::Mod_keys_strict modifier_keys,
+        remoTemo::Key key);
+remoTemo::Key_combo remoTemo::Temo::get_key_fullscreen();
+
+int remoTemo::Temo::set_key_close_window(); // Set to none
+int remoTemo::Temo::set_key_close_window(remoTemo::Mod_keys modifier_keys,
         remoTemo::F_key key);
-int remoTemo::Temo::set_key_close_window(SDL_Keymod modifier_keys, remoTemo::Key key);
-std::tuple<SDL_Keymod, remoTemo::F_key, remoTemo::Key>
-        remoTemo::Temo::get_key_close_window();
-int remoTemo::Temo::set_key_quit(SDL_Keymod modifier_keys, remoTemo::F_key key);
-int remoTemo::Temo::set_key_quit(SDL_Keymod modifier_keys, remoTemo::Key key);
-std::tuple<SDL_Keymod, remoTemo::F_key, remoTemo::Key>
-        remoTemo::Temo::get_key_quit();
+int remoTemo::Temo::set_key_close_window(
+        remoTemo::Mod_keys_strict modifier_keys, remoTemo::Key key);
+remoTemo::Key_combo remoTemo::Temo::get_key_close_window();
+
+int remoTemo::Temo::set_key_quit(); // Set to none
+int remoTemo::Temo::set_key_quit(remoTemo::Mod_keys modifier_keys,
+        remoTemo::F_key key);
+int remoTemo::Temo::set_key_quit(remoTemo::Mod_keys_strict modifier_keys,
+        remoTemo::Key key);
+remoTemo::Key_combo remoTemo::Temo::get_key_quit();
 
 int remoTemo::Temo::set_closing_same_as_quit(bool is_closing_same_as_quit);
 bool remoTemo::Temo::get_closing_same_as_quit();

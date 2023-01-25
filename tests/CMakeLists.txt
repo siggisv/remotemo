@@ -12,12 +12,20 @@ target_link_libraries(test_mock PRIVATE
     trompeloeil::trompeloeil
 )
 
+option(REMOTEMO_VERBOSE_TESTS
+    "Should the output from the tests themselve be more verbose?"
+    OFF
+)
+IF (REMOTEMO_VERBOSE_TESTS)
+    set(TEST_ARG ${TEST_ARG} "-s")
+endif()
+
 option(REMOTEMO_TESTS_COLOR 
-    "Should the output from the test themselve be in color?"
+    "Should the output from the tests themselve be in color?"
     ON
 )
 if (REMOTEMO_TESTS_COLOR)
-    set(TEST_ARG "--colour-mode=ansi")
+    set(TEST_ARG ${TEST_ARG} "--colour-mode=ansi")
 endif()
 
 enable_testing()
