@@ -266,10 +266,9 @@ object has been created:
       ```
 
       When changing this setting, you could use the constant
-      `remoTemo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
-      operating system) for the path separator when creating the path, if you
-      care about it being cross-platform.
-
+      `remoTemo::path_separator` (which is set to `'\'` or `'/'` depending on
+      the operating system) for the path separator when creating the path, if
+      you care about it being cross-platform.
 
       > **Note** If this setting is set to a string starting with the path
       > separator (or a drive letter, if on Windows. E.g. "D:") then the path
@@ -323,9 +322,9 @@ object has been created:
       ```
 
       When changing this setting, you could use the constant
-      `remoTemo::PATH_SEP` (which is set to `'\'` or `'/'` depending on the
-      operating system) for the path separator when creating the path, if you
-      care about it being cross-platform.
+      `remoTemo::path_separator` (which is set to `'\'` or `'/'` depending on
+      the operating system) for the path separator when creating the path, if
+      you care about it being cross-platform.
 
       > **Note** If this setting is set to a string starting with the path
       > separator (or a drive letter, if on Windows. E.g. "D:") then the path
@@ -503,21 +502,21 @@ int remoTemo::Temo::set_key_fullscreen(remoTemo::Mod_keys modifier_keys,
         remoTemo::F_key key);
 int remoTemo::Temo::set_key_fullscreen(remoTemo::Mod_keys_strict modifier_keys,
         remoTemo::Key key);
-remoTemo::Key_combo remoTemo::Temo::get_key_fullscreen();
+std::optional<remoTemo::Key_combo> remoTemo::Temo::get_key_fullscreen();
 
 int remoTemo::Temo::set_key_close_window(); // Set to none
 int remoTemo::Temo::set_key_close_window(remoTemo::Mod_keys modifier_keys,
         remoTemo::F_key key);
 int remoTemo::Temo::set_key_close_window(
         remoTemo::Mod_keys_strict modifier_keys, remoTemo::Key key);
-remoTemo::Key_combo remoTemo::Temo::get_key_close_window();
+std::optional<remoTemo::Key_combo> remoTemo::Temo::get_key_close_window();
 
 int remoTemo::Temo::set_key_quit(); // Set to none
 int remoTemo::Temo::set_key_quit(remoTemo::Mod_keys modifier_keys,
         remoTemo::F_key key);
 int remoTemo::Temo::set_key_quit(remoTemo::Mod_keys_strict modifier_keys,
         remoTemo::Key key);
-remoTemo::Key_combo remoTemo::Temo::get_key_quit();
+std::optional<remoTemo::Key_combo> remoTemo::Temo::get_key_quit();
 
 int remoTemo::Temo::set_closing_same_as_quit(bool is_closing_same_as_quit);
 bool remoTemo::Temo::get_closing_same_as_quit();
