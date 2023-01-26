@@ -32,3 +32,11 @@ enable_testing()
 add_test(run_catch2_test test_dummy ${TEST_ARG})
 add_test(run_trompeloeil_test test_mock ${TEST_ARG})
 
+add_executable(remotemo_init src/remotemo_init.cpp)
+target_link_libraries(remotemo_init PRIVATE
+    remotemo
+    Catch2::Catch2WithMain
+    trompeloeil::trompeloeil
+)
+add_test(test_remotemo_init remotemo_init ${TEST_ARG})
+
