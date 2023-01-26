@@ -1,6 +1,31 @@
 #include <remotemo/remotemo.hpp>
-#include <SDL.h>
 #include <SDL_image.h>
+
+namespace remoTemo {
+Temo::~Temo() noexcept
+{}
+Temo::Temo(Temo&& other) noexcept
+    : m_cleanup_all(std::exchange(other.m_cleanup_all, false))
+{}
+bool Temo::initialize([[maybe_unused]] const Config& config)
+{
+  return true;
+}
+std::optional<Temo> create()
+{
+  return create(Config {});
+}
+
+std::optional<Temo> create(const Config& config)
+{
+  Temo temo {};
+  if (temo.initialize(config)) {
+    return temo;
+  } else {
+    return {};
+  }
+}
+} // namespace remoTemo
 
 ///////////////////////////////////////////////////////////////////////////////
 // The following is just a dummy test, mainly to test if the build setup
