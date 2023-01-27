@@ -13,8 +13,6 @@
 //   away by accident.
 #include <SDL.h>
 
-int dummy_sample();
-
 namespace remoTemo {
 class Temo {
   friend std::optional<Temo> create(const Config& config);
