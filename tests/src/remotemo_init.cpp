@@ -3,6 +3,8 @@
 #include <catch2/catch_all.hpp>
 #include <catch2/trompeloeil.hpp>
 
+using trompeloeil::eq;
+
 class Dummy_test {
   MAKE_MOCK0(dummy_func, void());
 };
@@ -11,6 +13,7 @@ Dummy_test dummy_test;
 class Mock_SDL {
   MAKE_MOCK1(mock_Init, int(Uint32));
   MAKE_MOCK0(mock_Quit, void());
+  MAKE_MOCK1(mock_QuitSubSystem, void(Uint32));
 };
 
 Mock_SDL mock_SDL;
@@ -24,9 +27,15 @@ void SDL_Quit()
 {
   mock_SDL.mock_Quit();
 }
+void SDL_QuitSubSystem(Uint32 flags)
+{
+  mock_SDL.mock_QuitSubSystem(flags);
+}
 }
 
-TEST_CASE("Test create()", "Init")
+Uint32 flags = 0;
+
+TEST_CASE("Test create() - SDL_Init() succeeds", "[Init]")
 {
   trompeloeil::sequence seq;
 
@@ -45,7 +54,7 @@ TEST_CASE("Test create()", "Init")
   }
 }
 
-TEST_CASE("Test create() - SDL_Init() fails", "Init")
+TEST_CASE("Test create() - SDL_Init() fails", "[Init]")
 {
   trompeloeil::sequence seq;
 
@@ -61,5 +70,41 @@ TEST_CASE("Test create() - SDL_Init() fails", "Init")
     auto t = remoTemo::create();
     REQUIRE(static_cast<bool>(t) == false);
     dummy_test.dummy_func();
+  }
+}
+
+TEST_CASE(
+    "Test create(config.cleanup_all(false)) - SDL_Init() succeeds", "[Init]")
+{
+  trompeloeil::sequence seq;
+
+  REQUIRE_CALL(mock_SDL, mock_Init(ANY(Uint32)))        //
+      .SIDE_EFFECT(flags = _1)                          //
+      .RETURN(0)                                        //
+      .IN_SEQUENCE(seq);                                //
+  REQUIRE_CALL(dummy_test, dummy_func())                //
+      .IN_SEQUENCE(seq);                                //
+  REQUIRE_CALL(mock_SDL, mock_QuitSubSystem(eq(flags))) //
+      .IN_SEQUENCE(seq);                                //
+
+  {
+    auto t = remoTemo::create(remoTemo::Config().cleanup_all(false));
+    REQUIRE(t.has_value() == true);
+    dummy_test.dummy_func();
+  }
+}
+
+TEST_CASE(
+    "Test create(config.cleanup_all(false)) - SDL_Init() fails", "[Init]")
+{
+  trompeloeil::sequence seq;
+
+  REQUIRE_CALL(mock_SDL, mock_Init(ANY(Uint32)))        //
+      .RETURN(-1)                                        //
+      .IN_SEQUENCE(seq);                                //
+
+  {
+    auto t = remoTemo::create(remoTemo::Config().cleanup_all(false));
+    REQUIRE(t.has_value() == false);
   }
 }
