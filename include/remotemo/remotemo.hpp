@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <memory>
 
 #include "remotemo/common_types.hpp"
 #include "remotemo/config.hpp"
@@ -29,8 +30,10 @@ private:
   constexpr Temo() noexcept = default;
   bool initialize(const Config& config);
 
-  bool m_cleanup_all = true;
-  static constexpr Uint32 sdl_init_flags = SDL_INIT_VIDEO;
+  class Cleanup_handler;
+  std::unique_ptr<Cleanup_handler> m_cleanup_handler;
+
+  static constexpr Uint32 sdl_init_flags {SDL_INIT_VIDEO};
 };
 
 std::optional<Temo> create();

@@ -32,8 +32,8 @@ void SDL_QuitSubSystem(Uint32 flags)
   mock_SDL.mock_QuitSubSystem(flags);
 }
 }
+Uint32 init_flags = 0, quit_flags = 0;
 
-Uint32 flags = 0;
 
 TEST_CASE("Test create() - SDL_Init() succeeds", "[Init]")
 {
@@ -78,20 +78,22 @@ TEST_CASE(
 {
   trompeloeil::sequence seq;
 
-  REQUIRE_CALL(mock_SDL, mock_Init(ANY(Uint32)))        //
-      .SIDE_EFFECT(flags = _1)                          //
-      .RETURN(0)                                        //
-      .IN_SEQUENCE(seq);                                //
-  REQUIRE_CALL(dummy_test, dummy_func())                //
-      .IN_SEQUENCE(seq);                                //
-  REQUIRE_CALL(mock_SDL, mock_QuitSubSystem(eq(flags))) //
-      .IN_SEQUENCE(seq);                                //
+  REQUIRE_CALL(mock_SDL, mock_Init(ANY(Uint32)))          //
+      .SIDE_EFFECT(init_flags = _1)                       //
+      .RETURN(0)                                          //
+      .IN_SEQUENCE(seq);                                  //
+  REQUIRE_CALL(dummy_test, dummy_func())                  //
+      .IN_SEQUENCE(seq);                                  //
+  REQUIRE_CALL(mock_SDL, mock_QuitSubSystem(ANY(Uint32))) //
+      .SIDE_EFFECT(quit_flags = _1)                       //
+      .IN_SEQUENCE(seq);                                  //
 
   {
     auto t = remoTemo::create(remoTemo::Config().cleanup_all(false));
     REQUIRE(t.has_value() == true);
     dummy_test.dummy_func();
   }
+  REQUIRE(init_flags == quit_flags);
 }
 
 TEST_CASE(
@@ -99,9 +101,9 @@ TEST_CASE(
 {
   trompeloeil::sequence seq;
 
-  REQUIRE_CALL(mock_SDL, mock_Init(ANY(Uint32)))        //
-      .RETURN(-1)                                        //
-      .IN_SEQUENCE(seq);                                //
+  REQUIRE_CALL(mock_SDL, mock_Init(ANY(Uint32))) //
+      .RETURN(-1)                                //
+      .IN_SEQUENCE(seq);                         //
 
   {
     auto t = remoTemo::create(remoTemo::Config().cleanup_all(false));
