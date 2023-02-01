@@ -68,19 +68,26 @@ bool Temo::initialize(const Config& config)
 
   if (config.m_cleanup_all) {
     // Set cleanup_handler to handle SDL_Quit() + all resources in config
-    m_cleanup_handler = std::make_unique<Cleanup_handler>(true,
-        config.m_the_window, ::SDL_GetRenderer(config.m_the_window),
-        config.m_background, config.m_font_bitmap);
+    m_cleanup_handler =
+        std::make_unique<Cleanup_handler>(true, config.m_the_window,
+            (config.m_the_window ? ::SDL_GetRenderer(config.m_the_window)
+                                 : nullptr),
+            config.m_background, config.m_font_bitmap);
   } else {
     m_cleanup_handler = std::make_unique<Cleanup_handler>(false);
   }
   ::SDL_Log("SDL_Init(%d)", sdl_init_flags);
   if (::SDL_Init(sdl_init_flags) < 0) {
-    ::SDL_LogCritical(::SDL_LOG_CATEGORY_APPLICATION,
-        "SDL_Init() failed: %s\n", ::SDL_GetError());
+    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n",
+        ::SDL_GetError());
     return false;
   } else {
     m_cleanup_handler->m_sdl_subsystems = sdl_init_flags;
+  }
+  if (::SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear") == SDL_FALSE) {
+    ::SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+        "SDL_SetHint() (scale quality to linear) failed: %s\n",
+        ::SDL_GetError());
   }
   return true;
 }
