@@ -1,4 +1,5 @@
-#pragma once
+#ifndef REMOTEMO_REMOTEMO_HPP
+#define REMOTEMO_REMOTEMO_HPP
 
 #include <optional>
 #include <memory>
@@ -40,3 +41,4 @@ std::optional<Temo> create();
 std::optional<Temo> create(const Config& config);
 
 } // namespace remoTemo
+#endif // REMOTEMO_REMOTEMO_HPP

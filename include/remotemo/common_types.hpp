@@ -1,4 +1,5 @@
-#pragma once
+#ifndef REMOTEMO_COMMON_TYPES_HPP
+#define REMOTEMO_COMMON_TYPES_HPP
 
 #include <SDL.h>
 
@@ -114,9 +115,8 @@ enum class Key {
   K_right = SDL_SCANCODE_RIGHT
 };
 
-struct Key_combo {
-  SDL_Keymod m_modifier_keys {};
-  SDL_Scancode m_key {};
+class Key_combo {
+public:
   Key_combo(Mod_keys modifier, F_key key)
       : m_modifier_keys {static_cast<SDL_Keymod>(modifier)},
         m_key {static_cast<SDL_Scancode>(key)}
@@ -135,6 +135,16 @@ struct Key_combo {
     m_modifier_keys = static_cast<SDL_Keymod>(modifier);
     m_key = static_cast<SDL_Scancode>(key);
   }
+  [[nodiscard]] const SDL_Keymod& modifier_keys() const
+  {
+    return m_modifier_keys;
+  }
+  [[nodiscard]] const SDL_Scancode& key() const { return m_key; }
+
+private:
+  SDL_Keymod m_modifier_keys {};
+  SDL_Scancode m_key {};
 };
 
 } // namespace remoTemo
+#endif // REMOTEMO_COMMON_TYPES_HPP

@@ -1,9 +1,10 @@
-#pragma once
+#ifndef REMOTEMO_CONFIG_HPP
+#define REMOTEMO_CONFIG_HPP
 
 #include <functional>
 #include <string>
 
-#include "remotemo/remotemo.hpp"
+#include "remotemo/common_types.hpp"
 
 #include <SDL.h>
 
@@ -142,16 +143,13 @@ public:
     m_is_closing_same_as_quit = is_closing_same_as_quit;
     return *this;
   }
-  Config& function_pre_quit(std::function<bool()> func)
+  Config& function_pre_quit(const std::function<bool()>& func)
   {
-    m_pre_quit_function_void = func;
-    m_pre_quit_function_points_back = nullptr;
-    return *this;
-  }
-  Config& function_pre_quit(std::function<bool(Temo*)> func)
-  {
-    m_pre_quit_function_void = nullptr;
-    m_pre_quit_function_points_back = func;
+    if (func == nullptr) {
+      m_pre_quit_function = []() -> bool { return true; };
+    } else {
+      m_pre_quit_function = func;
+    }
     return *this;
   }
 
@@ -234,6 +232,7 @@ private:
   bool m_cleanup_all {true};
   SDL_Window* m_the_window {nullptr};
   std::string m_window_title {"Retro Monochrome Text Monitor"s};
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   int m_window_width {1280}, m_window_height {720};
   int m_window_pos_x {SDL_WINDOWPOS_UNDEFINED};
   int m_window_pos_y {SDL_WINDOWPOS_UNDEFINED};
@@ -246,15 +245,16 @@ private:
   std::optional<Key_combo> m_key_quit {
       std::in_place, Mod_keys_strict::Ctrl, Key::K_q};
   bool m_is_closing_same_as_quit {true};
-  std::function<bool()> m_pre_quit_function_void {nullptr};
-  std::function<bool(Temo*)> m_pre_quit_function_points_back {nullptr};
+  std::function<bool()> m_pre_quit_function {[]() -> bool { return true; }};
   SDL_Texture* m_background {nullptr};
 #ifdef _WIN32
   std::string m_background_file_path {"res\\img\\terminal_screen.png"s};
 #else
   std::string m_background_file_path {"res/img/terminal_screen.png"s};
 #endif
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   SDL_Rect m_background_min_area {118, 95, 700, 540};
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   SDL_FRect m_background_text_area {188.25f, 149.25f, 560.0f, 432.0f};
   SDL_Texture* m_font_bitmap {nullptr};
 #ifdef _WIN32
@@ -262,9 +262,13 @@ private:
 #else
   std::string m_font_bitmap_file_path {"res/img/font_bitmap.png"s};
 #endif
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   int m_font_width {7}, m_font_height {18};
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   int m_text_area_columns {40}, m_text_area_lines {24};
   SDL_BlendMode m_text_blend_mode {SDL_BLENDMODE_ADD};
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   Color m_text_color {89, 221, 0};
 };
 } // namespace remoTemo
+#endif // REMOTEMO_CONFIG_HPP
