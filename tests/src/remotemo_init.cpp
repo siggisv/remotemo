@@ -123,9 +123,9 @@ TEST_CASE("Test create() - SDL_Init() succeeds,", "[Init]")
     }
   }
 }
-/*
+
 TEST_CASE(
-    "Test create(config.cleanup_all(false)) - SDL_Init() succeeds", "[Init]")
+    "Test create(config.cleanup_all(false)) - SDL_Init() succeeds,", "[Init]")
 {
   trompeloeil::sequence init_seq, cleanup_seq;
   // clang-format off
@@ -133,17 +133,45 @@ TEST_CASE(
       .SIDE_EFFECT(init_flags = _1)
       .RETURN(0)
       .IN_SEQUENCE(init_seq);
-  REQUIRE_CALL(dummy_test, dummy_func())
-      .IN_SEQUENCE(seq);
-  REQUIRE_CALL(mock_SDL, mock_QuitSubSystem(ANY(Uint32)))
-      .SIDE_EFFECT(quit_flags = _1)
-      .IN_SEQUENCE(seq);
   // clang-format on
+
+  SECTION("... but SDL_SetHint() fails!")
   {
-    auto t = remoTemo::create(remoTemo::Config().cleanup_all(false));
-    REQUIRE(t.has_value() == true);
-    dummy_test.dummy_func();
+    // clang-format off
+    REQUIRE_CALL(mock_SDL, mock_SetHint(re(regex_hint_name), re("^linear$")))
+        .RETURN(SDL_FALSE)
+        .IN_SEQUENCE(init_seq);
+    REQUIRE_CALL(dummy_test, dummy_func())
+        .IN_SEQUENCE(init_seq, cleanup_seq);
+    REQUIRE_CALL(mock_SDL, mock_QuitSubSystem(ANY(Uint32)))
+        .SIDE_EFFECT(quit_flags = _1)
+        .IN_SEQUENCE(cleanup_seq);
+    // clang-format on
+    {
+      auto t = remoTemo::create(remoTemo::Config().cleanup_all(false));
+      REQUIRE(t.has_value() == true);
+      dummy_test.dummy_func();
+    }
+    REQUIRE(init_flags == quit_flags);
   }
-  REQUIRE(init_flags == quit_flags);
+
+  SECTION("...  SDL_SetHint() succeeds,")
+  {
+    // clang-format off
+    REQUIRE_CALL(mock_SDL, mock_SetHint(re(regex_hint_name), re("^linear$")))
+        .RETURN(SDL_FALSE)
+        .IN_SEQUENCE(init_seq);
+    REQUIRE_CALL(dummy_test, dummy_func())
+        .IN_SEQUENCE(init_seq, cleanup_seq);
+    REQUIRE_CALL(mock_SDL, mock_QuitSubSystem(ANY(Uint32)))
+        .SIDE_EFFECT(quit_flags = _1)
+        .IN_SEQUENCE(cleanup_seq);
+    // clang-format on
+    {
+      auto t = remoTemo::create(remoTemo::Config().cleanup_all(false));
+      REQUIRE(t.has_value() == true);
+      dummy_test.dummy_func();
+    }
+    REQUIRE(init_flags == quit_flags);
+  }
 }
-*/
