@@ -48,13 +48,20 @@ properties (along with the needed properties for the underlying SDL2-library).
 
   > **Warning**
   > On failure, it will clean up all the resources that the `remoTemo::Temo`'s
-  > destructor is supposed to handle. Meaning that by default it would also
-  > clean up all those resources handled to it.
+  > destructor is supposed to handle. Meaning that:
+  > - by **default** it would **not only** clean up those resources it had
+  >   succeeded setting up, but **also all** those resources handled to it.
+  >   **And** it will call `SDL_Quit()`.
+  > - if `Config::cleanup_all` was set to `false`, it will **only** clean up
+  >   those resources it had succeeded setting up itself. It will quit those
+  >   SDL subsystems it did set up but will **not** call `SDL_Quit()`.
 
 When invoked without any parameters, it will set up the underlying
 SDL2-library and create a window for you with the default settings (including
 loading a background texture and the font-bitmap from their default
 locations). Most of those settings can not be changed after creation.
+
+-----
 
 To allow you to initialize using other settings than the default ones, the
 [Named Parameter
@@ -108,17 +115,20 @@ _The destructor, (by default) in charge of deleting/closing textures, the
 renderer, the window and quitting SDL._
 
 - By default, the destructor of the `remoTemo::Temo` object will handle cleaning
-  up all SDL-resources it used (even those it did not create itself) and then
-  call `SDL_Quit()` to clean up all SDL subsystems.
+  up all its resources (both those it did create itself and those passed to
+  it) and then call `SDL_Quit()` to clean up all SDL subsystems.
 
-- When created, the `remoTemo::Temo` object can be set not to have its
-  destructor handle cleaning up **all** resources (e.g. if you wanted to create
-  the window yourself to display some menu before and after having remoTemo
-  taking control of the window).  In that case you have the responsibility of
-  cleaning up those resources and to call `SDL_Quit()`.
-  > **Note**
-  > Even when set to not clean up everything, it will still clean up those
-  > resources it did create itself.
+- When created, the `remoTemo::Temo` object can be set to not have its
+  destructor handle cleaning up **all** its resources.
+
+  In that case it will **only** clean up those resources it did create itself,
+  leaving to you the responsibility of cleaning up all other resources and to
+  call `SDL_Quit()` when you're done.
+
+  This can be usefull e.g. if you already created a window yourself to display
+  some splash screen and/or menu before the text monitor is shown and would
+  like that window to remain open afterward to be able to display the menu
+  again and/or some afterwords.
 
 If, for some reason, you want to clean up sooner, you could call:
 
@@ -144,12 +154,13 @@ object has been created:
   remoTemo::Config& remoTemo::Config::cleanup_all(bool cleanup_all);
   ```
   - If `true`, then the destructor of the `remoTemo::Temo` object will handle
-    cleaning up all SDL-resources it used and then call `SDL_Quit()` to clean
+    cleaning up all its resources and then call `SDL_Quit()` to clean
     up all SDL subsystems.
 
     > **Warning**
-    > It will clean up any window, renderer and texture it used, no matter if
-    > it did created them itself or they were passed to it.
+    > It will clean up (i.e close, remove and/or delete) any window, renderer
+    > and texture it used, no matter if it did created them itself or they
+    > were passed to it.
 
   - If `false`, then it will only clean up those resources it did create (but
     none of those you passed to it). You must then handle cleaning up those
