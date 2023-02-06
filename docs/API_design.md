@@ -1,5 +1,5 @@
 # remoTemo API design
-_2nd draft_
+_3rd draft_
 
 > **Warning**
 >
@@ -243,17 +243,39 @@ object has been created:
     ```
     > **Note** Not recommended to change that setting to `false` unless you
     > either really want the application to continue running without a window
-    > or you have taken care of opening another window yourself.
-  - Function to call before closing window: `nullptr` _(can be changed later)_
+    > or the text monitor was running in an auxiliary window, while the main
+    > window is still controlled by you.
+  - Function to call before closing window: `[]() -> bool { return true; }`
+    _(can be changed later)_
+    ```C++
+    remoTemo::Config& remoTemo::Config::function_pre_close(
+            const std::function<bool()>& func);
+    ```
+    That function must return a `bool`. If it returns `false`, closing the
+    window will be canceled.
+
+    That function can be used to e.g. offer the user the option to cancel that
+    action or to save before closing.
+    > **Note** Trying to set this to `nullptr` will result in it being set to
+    > the default value instead.
+  - Function to call before quitting: `[]() -> bool { return true; }`
+    _(can be changed later)_
     ```C++
     remoTemo::Config& remoTemo::Config::function_pre_quit(
-            std::function<bool()> func);
-    remoTemo::Config& remoTemo::Config::function_pre_quit(
-            std::function<bool(remoTemo::Temo*)> func);
+            const std::function<bool()>& func);
     ```
-    If set, that function can be used to e.g. offer the user the option to
-    cancel that action or to save before continuing. That function must return
-    a `bool`. Returning `false` will cancel closing the window.
+    > **Note** No mater if 'Closing window is the same as quitting' is set to
+    > `true` or `false`, the window will have been closed before this function
+    > gets called.
+    That function must return a `bool`. If it returns `false`, quitting will
+    be canceled.
+
+    That function can be used to e.g. automatically save and/or do any needed
+    cleanup before quitting. Or
+    it could be used to set some flag and then return `false`, allowing you to
+    handle quitting yourself in any other way you wish.
+    > **Note** Trying to set this to `nullptr` will result in it being set to
+    > the default value instead.
 
   Finally, if 'the window' was set to `nullptr` **OR** if it is pointing to a
   `SDL_Window` that doesn't have a renderer then a `SDL_Renderer` will be
@@ -484,6 +506,14 @@ remoTemo::Color remoTemo::Temo::get_text_color();
 ### Change window settings
 
 ```C++
+enum class Mod_keys_strict {
+  Ctrl, Alt, Alt_shift, Ctrl_shift, Ctrl_alt, Ctrl_alt_shift
+};
+
+enum class Mod_keys {
+  None, Shift, Ctrl, Alt, Alt_shift, Ctrl_shift, Ctrl_alt, Ctrl_alt_shift
+};
+
 enum class remoTemo::F_key {
     F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12};
 enum class remoTemo::Key {
@@ -531,9 +561,8 @@ std::optional<remoTemo::Key_combo> remoTemo::Temo::get_key_quit();
 
 int remoTemo::Temo::set_closing_same_as_quit(bool is_closing_same_as_quit);
 bool remoTemo::Temo::get_closing_same_as_quit();
+int remoTemo::Temo::set_function_pre_close(std::function<bool()> func);
 int remoTemo::Temo::set_function_pre_quit(std::function<bool()> func);
-int remoTemo::Temo::set_function_pre_quit(
-        std::function<bool(remoTemo::Temo*)> func);
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>

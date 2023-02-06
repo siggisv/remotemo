@@ -143,6 +143,15 @@ public:
     m_is_closing_same_as_quit = is_closing_same_as_quit;
     return *this;
   }
+  Config& function_pre_close(const std::function<bool()>& func)
+  {
+    if (func == nullptr) {
+      m_pre_close_function = []() -> bool { return true; };
+    } else {
+      m_pre_close_function = func;
+    }
+    return *this;
+  }
   Config& function_pre_quit(const std::function<bool()>& func)
   {
     if (func == nullptr) {
@@ -245,6 +254,7 @@ private:
   std::optional<Key_combo> m_key_quit {
       std::in_place, Mod_keys_strict::Ctrl, Key::K_q};
   bool m_is_closing_same_as_quit {true};
+  std::function<bool()> m_pre_close_function {[]() -> bool { return true; }};
   std::function<bool()> m_pre_quit_function {[]() -> bool { return true; }};
   SDL_Texture* m_background {nullptr};
 #ifdef _WIN32

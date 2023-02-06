@@ -142,8 +142,8 @@ public:
   [[nodiscard]] const SDL_Scancode& key() const { return m_key; }
 
 private:
-  SDL_Keymod m_modifier_keys {};
-  SDL_Scancode m_key {};
+  SDL_Keymod m_modifier_keys;
+  SDL_Scancode m_key;
 };
 
 } // namespace remoTemo
