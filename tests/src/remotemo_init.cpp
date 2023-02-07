@@ -96,7 +96,6 @@ TEST_CASE(
   }
 }
 
-
 TEST_CASE("Test create() - SDL_Init() succeeds, ...", "[Init]")
 {
   trompeloeil::sequence init_seq, cleanup_seq;
@@ -106,29 +105,16 @@ TEST_CASE("Test create() - SDL_Init() succeeds, ...", "[Init]")
       .IN_SEQUENCE(init_seq);
   // clang-format on
 
-  SECTION("... but SDL_SetHint() fails!")
+  auto setHintRet = GENERATE(SDL_TRUE, SDL_FALSE);
+  DYNAMIC_SECTION(
+      "... SDL_SetHint() "
+      << (setHintRet == SDL_TRUE
+                 ? "succeeds, ..."
+                 : "fails! (but isn't fatal so we continue), ..."))
   {
     // clang-format off
     REQUIRE_CALL(mock_SDL, mock_SetHint(re(regex_hint_name), re("^linear$")))
-        .RETURN(SDL_FALSE)
-        .IN_SEQUENCE(init_seq);
-    REQUIRE_CALL(dummy_test, dummy_func())
-        .IN_SEQUENCE(init_seq, cleanup_seq);
-    REQUIRE_CALL(mock_SDL, mock_Quit())
-        .IN_SEQUENCE(cleanup_seq);
-    // clang-format on
-    {
-      auto t = remoTemo::create(remoTemo::Config());
-      REQUIRE(t.has_value() == true);
-      dummy_test.dummy_func();
-    }
-  }
-
-  SECTION("...  SDL_SetHint() succeeds, ...")
-  {
-    // clang-format off
-    REQUIRE_CALL(mock_SDL, mock_SetHint(re(regex_hint_name), re("^linear$")))
-        .RETURN(SDL_TRUE)
+        .RETURN(setHintRet)
         .IN_SEQUENCE(init_seq);
 
     SECTION("... but SDL_CreateWindow() fails!")
@@ -188,31 +174,16 @@ TEST_CASE("Test create(config.cleanup_all(false)) - SDL_Init() succeeds, ...",
       .IN_SEQUENCE(init_seq);
   // clang-format on
 
-  SECTION("... but SDL_SetHint() fails!")
+  auto setHintRet = GENERATE(SDL_TRUE, SDL_FALSE);
+  DYNAMIC_SECTION(
+      "... SDL_SetHint() "
+      << (setHintRet == SDL_TRUE
+                 ? "succeeds, ..."
+                 : "fails! (but isn't fatal so we continue), ..."))
   {
     // clang-format off
     REQUIRE_CALL(mock_SDL, mock_SetHint(re(regex_hint_name), re("^linear$")))
-        .RETURN(SDL_FALSE)
-        .IN_SEQUENCE(init_seq);
-    REQUIRE_CALL(dummy_test, dummy_func())
-        .IN_SEQUENCE(init_seq, cleanup_seq);
-    REQUIRE_CALL(mock_SDL, mock_QuitSubSystem(ANY(Uint32)))
-        .SIDE_EFFECT(quit_flags = _1)
-        .IN_SEQUENCE(cleanup_seq);
-    // clang-format on
-    {
-      auto t = remoTemo::create(remoTemo::Config().cleanup_all(false));
-      REQUIRE(t.has_value() == true);
-      dummy_test.dummy_func();
-    }
-    REQUIRE(init_flags == quit_flags);
-  }
-
-  SECTION("...  SDL_SetHint() succeeds, ...")
-  {
-    // clang-format off
-    REQUIRE_CALL(mock_SDL, mock_SetHint(re(regex_hint_name), re("^linear$")))
-        .RETURN(SDL_FALSE)
+        .RETURN(setHintRet)
         .IN_SEQUENCE(init_seq);
     REQUIRE_CALL(dummy_test, dummy_func())
         .IN_SEQUENCE(init_seq, cleanup_seq);
