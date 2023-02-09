@@ -16,6 +16,8 @@ class Mock_SDL {
   MAKE_MOCK6(mock_CreateWindow,
       SDL_Window*(const char*, int, int, int, int, Uint32));
   MAKE_MOCK1(mock_DestroyWindow, void(SDL_Window*));
+  MAKE_MOCK3(mock_CreateRenderer, SDL_Renderer*(SDL_Window*, int, Uint32));
+  MAKE_MOCK1(mock_DestroyRenderer, void(SDL_Renderer*));
 };
 Mock_SDL mock_SDL;
 
@@ -46,6 +48,14 @@ void SDL_DestroyWindow(SDL_Window* window)
 {
   mock_SDL.mock_DestroyWindow(window);
 }
+SDL_Renderer* SDL_CreateRenderer(SDL_Window* window, int index, Uint32 flags)
+{
+  return mock_SDL.mock_CreateRenderer(window, index, flags);
+}
+void SDL_DestroyRenderer(SDL_Renderer* renderer)
+{
+  mock_SDL.mock_DestroyRenderer(renderer);
+}
 } // extern "C"
 
 
@@ -54,12 +64,15 @@ class Dummy_test {
 };
 Dummy_test dummy_t;
 
-struct Dummy_window {
+struct Dummy_object {
   char dummy_text[2000];
   int dummy_int;
 };
-Dummy_window dummy_w {{"Dummy window."}, 5};
+Dummy_object dummy_w {{"Dummy window."}, 5};
 SDL_Window* dummy_window = reinterpret_cast<SDL_Window*>(&dummy_w);
+
+Dummy_object dummy_r {{"Dummy renderer."}, 5};
+SDL_Renderer* dummy_renderer = reinterpret_cast<SDL_Renderer*>(&dummy_r);
 
 Uint32 init_flags = 0, quit_flags = 0;
 constexpr char regex_hint_name[] = "^" SDL_HINT_RENDER_SCALE_QUALITY "$";
@@ -70,6 +83,7 @@ enum Resources {
   Res_Init = 0,
   Res_SetHint,
   Res_CreateWin,
+  Res_CreateRender,
   Res_MAX_NUM,
 };
 
@@ -121,10 +135,26 @@ TEST_CASE("Test create() ...")
     if (create_win_ret == nullptr) {
       should_succeed = false;
     } else {
-      // If no fatal failures happened, cleanup shouldn't happen until the
-      // returned object goes out of scope.
-      dummy_exp = NAMED_REQUIRE_CALL(dummy_t, func()).IN_SEQUENCE(main_seq);
+      auto create_render_ret =
+          GENERATE(static_cast<SDL_Renderer*>(nullptr), dummy_renderer);
+      UNSCOPED_INFO("... SDL_CreateRenderer() "
+                    << (create_render_ret == dummy_renderer ? "succeeds, ..."
+                                                            : "fails!"));
+      setups[Res_CreateRender] = NAMED_REQUIRE_CALL(mock_SDL,
+          mock_CreateRenderer(dummy_window, -1, SDL_RENDERER_TARGETTEXTURE))
+                                     .RETURN(create_render_ret)
+                                     .IN_SEQUENCE(main_seq);
+      if (create_render_ret == nullptr) {
+        should_succeed = false;
+      } else {
+        // If no fatal failures happened, cleanup shouldn't happen until the
+        // returned object goes out of scope.
+        dummy_exp = NAMED_REQUIRE_CALL(dummy_t, func()).IN_SEQUENCE(main_seq);
 
+        cleanups[Res_CreateRender] =
+            NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyRenderer(dummy_renderer))
+                .IN_SEQUENCE(main_seq);
+      }
       cleanups[Res_CreateWin] =
           NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyWindow(dummy_window))
               .IN_SEQUENCE(main_seq);
