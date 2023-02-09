@@ -95,7 +95,6 @@ TEST_CASE("Test create() ...")
                          .IN_SEQUENCE(main_seq);
   if (init_ret == -1) {
     should_succeed = false;
-    UNSCOPED_INFO(separator);
   } else {
     auto set_hint_ret = GENERATE(SDL_TRUE, SDL_FALSE);
     UNSCOPED_INFO(
@@ -107,9 +106,7 @@ TEST_CASE("Test create() ...")
         mock_SDL, mock_SetHint(re(regex_hint_name), re("^linear$")))
                               .RETURN(set_hint_ret)
                               .IN_SEQUENCE(main_seq);
-  }
 
-  if (should_succeed) {
     auto create_win_ret =
         GENERATE(static_cast<SDL_Window*>(nullptr), dummy_window);
     UNSCOPED_INFO(
@@ -123,33 +120,43 @@ TEST_CASE("Test create() ...")
                                 .IN_SEQUENCE(main_seq);
     if (create_win_ret == nullptr) {
       should_succeed = false;
-      UNSCOPED_INFO(separator);
     } else {
+      // If no fatal failures happened, cleanup shouldn't happen until the
+      // returned object goes out of scope.
       dummy_exp = NAMED_REQUIRE_CALL(dummy_t, func()).IN_SEQUENCE(main_seq);
+
       cleanups[Res_CreateWin] =
           NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyWindow(dummy_window))
               .IN_SEQUENCE(main_seq);
-      UNSCOPED_INFO(separator);
-      SUCCEED();
+    }
+    if (!do_cleanup_all) {
+      cleanups[Res_Init] =
+          NAMED_REQUIRE_CALL(mock_SDL, mock_QuitSubSystem(ANY(Uint32)))
+              .SIDE_EFFECT(quit_flags = _1)
+              .IN_SEQUENCE(main_seq);
     }
   }
-
   if (do_cleanup_all) {
+    // Unless do_cleanup_all is false, SDL_Quit should always be called at the
+    // end of cleanup.
     cleanups[Res_Init] =
         NAMED_REQUIRE_CALL(mock_SDL, mock_Quit()).IN_SEQUENCE(main_seq);
-  } else if (init_ret == 0) {
-    cleanups[Res_Init] =
-        NAMED_REQUIRE_CALL(mock_SDL, mock_QuitSubSystem(ANY(Uint32)))
-            .SIDE_EFFECT(quit_flags = _1)
-            .IN_SEQUENCE(main_seq);
   }
 
   if (should_succeed == false) {
+    // If some non-optional setup failed, cleanup should happen before the
+    // end of the create() function.
     dummy_exp = NAMED_REQUIRE_CALL(dummy_t, func()).IN_SEQUENCE(main_seq);
   }
+
+  // This is just to trigger output of all unscoped_info messages:
+  SUCCEED(separator);
+
   {
     auto t = remoTemo::create(remoTemo::Config().cleanup_all(do_cleanup_all));
     REQUIRE(t.has_value() == should_succeed);
+    // This dummy function is here so we can check if cleanup happens before
+    // `t` goes out of scope or after:
     dummy_t.func();
   }
   if (!do_cleanup_all && init_ret == 0) {
