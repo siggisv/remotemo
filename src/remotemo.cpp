@@ -94,6 +94,20 @@ bool Temo::initialize(const Config& config)
         "SDL_SetHint() (scale quality to linear) failed: %s\n",
         ::SDL_GetError());
   }
+  if (config.m_the_window == nullptr) {
+    auto* window = ::SDL_CreateWindow(config.m_window_title.c_str(),
+        config.m_window_pos_x, config.m_window_pos_y, config.m_window_width,
+        config.m_window_height,
+        (config.m_window_is_resizable ? SDL_WINDOW_RESIZABLE : 0) |
+            (config.m_window_is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP
+                                           : 0));
+    if (window == nullptr) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "SDL_CreateWindow() failed: %s\n", ::SDL_GetError());
+      return false;
+    }
+    m_cleanup_handler->m_window = window;
+  }
   return true;
 }
 
