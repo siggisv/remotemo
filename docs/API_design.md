@@ -312,9 +312,11 @@ object has been created:
   - If NOT set to `nullptr` then 'background' must point to an `SDL_Texture`
     containing the desired background image.
 
-    > **Note** The texture **MUST** have been created with the renderer tied
-    > to the window (which also means that you can not hand over a texture
-    > without also handing over the correct window).
+    > **Warning** The texture **MUST** have been created with the renderer
+    > tied to the window (which also means that you can not hand over a
+    > texture without also handing over the correct window).
+
+    [](ignored)
 
     > **Warning** It will be your responsability to keep that pointed texture
     > valid while `remoTemo::Temo` is alive.
@@ -372,9 +374,11 @@ object has been created:
   - If NOT set to `nullptr` then 'font-bitmap' must point to an `SDL_Texture`
     containing the desired font-bitmap image.
 
-    > **Note** The texture **MUST** have been created with the renderer tied
-    > to the window (which also means that you can not hand over a texture
-    > without also handing over the correct window).
+    > **Warning** The texture **MUST** have been created with the renderer
+    > tied to the window (which also means that you can not hand over a
+    > texture without also handing over the correct window).
+
+    [](ignored)
 
     > **Warning** It will be your responsability to keep that pointed texture
     > valid while `remoTemo::Temo` is alive.
