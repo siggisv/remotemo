@@ -34,6 +34,11 @@ private:
   class Cleanup_handler;
   std::unique_ptr<Cleanup_handler> m_cleanup_handler;
 
+  SDL_Window* m_window {nullptr};
+  SDL_Renderer* m_renderer {nullptr};
+  SDL_Texture* m_background {nullptr};
+  SDL_Texture* m_font_bitmap {nullptr};
+  SDL_Texture* m_text_area {nullptr};
   static constexpr Uint32 sdl_init_flags {SDL_INIT_VIDEO};
 };
 

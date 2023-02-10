@@ -71,7 +71,10 @@ bool Temo::initialize(const Config& config)
       config.m_cleanup_all ? "True" : "False");
 
   if (config.m_cleanup_all) {
-    // Set cleanup_handler to handle SDL_Quit() + all resources in config
+    // Set cleanup_handler to handle SDL_Quit() AND all resources in config.
+    // This is done right here at the start so that if something fails, then
+    // everything that was handed over will be taken care of no matter where
+    // in the setup process something failed.
     m_cleanup_handler =
         std::make_unique<Cleanup_handler>(true, config.m_the_window,
             (config.m_the_window == nullptr)
@@ -94,19 +97,48 @@ bool Temo::initialize(const Config& config)
         "SDL_SetHint() (scale quality to linear) failed: %s\n",
         ::SDL_GetError());
   }
-  if (config.m_the_window == nullptr) {
-    auto* window = ::SDL_CreateWindow(config.m_window_title.c_str(),
+  if (config.m_the_window != nullptr) {
+    m_window = config.m_the_window;
+  } else {
+    m_window = ::SDL_CreateWindow(config.m_window_title.c_str(),
         config.m_window_pos_x, config.m_window_pos_y, config.m_window_width,
         config.m_window_height,
         (config.m_window_is_resizable ? SDL_WINDOW_RESIZABLE : 0) |
             (config.m_window_is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP
                                            : 0));
-    if (window == nullptr) {
+    if (m_window == nullptr) {
       ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
           "SDL_CreateWindow() failed: %s\n", ::SDL_GetError());
       return false;
     }
-    m_cleanup_handler->m_window = window;
+    m_cleanup_handler->m_window = m_window;
+  }
+  m_renderer = ::SDL_GetRenderer(m_window);
+  if (m_renderer != nullptr) {
+    ::SDL_RendererInfo info;
+    if (::SDL_GetRendererInfo(m_renderer, &info) != 0) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "SDL_GetRendererInfo() failed when trying to get info on the "
+          "renderer of the window handed to remoTemo::create(): %s\n",
+          ::SDL_GetError());
+      return false;
+    }
+    if ((info.flags & SDL_RENDERER_TARGETTEXTURE) !=
+        SDL_RENDERER_TARGETTEXTURE) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "The renderer of the window handed to remoTemo::create() did not "
+          "have the correct flag (SDL_RENDERER_TARGETTEXTURE missing).\n");
+      return false;
+    }
+  } else {
+    m_renderer =
+        ::SDL_CreateRenderer(m_window, -1, SDL_RENDERER_TARGETTEXTURE);
+    if (m_renderer == nullptr) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "SDL_CreateRenderer() failed: %s\n", ::SDL_GetError());
+      return false;
+    }
+    m_cleanup_handler->m_renderer = m_renderer;
   }
   return true;
 }
