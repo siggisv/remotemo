@@ -50,8 +50,8 @@ properties (along with the needed properties for the underlying SDL2-library).
   > On failure, it will clean up all the resources that the `remoTemo::Temo`'s
   > destructor is supposed to handle. Meaning that:
   > - by **default** it would **not only** clean up those resources it had
-  >   succeeded setting up, but **also all** those resources handled to it.
-  >   **And** it will call `SDL_Quit()`.
+  >   succeeded setting up, but **also all** those resources handed over to
+  >   it. **And** it will call `SDL_Quit()`.
   > - if `Config::cleanup_all` was set to `false`, it will **only** clean up
   >   those resources it had succeeded setting up itself. It will quit those
   >   SDL subsystems it did set up but will **not** call `SDL_Quit()`.
@@ -312,6 +312,10 @@ object has been created:
   - If NOT set to `nullptr` then 'background' must point to an `SDL_Texture`
     containing the desired background image.
 
+    > **Note** The texture **MUST** have been created with the renderer tied
+    > to the window (which also means that you can not hand over a texture
+    > without also handing over the correct window).
+
     > **Warning** It will be your responsability to keep that pointed texture
     > valid while `remoTemo::Temo` is alive.
     >
@@ -367,6 +371,10 @@ object has been created:
 
   - If NOT set to `nullptr` then 'font-bitmap' must point to an `SDL_Texture`
     containing the desired font-bitmap image.
+
+    > **Note** The texture **MUST** have been created with the renderer tied
+    > to the window (which also means that you can not hand over a texture
+    > without also handing over the correct window).
 
     > **Warning** It will be your responsability to keep that pointed texture
     > valid while `remoTemo::Temo` is alive.
