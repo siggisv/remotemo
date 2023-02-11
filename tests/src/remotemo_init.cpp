@@ -18,6 +18,10 @@ class Mock_SDL {
   MAKE_MOCK1(mock_DestroyWindow, void(SDL_Window*));
   MAKE_MOCK3(mock_CreateRenderer, SDL_Renderer*(SDL_Window*, int, Uint32));
   MAKE_MOCK1(mock_DestroyRenderer, void(SDL_Renderer*));
+  MAKE_MOCK0(mock_GetBasePath, char*());
+  MAKE_MOCK1(mock_free, void(void*));
+  MAKE_MOCK2(mock_LoadTexture, SDL_Texture*(SDL_Renderer*, const char*));
+  MAKE_MOCK1(mock_DestroyTexture, void(SDL_Texture*));
 };
 Mock_SDL mock_SDL;
 
@@ -48,6 +52,10 @@ void SDL_DestroyWindow(SDL_Window* window)
 {
   mock_SDL.mock_DestroyWindow(window);
 }
+SDL_Renderer* SDL_GetRenderer(SDL_Window* window)
+{
+  return nullptr;
+}
 SDL_Renderer* SDL_CreateRenderer(SDL_Window* window, int index, Uint32 flags)
 {
   return mock_SDL.mock_CreateRenderer(window, index, flags);
@@ -55,6 +63,22 @@ SDL_Renderer* SDL_CreateRenderer(SDL_Window* window, int index, Uint32 flags)
 void SDL_DestroyRenderer(SDL_Renderer* renderer)
 {
   mock_SDL.mock_DestroyRenderer(renderer);
+}
+char* SDL_GetBasePath()
+{
+  return mock_SDL.mock_GetBasePath();
+}
+void SDL_free(void* mem)
+{
+  mock_SDL.mock_free(mem);
+}
+SDL_Texture* IMG_LoadTexture(SDL_Renderer* renderer, const char* file_path)
+{
+  return mock_SDL.mock_LoadTexture(renderer, file_path);
+}
+void SDL_DestroyTexture(SDL_Texture* texture)
+{
+  return mock_SDL.mock_DestroyTexture(texture);
 }
 } // extern "C"
 
@@ -74,6 +98,25 @@ SDL_Window* dummy_window = reinterpret_cast<SDL_Window*>(&dummy_w);
 Dummy_object dummy_r {{"Dummy renderer."}, 5};
 SDL_Renderer* dummy_renderer = reinterpret_cast<SDL_Renderer*>(&dummy_r);
 
+Dummy_object dummy_f {{"Dummy font bitmap."}, 5};
+SDL_Texture* dummy_font_bitmap = reinterpret_cast<SDL_Texture*>(&dummy_f);
+
+Dummy_object dummy_b {{"Dummy background."}, 5};
+SDL_Texture* dummy_background = reinterpret_cast<SDL_Texture*>(&dummy_b);
+
+#ifdef _WIN32
+constexpr char dummy_basepath[] = "\\dummy\\base\\path\\";
+constexpr char regex_dummy_font_path[] = "^\\dummy\\base\\path\\"
+                                         "res\\img\\font_bitmap.png$";
+constexpr char regex_dummy_backgr_path[] = "^\\dummy\\base\\path\\"
+                                           "res\\img\\terminal_screen.png$";
+#else
+constexpr char dummy_basepath[] = "/dummy/base/path/";
+constexpr char regex_dummy_font_path[] = "^/dummy/base/path/"
+                                         "res/img/font_bitmap.png$";
+constexpr char regex_dummy_backgr_path[] = "^/dummy/base/path/"
+                                           "res/img/terminal_screen.png$";
+#endif
 Uint32 init_flags = 0, quit_flags = 0;
 constexpr char regex_hint_name[] = "^" SDL_HINT_RENDER_SCALE_QUALITY "$";
 constexpr char separator[] = "====================================="
@@ -84,12 +127,15 @@ enum Resources {
   Res_SetHint,
   Res_CreateWin,
   Res_CreateRender,
+  Res_GetBasePath,
+  Res_Load_Font,
+  Res_Load_Backgr,
   Res_MAX_NUM,
 };
 
 TEST_CASE("Test create() ...")
 {
-  trompeloeil::sequence main_seq;
+  trompeloeil::sequence main_seq, basepath_seq, font_seq, backgr_seq;
   std::unique_ptr<trompeloeil::expectation> setups[Res_MAX_NUM];
   std::unique_ptr<trompeloeil::expectation> cleanups[Res_MAX_NUM];
   std::unique_ptr<trompeloeil::expectation> dummy_exp;
@@ -147,13 +193,64 @@ TEST_CASE("Test create() ...")
       if (create_render_ret == nullptr) {
         should_succeed = false;
       } else {
-        // If no fatal failures happened, cleanup shouldn't happen until the
-        // returned object goes out of scope.
-        dummy_exp = NAMED_REQUIRE_CALL(dummy_t, func()).IN_SEQUENCE(main_seq);
-
+        auto get_basepath_ret =
+            GENERATE(static_cast<char*>(nullptr), dummy_basepath);
+        UNSCOPED_INFO("... SDL_GetBasePath() "
+                      << (get_basepath_ret == dummy_basepath ? "succeeds, ..."
+                                                             : "fails!"));
+        setups[Res_GetBasePath] =
+            NAMED_REQUIRE_CALL(mock_SDL, mock_GetBasePath())
+                .RETURN(get_basepath_ret)
+                .IN_SEQUENCE(main_seq, basepath_seq);
+        if (get_basepath_ret == nullptr) {
+          should_succeed = false;
+        } else {
+          cleanups[Res_GetBasePath] = NAMED_REQUIRE_CALL(
+              mock_SDL, mock_free(static_cast<void*>(get_basepath_ret)))
+                                          .IN_SEQUENCE(basepath_seq);
+          auto load_font_ret =
+              GENERATE(static_cast<SDL_Texture*>(nullptr), dummy_font_bitmap);
+          UNSCOPED_INFO(
+              "... SDL_LoadTexture(font_bitmap) "
+              << (load_font_ret == dummy_font_bitmap ? "succeeds, ..."
+                                                     : "fails!"));
+          setups[Res_Load_Font] = NAMED_REQUIRE_CALL(mock_SDL,
+              mock_LoadTexture(dummy_renderer, re(regex_dummy_font_path)))
+                                      .RETURN(load_font_ret)
+                                      .IN_SEQUENCE(main_seq, font_seq);
+          if (load_font_ret == nullptr) {
+            should_succeed = false;
+          } else {
+            // Load background
+            auto load_backgr_ret = GENERATE(
+                static_cast<SDL_Texture*>(nullptr), dummy_background);
+            UNSCOPED_INFO(
+                "... SDL_LoadTexture(background) "
+                << (load_backgr_ret == dummy_background ? "succeeds, ..."
+                                                        : "fails!"));
+            setups[Res_Load_Backgr] = NAMED_REQUIRE_CALL(mock_SDL,
+                mock_LoadTexture(dummy_renderer, re(regex_dummy_backgr_path)))
+                                          .RETURN(load_backgr_ret)
+                                          .IN_SEQUENCE(main_seq, backgr_seq);
+            if (load_backgr_ret == nullptr) {
+              should_succeed = false;
+            } else {
+              // If no fatal failures happened, cleanup shouldn't happen until
+              // the returned object goes out of scope.
+              dummy_exp = NAMED_REQUIRE_CALL(dummy_t, func())
+                              .IN_SEQUENCE(main_seq, font_seq, backgr_seq);
+              cleanups[Res_Load_Backgr] = NAMED_REQUIRE_CALL(
+                  mock_SDL, mock_DestroyTexture(dummy_background))
+                                              .IN_SEQUENCE(backgr_seq);
+            }
+            cleanups[Res_Load_Font] = NAMED_REQUIRE_CALL(
+                mock_SDL, mock_DestroyTexture(dummy_font_bitmap))
+                                          .IN_SEQUENCE(font_seq);
+          }
+        }
         cleanups[Res_CreateRender] =
             NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyRenderer(dummy_renderer))
-                .IN_SEQUENCE(main_seq);
+                .IN_SEQUENCE(main_seq, font_seq, backgr_seq);
       }
       cleanups[Res_CreateWin] =
           NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyWindow(dummy_window))
@@ -176,7 +273,8 @@ TEST_CASE("Test create() ...")
   if (should_succeed == false) {
     // If some non-optional setup failed, cleanup should happen before the
     // end of the create() function.
-    dummy_exp = NAMED_REQUIRE_CALL(dummy_t, func()).IN_SEQUENCE(main_seq);
+    dummy_exp = NAMED_REQUIRE_CALL(dummy_t, func())
+                    .IN_SEQUENCE(main_seq, font_seq, backgr_seq);
   }
 
   // This is just to trigger output of all unscoped_info messages:
