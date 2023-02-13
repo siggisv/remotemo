@@ -291,23 +291,37 @@ object has been created:
   - If set to `nullptr` then the background texture will be loaded from the
     following file and set as being owned by this object (meaning the
     destructor will be in charge of destroying it):
-    - Background file path: `"res/img/terminal_screen.png"`
-      (or `"res\img\terminal_screen.png"` depending on the operating system).
+    - Background file path: `"res/img/terminal_screen.png"` (which will be
+      converted to `"res\\img\\terminal_screen.png"` on operating systems that
+      have `\` as a path separator).
       ```C++
       remoTemo::Config& remoTemo::Config::background_file_path(
               const std::string& file_path);
       ```
 
-      When changing this setting, you could use the constant
-      `remoTemo::path_separator` (which is set to `'\'` or `'/'` depending on
-      the operating system) for the path separator when creating the path, if
-      you care about it being cross-platform.
+      When changing this setting, you should use `'/'` as a path separator
+      since it's more portable (it will be converted to the preferred one of
+      the operating system for you).
 
-      > **Note** If this setting is set to a string starting with the path
-      > separator (or a drive letter, if on Windows. E.g. "D:") then the path
-      > is an absolute path.
+      > **Note**
+      > - On Linux/Unix/macOS/etc, if this setting is set to a string starting
+      >   with the path separator (e.g. "/example/file") then the path is an
+      >   absolute path.
       >
-      > Otherwise the path is relative to your executable program file.
+      >   Otherwise the path is relative to your executable program file.
+      > - On windows, if it's set to a string starting with:
+      >   - a volume or drive letter, followed by the volume separator and the
+      >     path separator (e.g. "D:\\example\\file") then the path is an
+      >     absolute path.
+      >   - a volume or drive letter, followed by the volume separator but not
+      >     the path separator (e.g. "D:example\\file") then the path is
+      >     relative to the current directory of that drive (probably not what
+      >     you intended).
+      >   - the path separator (e.g. "\\example\file") then the path is
+      >     relative to the root of the current drive (are you sure that is
+      >     what you intended?).
+      >
+      >   Otherwise the path is relative to your executable program file.
 
   - If NOT set to `nullptr` then 'background' must point to an `SDL_Texture`
     containing the desired background image.
@@ -353,23 +367,21 @@ object has been created:
   - If set to `nullptr` then the font-bitmap texture will be loaded from the
     following file and set as being owned by this object (meaning the
     destructor will be in charge of destroying it):
-    - Font-bitmap path: `"res/img/font_bitmap.png"`
-      (or `"res\img\font_bitmap.png"` depending on the operating system).
+    - Font-bitmap file path: `"res/img/font_bitmap.png"` (which will be
+      converted to `"res\\img\\font_bitmap.png"` on operating systems that
+      have `\` as a path separator).
       ```C++
       remoTemo::Config& remoTemo::Config::font_bitmap_file_path(
               const std::string& file_path);
       ```
 
-      When changing this setting, you could use the constant
-      `remoTemo::path_separator` (which is set to `'\'` or `'/'` depending on
-      the operating system) for the path separator when creating the path, if
-      you care about it being cross-platform.
+      When changing this setting, you should use `'/'` as a path separator
+      since it's more portable (it will be converted to the preferred one of
+      the operating system for you).
 
-      > **Note** If this setting is set to a string starting with the path
-      > separator (or a drive letter, if on Windows. E.g. "D:") then the path
-      > is an absolute path.
-      >
-      > Otherwise the path is relative to your executable program file.
+      > **Note**
+      > See note above in background setting regarding paths being relative
+      > or absolute.
 
   - If NOT set to `nullptr` then 'font-bitmap' must point to an `SDL_Texture`
     containing the desired font-bitmap image.
