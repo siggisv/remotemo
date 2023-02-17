@@ -22,6 +22,8 @@ class Mock_SDL {
   MAKE_MOCK1(mock_free, void(void*));
   MAKE_MOCK2(mock_LoadTexture, SDL_Texture*(SDL_Renderer*, const char*));
   MAKE_MOCK1(mock_DestroyTexture, void(SDL_Texture*));
+  MAKE_MOCK5(
+      mock_CreateTexture, SDL_Texture*(SDL_Renderer*, Uint32, int, int, int));
 };
 Mock_SDL mock_SDL;
 
@@ -80,6 +82,11 @@ void SDL_DestroyTexture(SDL_Texture* texture)
 {
   return mock_SDL.mock_DestroyTexture(texture);
 }
+SDL_Texture* SDL_CreateTexture(
+    SDL_Renderer* renderer, Uint32 format, int access, int w, int h)
+{
+  return mock_SDL.mock_CreateTexture(renderer, format, access, w, h);
+}
 } // extern "C"
 
 
@@ -103,6 +110,9 @@ SDL_Texture* dummy_font_bitmap = reinterpret_cast<SDL_Texture*>(&dummy_f);
 
 Dummy_object dummy_b {{"Dummy background."}, 5};
 SDL_Texture* dummy_background = reinterpret_cast<SDL_Texture*>(&dummy_b);
+
+Dummy_object dummy_ta {{"Dummy background."}, 5};
+SDL_Texture* dummy_text_area = reinterpret_cast<SDL_Texture*>(&dummy_ta);
 
 #ifdef _WIN32
 constexpr char dummy_basepath[] = "\\dummy\\base\\path\\";
@@ -130,12 +140,14 @@ enum Resources {
   Res_GetBasePath,
   Res_Load_Font,
   Res_Load_Backgr,
+  Res_Create_Text_area,
   Res_MAX_NUM,
 };
 
 TEST_CASE("Test create() ...")
 {
-  trompeloeil::sequence main_seq, basepath_seq, font_seq, backgr_seq;
+  trompeloeil::sequence main_seq, basepath_seq, font_seq, backgr_seq,
+      text_area_seq;
   std::unique_ptr<trompeloeil::expectation> setups[Res_MAX_NUM];
   std::unique_ptr<trompeloeil::expectation> cleanups[Res_MAX_NUM];
   std::unique_ptr<trompeloeil::expectation> dummy_exp;
@@ -235,10 +247,31 @@ TEST_CASE("Test create() ...")
             if (load_backgr_ret == nullptr) {
               should_succeed = false;
             } else {
-              // If no fatal failures happened, cleanup shouldn't happen until
-              // the returned object goes out of scope.
-              dummy_exp = NAMED_REQUIRE_CALL(dummy_t, func())
-                              .IN_SEQUENCE(main_seq, font_seq, backgr_seq);
+              auto create_text_area_ret = GENERATE(
+                  static_cast<SDL_Texture*>(nullptr), dummy_text_area);
+              UNSCOPED_INFO("... SDL_CreateTexture(text area) "
+                            << (create_text_area_ret == dummy_text_area
+                                       ? "succeeds, ..."
+                                       : "fails!"));
+              setups[Res_Create_Text_area] = NAMED_REQUIRE_CALL(mock_SDL,
+                  mock_CreateTexture(dummy_renderer, SDL_PIXELFORMAT_RGBA32,
+                      SDL_TEXTUREACCESS_TARGET, (40 * 7) + 2, (24 * 18) + 2))
+                                                 .RETURN(create_text_area_ret)
+                                                 .IN_SEQUENCE(
+                                                     main_seq, text_area_seq);
+              if (create_text_area_ret == nullptr) {
+                should_succeed = false;
+              } else {
+                // If no fatal failures happened, cleanup shouldn't happen
+                // until the returned object goes out of scope.
+                dummy_exp = NAMED_REQUIRE_CALL(dummy_t, func())
+                                .IN_SEQUENCE(main_seq, font_seq, backgr_seq,
+                                    text_area_seq);
+                cleanups[Res_Create_Text_area] =
+                    NAMED_REQUIRE_CALL(
+                        mock_SDL, mock_DestroyTexture(dummy_text_area))
+                        .IN_SEQUENCE(text_area_seq);
+              }
               cleanups[Res_Load_Backgr] = NAMED_REQUIRE_CALL(
                   mock_SDL, mock_DestroyTexture(dummy_background))
                                               .IN_SEQUENCE(backgr_seq);
@@ -250,7 +283,7 @@ TEST_CASE("Test create() ...")
         }
         cleanups[Res_CreateRender] =
             NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyRenderer(dummy_renderer))
-                .IN_SEQUENCE(main_seq, font_seq, backgr_seq);
+                .IN_SEQUENCE(main_seq, font_seq, backgr_seq, text_area_seq);
       }
       cleanups[Res_CreateWin] =
           NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyWindow(dummy_window))
@@ -273,8 +306,9 @@ TEST_CASE("Test create() ...")
   if (should_succeed == false) {
     // If some non-optional setup failed, cleanup should happen before the
     // end of the create() function.
-    dummy_exp = NAMED_REQUIRE_CALL(dummy_t, func())
-                    .IN_SEQUENCE(main_seq, font_seq, backgr_seq);
+    dummy_exp =
+        NAMED_REQUIRE_CALL(dummy_t, func())
+            .IN_SEQUENCE(main_seq, font_seq, backgr_seq, text_area_seq);
   }
 
   // This is just to trigger output of all unscoped_info messages:
