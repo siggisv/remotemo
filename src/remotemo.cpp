@@ -202,7 +202,19 @@ bool Temo::initialize(const Config& config)
     }
     m_cleanup_handler->m_background = m_background;
   }
-
+  m_text_area = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_RGBA32,
+      SDL_TEXTUREACCESS_TARGET,
+      (config.m_font_width * config.m_text_area_columns) + 2,
+      (config.m_font_height * config.m_text_area_lines) + 2);
+  if (m_text_area == nullptr) {
+    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+        "SDL_CreateTexture() failed: %s\n", ::SDL_GetError());
+    return false;
+  }
+  SDL_SetTextureBlendMode(m_text_area, config.m_text_blend_mode);
+  SDL_SetTextureColorMod(m_text_area, config.m_text_color.red,
+      config.m_text_color.green, config.m_text_color.blue);
+  m_cleanup_handler->m_text_area = m_text_area;
   return true;
 }
 

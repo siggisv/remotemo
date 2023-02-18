@@ -92,8 +92,8 @@ int dummy_sample()
   SDL_Log("basePath: %s\n", basePath);
   std::string resImagePath = basePath;
   SDL_free(basePath);
-  resImagePath = resImagePath + "res" + path_separator + "img" +
-                 path_separator;
+  resImagePath =
+      resImagePath + "res" + path_separator + "img" + path_separator;
   SDL_Log("resImagePath: %s\n", resImagePath.c_str());
 
   auto screenTexture = loadTexture(renderer, resImagePath + screenImageFile);
