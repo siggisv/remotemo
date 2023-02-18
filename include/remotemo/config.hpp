@@ -257,21 +257,13 @@ private:
   std::function<bool()> m_pre_close_function {[]() -> bool { return true; }};
   std::function<bool()> m_pre_quit_function {[]() -> bool { return true; }};
   SDL_Texture* m_background {nullptr};
-#ifdef _WIN32
-  std::string m_background_file_path {"res\\img\\terminal_screen.png"s};
-#else
   std::string m_background_file_path {"res/img/terminal_screen.png"s};
-#endif
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   SDL_Rect m_background_min_area {118, 95, 700, 540};
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   SDL_FRect m_background_text_area {188.25f, 149.25f, 560.0f, 432.0f};
   SDL_Texture* m_font_bitmap {nullptr};
-#ifdef _WIN32
-  std::string m_font_bitmap_file_path {"res\\img\\font_bitmap.png"s};
-#else
   std::string m_font_bitmap_file_path {"res/img/font_bitmap.png"s};
-#endif
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   int m_font_width {7}, m_font_height {18};
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)

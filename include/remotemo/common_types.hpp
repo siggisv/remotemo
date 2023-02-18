@@ -5,12 +5,6 @@
 
 namespace remoTemo {
 
-#ifdef _WIN32
-constexpr char path_separator = '\\';
-#else
-constexpr char path_separator = '/';
-#endif
-
 struct Color {
   Uint8 red {}, green {}, blue {};
 };

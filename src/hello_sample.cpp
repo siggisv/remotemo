@@ -6,6 +6,12 @@
 // was working
 //
 
+#ifdef _WIN32
+constexpr char path_separator = '\\';
+#else
+constexpr char path_separator = '/';
+#endif
+
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
@@ -86,8 +92,8 @@ int dummy_sample()
   SDL_Log("basePath: %s\n", basePath);
   std::string resImagePath = basePath;
   SDL_free(basePath);
-  resImagePath = resImagePath + "res" + remoTemo::path_separator + "img" +
-                 remoTemo::path_separator;
+  resImagePath = resImagePath + "res" + path_separator + "img" +
+                 path_separator;
   SDL_Log("resImagePath: %s\n", resImagePath.c_str());
 
   auto screenTexture = loadTexture(renderer, resImagePath + screenImageFile);
