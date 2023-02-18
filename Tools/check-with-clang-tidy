@@ -1,0 +1,6 @@
+#! /bin/bash -x
+
+CPP_STANDARD=c++17
+INCLUDES=("-Iinclude/" "-I/usr/include/SDL2/")
+
+clang-tidy "$@" -- -std=${CPP_STANDARD} ${INCLUDES[*]}

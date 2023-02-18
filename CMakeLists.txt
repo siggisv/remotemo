@@ -48,7 +48,7 @@ find_package(SDL2 REQUIRED)
 #   E.g.:
 #   find_package(SDL2_image REQUIRED)
 find_library(SDL2_IMAGE_LIBRARIES SDL2_image REQUIRED)
-set(SDL2_IMAGES_INCLUDE_DIRS ${SDL2_INLCUDE_DIRS})
+set(SDL2_IMAGE_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
 
 add_library(remotemo src/remotemo.cpp)
 # How to prevent warnings in header files (when used in other projects):
@@ -58,7 +58,11 @@ target_include_directories(remotemo PRIVATE
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
 )
-target_include_directories(remotemo SYSTEM INTERFACE include/)
+target_include_directories(remotemo SYSTEM INTERFACE
+    include/
+    ${SDL2_INCLUDE_DIRS}
+    ${SDL2_IMAGE_INCLUDE_DIRS}
+)
 
 # Note. Since CMake 3.19, the following can be set in a preset
 # file (i.e. CMakePresets.json)

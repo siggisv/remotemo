@@ -1,188 +1,234 @@
 #include <remotemo/remotemo.hpp>
-#include <SDL.h>
 #include <SDL_image.h>
 
-const int WINDOW_WIDTH = 1280;
-const int WINDOW_HEIGHT = 720;
+#include <filesystem>
 
-const char *screenImageFile = "terminal_screen.png";
-const SDL_Point SCREEN_TEXTURE_SIZE = {946, 732};
-const SDL_Rect backgroundMinArea {118, 95, 700, 540};
+namespace remoTemo {
+class Temo::Cleanup_handler {
+  friend Temo;
 
+public:
+  constexpr explicit Cleanup_handler(bool do_sdl_quit, ::SDL_Window* window,
+      ::SDL_Renderer* renderer, ::SDL_Texture* background,
+      ::SDL_Texture* font_bitmap) noexcept
+      : m_do_sdl_quit(do_sdl_quit), m_window(window), m_renderer(renderer),
+        m_background(background), m_font_bitmap(font_bitmap)
+  {}
+  constexpr explicit Cleanup_handler(bool do_sdl_quit) noexcept
+      : m_do_sdl_quit(do_sdl_quit)
+  {}
+  ~Cleanup_handler();
+  Cleanup_handler(const Cleanup_handler&) = delete;
+  Cleanup_handler& operator=(const Cleanup_handler&) = delete;
+  Cleanup_handler(Cleanup_handler&&) = default;
+  Cleanup_handler& operator=(Cleanup_handler&&) = default;
 
-SDL_Texture *loadTexture(SDL_Renderer *renderer, const std::string &file)
+private:
+  bool m_do_sdl_quit {false};
+  ::Uint32 m_sdl_subsystems {0};
+  ::SDL_Window* m_window {nullptr};
+  ::SDL_Renderer* m_renderer {nullptr};
+  ::SDL_Texture* m_background {nullptr};
+  ::SDL_Texture* m_font_bitmap {nullptr};
+  ::SDL_Texture* m_text_area {nullptr};
+};
+
+Temo::Cleanup_handler::~Cleanup_handler()
 {
-  auto texture = IMG_LoadTexture(renderer, file.c_str());
-  if (texture == nullptr) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-        "IMG_LoadTexture(renderer, \"%s\") failed: %s\n", file.c_str(),
-        SDL_GetError());
+  if (m_text_area != nullptr) {
+    ::SDL_DestroyTexture(m_text_area);
   }
-  return texture;
-}
-
-void getClipping(const int win_w, const int win_h, const int texture_w,
-    const int texture_h, const SDL_Rect &minArea, float *scale,
-    SDL_Rect *target)
-{
-  target->h = texture_h;
-  target->w = texture_w;
-  float scale_w = static_cast<float>(win_w) / minArea.w;
-  float scale_h = static_cast<float>(win_h) / minArea.h;
-  *scale = scale_w < scale_h ? scale_w : scale_h;
-
-  int border_h = ((win_h / *scale) - minArea.h + 1) / 2;
-  int border_w = ((win_w / *scale) - minArea.w + 1) / 2;
-  target->y = border_h - minArea.y;
-  target->x = border_w - minArea.x;
-}
-
-int test_init()
-{
-  if (SDL_Init(SDL_INIT_VIDEO) == -1) {
-    SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-        "SDL_Init(SDL_INIT_VIDEO) failed: %s\n", SDL_GetError());
-    return 2;
+  if (m_font_bitmap != nullptr) {
+    ::SDL_DestroyTexture(m_font_bitmap);
   }
-
-  if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear")) {
-    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-        "SDL_SetHint() (scale quality to linear) failed: %s\n",
-        SDL_GetError());
+  if (m_background != nullptr) {
+    ::SDL_DestroyTexture(m_background);
   }
-
-  auto window = SDL_CreateWindow("Monitor TEST", SDL_WINDOWPOS_UNDEFINED,
-      SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT,
-      SDL_WINDOW_RESIZABLE);
-  if (window == nullptr) {
-    SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-        "SDL_CreateWindow() failed: %s\n", SDL_GetError());
-    SDL_Quit();
-    return 2;
+  if (m_renderer != nullptr) {
+    ::SDL_DestroyRenderer(m_renderer);
   }
-
-  auto renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE);
-  if (renderer == NULL) {
-    SDL_DestroyWindow(window);
-    SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-        "SDL_CreateRenderer() failed: %s\n", SDL_GetError());
-    SDL_Quit();
-    return 2;
+  if (m_window != nullptr) {
+    ::SDL_DestroyWindow(m_window);
   }
-
-  char *basePath = SDL_GetBasePath();
-  if (basePath == nullptr) {
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-        "SDL_GetBasePath() failed: %s\n", SDL_GetError());
-    SDL_Quit();
-    return 2;
-  }
-
-  SDL_Log("basePath: %s\n", basePath);
-  std::string resImagePath = basePath;
-  SDL_free(basePath);
-#ifdef _WIN32
-  const char PATH_SEP = '\\';
-#else
-  const char PATH_SEP = '/';
-#endif
-  resImagePath = resImagePath + "res" + PATH_SEP + "img" + PATH_SEP;
-  SDL_Log("resImagePath: %s\n", resImagePath.c_str());
-
-  auto screenTexture = loadTexture(renderer, resImagePath + screenImageFile);
-  if (screenTexture == nullptr) {
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-    return 2;
-  }
-  SDL_Rect backgroundTarget;
-  float backgroundScale;
-  getClipping(WINDOW_WIDTH, WINDOW_HEIGHT, SCREEN_TEXTURE_SIZE.x,
-      SCREEN_TEXTURE_SIZE.y, backgroundMinArea, &backgroundScale,
-      &backgroundTarget);
-
-  bool done = false;
-  bool fullscreen = false;
-  SDL_Event event;
-  bool keyHandled_F11 = false;
-  while (!done && SDL_WaitEvent(&event)) {
-    bool unhandled_event = true;
-    while (!done && unhandled_event) {
-      switch (event.type) {
-        case SDL_QUIT:
-          done = true;
-          break;
-        case SDL_KEYDOWN:
-          switch (event.key.keysym.sym) {
-            case SDLK_q:
-            case SDLK_w:
-              if (SDL_GetModState() & KMOD_CTRL) {
-                done = true;
-              }
-              break;
-            case SDLK_F11:
-              if (keyHandled_F11)
-                break;
-              /* Do the following only once per keypress.
-               * Therefore we set keyHandled_F11 when done
-               * and then reset it back to false when KEYUP.
-               */
-              if (!fullscreen) {
-                SDL_SetWindowFullscreen(
-                    window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-              } else {
-                SDL_SetWindowFullscreen(window, 0);
-              }
-              fullscreen = !fullscreen;
-              keyHandled_F11 = true;
-              break;
-            default:
-              break;
-          }
-          break;
-        case SDL_KEYUP:
-          switch (event.key.keysym.sym) {
-            case SDLK_F11:
-              keyHandled_F11 = false;
-              break;
-            default:
-              break;
-          }
-          break;
-        case SDL_WINDOWEVENT:
-          switch (event.window.event) {
-            case SDL_WINDOWEVENT_SIZE_CHANGED:
-              getClipping(event.window.data1, event.window.data2,
-                  SCREEN_TEXTURE_SIZE.x, SCREEN_TEXTURE_SIZE.y,
-                  backgroundMinArea, &backgroundScale, &backgroundTarget);
-              break;
-            default:
-              break;
-          }
-          break;
-        default:
-          break;
-      }
-      unhandled_event = (SDL_PollEvent(&event) != 0);
+  ::SDL_Log("Cleanup_handler Destructor: m_do_sdl_quit: %s",
+      m_do_sdl_quit ? "True" : "False");
+  if (m_do_sdl_quit) {
+    ::SDL_Log("Quit\n");
+    ::SDL_Quit();
+  } else {
+    ::SDL_Log("QuitSubSystem(%d)\n", m_sdl_subsystems);
+    if (m_sdl_subsystems != 0) {
+      ::SDL_QuitSubSystem(m_sdl_subsystems);
     }
-
-    SDL_RenderClear(renderer);
-    float tmpScaleX, tmpScaleY;
-    SDL_RenderGetScale(renderer, &tmpScaleX, &tmpScaleY);
-    SDL_RenderSetScale(renderer, backgroundScale, backgroundScale);
-    SDL_RenderCopy(renderer, screenTexture, NULL, &backgroundTarget);
-    SDL_RenderSetScale(renderer, tmpScaleX, tmpScaleY);
-    SDL_RenderPresent(renderer);
-    SDL_Delay(10);
   }
-
-  SDL_DestroyTexture(screenTexture);
-  SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindow(window);
-
-  SDL_Quit();
-  return 0;
 }
+
+Temo::~Temo() noexcept = default;
+Temo::Temo(Temo&& other) noexcept
+    : m_cleanup_handler(std::move(other.m_cleanup_handler))
+{}
+bool Temo::initialize(const Config& config)
+{
+  ::SDL_Log("Temo::initialize() with config.m_cleanup_all: %s",
+      config.m_cleanup_all ? "True" : "False");
+
+  if (config.m_cleanup_all) {
+    // Set cleanup_handler to handle SDL_Quit() AND all resources in config.
+    // This is done right here at the start so that if something fails, then
+    // everything that was handed over will be taken care of no matter where
+    // in the setup process something failed.
+    m_cleanup_handler =
+        std::make_unique<Cleanup_handler>(true, config.m_the_window,
+            (config.m_the_window == nullptr)
+                ? nullptr
+                : ::SDL_GetRenderer(config.m_the_window),
+            config.m_background, config.m_font_bitmap);
+  } else {
+    m_cleanup_handler = std::make_unique<Cleanup_handler>(false);
+  }
+  ::SDL_Log("SDL_Init(%d)", sdl_init_flags);
+  if (::SDL_Init(sdl_init_flags) < 0) {
+    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n",
+        ::SDL_GetError());
+    return false;
+  }
+  m_cleanup_handler->m_sdl_subsystems = sdl_init_flags;
+
+  if (::SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear") == SDL_FALSE) {
+    ::SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+        "SDL_SetHint() (scale quality to linear) failed: %s\n",
+        ::SDL_GetError());
+  }
+  if (config.m_the_window != nullptr) {
+    m_window = config.m_the_window;
+  } else {
+    m_window = ::SDL_CreateWindow(config.m_window_title.c_str(),
+        config.m_window_pos_x, config.m_window_pos_y, config.m_window_width,
+        config.m_window_height,
+        (config.m_window_is_resizable ? SDL_WINDOW_RESIZABLE : 0) |
+            (config.m_window_is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP
+                                           : 0));
+    if (m_window == nullptr) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "SDL_CreateWindow() failed: %s\n", ::SDL_GetError());
+      return false;
+    }
+    m_cleanup_handler->m_window = m_window;
+  }
+  m_renderer = ::SDL_GetRenderer(m_window);
+  if (m_renderer != nullptr) {
+    ::SDL_RendererInfo info;
+    if (::SDL_GetRendererInfo(m_renderer, &info) != 0) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "SDL_GetRendererInfo() failed when trying to get info on the "
+          "renderer of the window handed to remoTemo::create(): %s\n",
+          ::SDL_GetError());
+      return false;
+    }
+    if ((info.flags & SDL_RENDERER_TARGETTEXTURE) !=
+        SDL_RENDERER_TARGETTEXTURE) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "The renderer of the window handed to remoTemo::create() did not "
+          "have the correct flags (SDL_RENDERER_TARGETTEXTURE missing).\n");
+      return false;
+    }
+  } else {
+    m_renderer =
+        ::SDL_CreateRenderer(m_window, -1, SDL_RENDERER_TARGETTEXTURE);
+    if (m_renderer == nullptr) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "SDL_CreateRenderer() failed: %s\n", ::SDL_GetError());
+      return false;
+    }
+    m_cleanup_handler->m_renderer = m_renderer;
+  }
+  std::filesystem::path base_path {};
+  if (config.m_font_bitmap == nullptr || config.m_background == nullptr) {
+    char* c_base_path = SDL_GetBasePath();
+    if (c_base_path == nullptr) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "SDL_GetBasePath() failed: %s\n", ::SDL_GetError());
+      return false;
+    }
+    base_path = c_base_path;
+    ::SDL_free(c_base_path);
+    SDL_Log("Base path: %s", base_path.c_str());
+  }
+  if (config.m_font_bitmap != nullptr) {
+    // Have not found a more direct way to check if the texture has got the
+    // correct renderer:
+    ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
+    if (::SDL_RenderCopy(
+            m_renderer, config.m_font_bitmap, nullptr, &noop_rect) != 0) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "The font bitmap texture that was handed to remoTemo::create() was"
+          "created with a different renderer than the window.\n");
+      return false;
+    }
+    m_font_bitmap = config.m_font_bitmap;
+  } else {
+    auto texture_path = base_path / config.m_font_bitmap_file_path;
+    SDL_Log("Font bitmap path: %s", texture_path.c_str());
+    m_font_bitmap = ::IMG_LoadTexture(m_renderer, texture_path.c_str());
+    if (m_font_bitmap == nullptr) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "IMG_LoadTexture(renderer, \"%s\") failed: %s\n",
+          texture_path.c_str(), ::SDL_GetError());
+      return false;
+    }
+    m_cleanup_handler->m_font_bitmap = m_font_bitmap;
+  }
+  if (config.m_background != nullptr) {
+    // Have not found a more direct way to check if the texture has got the
+    // correct renderer:
+    ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
+    if (::SDL_RenderCopy(
+            m_renderer, config.m_background, nullptr, &noop_rect) != 0) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "The background texture that was handed to remoTemo::create() was"
+          "created with a different renderer than the window.\n");
+      return false;
+    }
+    m_background = config.m_background;
+  } else {
+    auto texture_path = base_path / config.m_background_file_path;
+    SDL_Log("Font bitmap path: %s", texture_path.c_str());
+    m_background = ::IMG_LoadTexture(m_renderer, texture_path.c_str());
+    if (m_background == nullptr) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "IMG_LoadTexture(renderer, \"%s\") failed: %s\n",
+          texture_path.c_str(), ::SDL_GetError());
+      return false;
+    }
+    m_cleanup_handler->m_background = m_background;
+  }
+  m_text_area = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_RGBA32,
+      SDL_TEXTUREACCESS_TARGET,
+      (config.m_font_width * config.m_text_area_columns) + 2,
+      (config.m_font_height * config.m_text_area_lines) + 2);
+  if (m_text_area == nullptr) {
+    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+        "SDL_CreateTexture() failed: %s\n", ::SDL_GetError());
+    return false;
+  }
+  SDL_SetTextureBlendMode(m_text_area, config.m_text_blend_mode);
+  SDL_SetTextureColorMod(m_text_area, config.m_text_color.red,
+      config.m_text_color.green, config.m_text_color.blue);
+  m_cleanup_handler->m_text_area = m_text_area;
+  return true;
+}
+
+std::optional<Temo> create()
+{
+  return create(Config {});
+}
+
+std::optional<Temo> create(const Config& config)
+{
+  Temo temo {};
+  if (temo.initialize(config)) {
+    return temo;
+  }
+  return {};
+}
+} // namespace remoTemo
