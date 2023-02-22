@@ -8,13 +8,13 @@
 
 #include <SDL.h>
 
-namespace remoTemo {
+namespace remotemo {
 using std::string_literals::operator""s;
 
-class Temo;
+class Remotemo;
 
 class Config {
-  friend Temo;
+  friend Remotemo;
 
 public:
   constexpr Config() = default;
@@ -272,5 +272,5 @@ private:
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   Color m_text_color {89, 221, 0};
 };
-} // namespace remoTemo
+} // namespace remotemo
 #endif // REMOTEMO_CONFIG_HPP

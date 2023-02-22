@@ -15,20 +15,20 @@
 //   away by accident.
 #include <SDL.h>
 
-namespace remoTemo {
-class Temo {
-  friend std::optional<Temo> create(const Config& config);
+namespace remotemo {
+class Remotemo {
+  friend std::optional<Remotemo> create(const Config& config);
 
 public:
-  ~Temo() noexcept;
-  Temo(Temo&& other) noexcept;
-  Temo& operator=(Temo&& other) noexcept;
+  ~Remotemo() noexcept;
+  Remotemo(Remotemo&& other) noexcept;
+  Remotemo& operator=(Remotemo&& other) noexcept;
 
-  Temo(const Temo&) = delete;
-  Temo& operator=(const Temo&) = delete;
+  Remotemo(const Remotemo&) = delete;
+  Remotemo& operator=(const Remotemo&) = delete;
 
 private:
-  constexpr Temo() noexcept = default;
+  constexpr Remotemo() noexcept = default;
   bool initialize(const Config& config);
 
   class Cleanup_handler;
@@ -42,8 +42,8 @@ private:
   static constexpr Uint32 sdl_init_flags {SDL_INIT_VIDEO};
 };
 
-std::optional<Temo> create();
-std::optional<Temo> create(const Config& config);
+std::optional<Remotemo> create();
+std::optional<Remotemo> create(const Config& config);
 
-} // namespace remoTemo
+} // namespace remotemo
 #endif // REMOTEMO_REMOTEMO_HPP

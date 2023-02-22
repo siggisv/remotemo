@@ -315,7 +315,7 @@ TEST_CASE("Test create() ...")
   SUCCEED(separator);
 
   {
-    auto t = remoTemo::create(remoTemo::Config().cleanup_all(do_cleanup_all));
+    auto t = remotemo::create(remotemo::Config().cleanup_all(do_cleanup_all));
     REQUIRE(t.has_value() == should_succeed);
     // This dummy function is here so we can check if cleanup happens before
     // `t` goes out of scope or after:

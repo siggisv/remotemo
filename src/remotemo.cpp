@@ -3,9 +3,9 @@
 
 #include <filesystem>
 
-namespace remoTemo {
-class Temo::Cleanup_handler {
-  friend Temo;
+namespace remotemo {
+class Remotemo::Cleanup_handler {
+  friend Remotemo;
 
 public:
   constexpr explicit Cleanup_handler(bool do_sdl_quit, ::SDL_Window* window,
@@ -33,7 +33,7 @@ private:
   ::SDL_Texture* m_text_area {nullptr};
 };
 
-Temo::Cleanup_handler::~Cleanup_handler()
+Remotemo::Cleanup_handler::~Cleanup_handler()
 {
   if (m_text_area != nullptr) {
     ::SDL_DestroyTexture(m_text_area);
@@ -63,13 +63,13 @@ Temo::Cleanup_handler::~Cleanup_handler()
   }
 }
 
-Temo::~Temo() noexcept = default;
-Temo::Temo(Temo&& other) noexcept
+Remotemo::~Remotemo() noexcept = default;
+Remotemo::Remotemo(Remotemo&& other) noexcept
     : m_cleanup_handler(std::move(other.m_cleanup_handler))
 {}
-bool Temo::initialize(const Config& config)
+bool Remotemo::initialize(const Config& config)
 {
-  ::SDL_Log("Temo::initialize() with config.m_cleanup_all: %s",
+  ::SDL_Log("Remotemo::initialize() with config.m_cleanup_all: %s",
       config.m_cleanup_all ? "True" : "False");
 
   if (config.m_cleanup_all) {
@@ -121,14 +121,14 @@ bool Temo::initialize(const Config& config)
     if (::SDL_GetRendererInfo(m_renderer, &info) != 0) {
       ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
           "SDL_GetRendererInfo() failed when trying to get info on the "
-          "renderer of the window handed to remoTemo::create(): %s\n",
+          "renderer of the window handed to remotemo::create(): %s\n",
           ::SDL_GetError());
       return false;
     }
     if ((info.flags & SDL_RENDERER_TARGETTEXTURE) !=
         SDL_RENDERER_TARGETTEXTURE) {
       ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "The renderer of the window handed to remoTemo::create() did not "
+          "The renderer of the window handed to remotemo::create() did not "
           "have the correct flags (SDL_RENDERER_TARGETTEXTURE missing).\n");
       return false;
     }
@@ -161,7 +161,7 @@ bool Temo::initialize(const Config& config)
     if (::SDL_RenderCopy(
             m_renderer, config.m_font_bitmap, nullptr, &noop_rect) != 0) {
       ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "The font bitmap texture that was handed to remoTemo::create() was"
+          "The font bitmap texture that was handed to remotemo::create() was"
           "created with a different renderer than the window.\n");
       return false;
     }
@@ -185,7 +185,7 @@ bool Temo::initialize(const Config& config)
     if (::SDL_RenderCopy(
             m_renderer, config.m_background, nullptr, &noop_rect) != 0) {
       ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "The background texture that was handed to remoTemo::create() was"
+          "The background texture that was handed to remotemo::create() was"
           "created with a different renderer than the window.\n");
       return false;
     }
@@ -218,17 +218,17 @@ bool Temo::initialize(const Config& config)
   return true;
 }
 
-std::optional<Temo> create()
+std::optional<Remotemo> create()
 {
   return create(Config {});
 }
 
-std::optional<Temo> create(const Config& config)
+std::optional<Remotemo> create(const Config& config)
 {
-  Temo temo {};
+  Remotemo temo {};
   if (temo.initialize(config)) {
     return temo;
   }
   return {};
 }
-} // namespace remoTemo
+} // namespace remotemo

@@ -3,7 +3,7 @@
 
 #include <SDL.h>
 
-namespace remoTemo {
+namespace remotemo {
 
 struct Color {
   Uint8 red {}, green {}, blue {};
@@ -140,5 +140,5 @@ private:
   SDL_Scancode m_key;
 };
 
-} // namespace remoTemo
+} // namespace remotemo
 #endif // REMOTEMO_COMMON_TYPES_HPP
