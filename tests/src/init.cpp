@@ -1,104 +1,15 @@
+#include <string>
+
 #include "remotemo/remotemo.hpp"
 
-#include <string>
 #include <catch2/catch_all.hpp>
 #include <catch2/trompeloeil.hpp>
+
+#include "mock_sdl_all.hpp"
 
 using trompeloeil::eq;
 using trompeloeil::re;
 
-
-class Mock_SDL {
-  MAKE_MOCK1(mock_Init, int(Uint32));
-  MAKE_MOCK0(mock_Quit, void());
-  MAKE_MOCK1(mock_QuitSubSystem, void(Uint32));
-  MAKE_MOCK2(mock_SetHint, SDL_bool(const char*, const char*));
-  MAKE_MOCK6(mock_CreateWindow,
-      SDL_Window*(const char*, int, int, int, int, Uint32));
-  MAKE_MOCK1(mock_DestroyWindow, void(SDL_Window*));
-  MAKE_MOCK3(mock_CreateRenderer, SDL_Renderer*(SDL_Window*, int, Uint32));
-  MAKE_MOCK1(mock_DestroyRenderer, void(SDL_Renderer*));
-  MAKE_MOCK0(mock_GetBasePath, char*());
-  MAKE_MOCK1(mock_free, void(void*));
-  MAKE_MOCK2(mock_LoadTexture, SDL_Texture*(SDL_Renderer*, const char*));
-  MAKE_MOCK1(mock_DestroyTexture, void(SDL_Texture*));
-  MAKE_MOCK5(
-      mock_CreateTexture, SDL_Texture*(SDL_Renderer*, Uint32, int, int, int));
-};
-Mock_SDL mock_SDL;
-
-
-extern "C" {
-int SDL_Init(Uint32 flags)
-{
-  return mock_SDL.mock_Init(flags);
-}
-void SDL_Quit()
-{
-  mock_SDL.mock_Quit();
-}
-void SDL_QuitSubSystem(Uint32 flags)
-{
-  mock_SDL.mock_QuitSubSystem(flags);
-}
-SDL_bool SDL_SetHint(const char* name, const char* value)
-{
-  return mock_SDL.mock_SetHint(name, value);
-}
-SDL_Window* SDL_CreateWindow(
-    const char* title, int x, int y, int w, int h, Uint32 flags)
-{
-  return mock_SDL.mock_CreateWindow(title, x, y, w, h, flags);
-}
-void SDL_DestroyWindow(SDL_Window* window)
-{
-  mock_SDL.mock_DestroyWindow(window);
-}
-SDL_Renderer* SDL_GetRenderer(SDL_Window* window)
-{
-  return nullptr;
-}
-SDL_Renderer* SDL_CreateRenderer(SDL_Window* window, int index, Uint32 flags)
-{
-  return mock_SDL.mock_CreateRenderer(window, index, flags);
-}
-void SDL_DestroyRenderer(SDL_Renderer* renderer)
-{
-  mock_SDL.mock_DestroyRenderer(renderer);
-}
-char* SDL_GetBasePath()
-{
-  return mock_SDL.mock_GetBasePath();
-}
-void SDL_free(void* mem)
-{
-  mock_SDL.mock_free(mem);
-}
-SDL_Texture* IMG_LoadTexture(SDL_Renderer* renderer, const char* file_path)
-{
-  return mock_SDL.mock_LoadTexture(renderer, file_path);
-}
-void SDL_DestroyTexture(SDL_Texture* texture)
-{
-  return mock_SDL.mock_DestroyTexture(texture);
-}
-SDL_Texture* SDL_CreateTexture(
-    SDL_Renderer* renderer, Uint32 format, int access, int w, int h)
-{
-  return mock_SDL.mock_CreateTexture(renderer, format, access, w, h);
-}
-} // extern "C"
-
-
-class Dummy_test {
-  MAKE_MOCK0(func, void());
-};
-Dummy_test dummy_t;
-
-struct Dummy_object {
-  char dummy_text[2000];
-  int dummy_int;
-};
 Dummy_object dummy_w {{"Dummy window."}, 5};
 SDL_Window* dummy_window = reinterpret_cast<SDL_Window*>(&dummy_w);
 
@@ -111,7 +22,7 @@ SDL_Texture* dummy_font_bitmap = reinterpret_cast<SDL_Texture*>(&dummy_f);
 Dummy_object dummy_b {{"Dummy background."}, 5};
 SDL_Texture* dummy_background = reinterpret_cast<SDL_Texture*>(&dummy_b);
 
-Dummy_object dummy_ta {{"Dummy background."}, 5};
+Dummy_object dummy_ta {{"Dummy text area."}, 5};
 SDL_Texture* dummy_text_area = reinterpret_cast<SDL_Texture*>(&dummy_ta);
 
 #ifdef _WIN32
@@ -153,6 +64,7 @@ TEST_CASE("Test create() ...")
   std::unique_ptr<trompeloeil::expectation> dummy_exp;
   bool should_succeed = true;
 
+  ALLOW_CALL(mock_SDL, mock_GetRenderer(dummy_window)).RETURN(nullptr);
   auto do_cleanup_all = GENERATE(true, false);
   UNSCOPED_INFO(separator);
   UNSCOPED_INFO("... with config.cleanup_all("
