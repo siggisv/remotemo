@@ -71,6 +71,9 @@ bool Remotemo::initialize(const Config& config)
 {
   ::SDL_Log("Remotemo::initialize() with config.m_cleanup_all: %s",
       config.m_cleanup_all ? "True" : "False");
+  SDL_Renderer* conf_renderer = (config.m_the_window == nullptr)
+                                    ? nullptr
+                                    : ::SDL_GetRenderer(config.m_the_window);
 
   if (config.m_cleanup_all) {
     // Set cleanup_handler to handle SDL_Quit() AND all resources in config.
@@ -79,13 +82,64 @@ bool Remotemo::initialize(const Config& config)
     // in the setup process something failed.
     m_cleanup_handler =
         std::make_unique<Cleanup_handler>(true, config.m_the_window,
-            (config.m_the_window == nullptr)
-                ? nullptr
-                : ::SDL_GetRenderer(config.m_the_window),
-            config.m_background, config.m_font_bitmap);
+            conf_renderer, config.m_background, config.m_font_bitmap);
   } else {
     m_cleanup_handler = std::make_unique<Cleanup_handler>(false);
   }
+
+  // Validate config resources:
+  if (config.m_the_window != nullptr &&
+      ::SDL_GetWindowID(config.m_the_window) == 0) {
+    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+        "Window in config is invalid: %s\n", ::SDL_GetError());
+    return false;
+  }
+  if (conf_renderer == nullptr) {
+    if (config.m_background != nullptr || config.m_font_bitmap) {
+      return false;
+    }
+  } else {
+    ::SDL_RendererInfo info;
+    if (::SDL_GetRendererInfo(conf_renderer, &info) != 0) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "SDL_GetRendererInfo() failed when trying to get info on the "
+          "renderer of the window handed to remotemo::create(): %s\n",
+          ::SDL_GetError());
+      return false;
+    }
+    if ((info.flags & SDL_RENDERER_TARGETTEXTURE) !=
+        SDL_RENDERER_TARGETTEXTURE) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "The renderer of the window handed to remotemo::create() did not "
+          "have the correct flags (SDL_RENDERER_TARGETTEXTURE missing).\n");
+      return false;
+    }
+    if (config.m_font_bitmap != nullptr) {
+      // Have not found a more direct way to check if the texture has got the
+      // correct renderer:
+      ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
+      if (::SDL_RenderCopy(conf_renderer, config.m_font_bitmap, nullptr,
+              &noop_rect) != 0) {
+        ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+            "The font bitmap texture that was handed to remotemo::create() "
+            "was created with a different renderer than the window.\n");
+        return false;
+      }
+    }
+    if (config.m_background != nullptr) {
+      // Have not found a more direct way to check if the texture has got the
+      // correct renderer:
+      ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
+      if (::SDL_RenderCopy(
+              conf_renderer, config.m_background, nullptr, &noop_rect) != 0) {
+        ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+            "The background texture that was handed to remotemo::create() "
+            "was created with a different renderer than the window.\n");
+        return false;
+      }
+    }
+  }
+
   ::SDL_Log("SDL_Init(%d)", sdl_init_flags);
   if (::SDL_Init(sdl_init_flags) < 0) {
     ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n",
@@ -115,23 +169,8 @@ bool Remotemo::initialize(const Config& config)
     }
     m_cleanup_handler->m_window = m_window;
   }
-  m_renderer = ::SDL_GetRenderer(m_window);
-  if (m_renderer != nullptr) {
-    ::SDL_RendererInfo info;
-    if (::SDL_GetRendererInfo(m_renderer, &info) != 0) {
-      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "SDL_GetRendererInfo() failed when trying to get info on the "
-          "renderer of the window handed to remotemo::create(): %s\n",
-          ::SDL_GetError());
-      return false;
-    }
-    if ((info.flags & SDL_RENDERER_TARGETTEXTURE) !=
-        SDL_RENDERER_TARGETTEXTURE) {
-      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "The renderer of the window handed to remotemo::create() did not "
-          "have the correct flags (SDL_RENDERER_TARGETTEXTURE missing).\n");
-      return false;
-    }
+  if (conf_renderer != nullptr) {
+    m_renderer = conf_renderer;
   } else {
     m_renderer =
         ::SDL_CreateRenderer(m_window, -1, SDL_RENDERER_TARGETTEXTURE);
@@ -155,16 +194,6 @@ bool Remotemo::initialize(const Config& config)
     SDL_Log("Base path: %s", base_path.c_str());
   }
   if (config.m_font_bitmap != nullptr) {
-    // Have not found a more direct way to check if the texture has got the
-    // correct renderer:
-    ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
-    if (::SDL_RenderCopy(
-            m_renderer, config.m_font_bitmap, nullptr, &noop_rect) != 0) {
-      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "The font bitmap texture that was handed to remotemo::create() was"
-          "created with a different renderer than the window.\n");
-      return false;
-    }
     m_font_bitmap = config.m_font_bitmap;
   } else {
     auto texture_path = base_path / config.m_font_bitmap_file_path;
@@ -179,16 +208,6 @@ bool Remotemo::initialize(const Config& config)
     m_cleanup_handler->m_font_bitmap = m_font_bitmap;
   }
   if (config.m_background != nullptr) {
-    // Have not found a more direct way to check if the texture has got the
-    // correct renderer:
-    ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
-    if (::SDL_RenderCopy(
-            m_renderer, config.m_background, nullptr, &noop_rect) != 0) {
-      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "The background texture that was handed to remotemo::create() was"
-          "created with a different renderer than the window.\n");
-      return false;
-    }
     m_background = config.m_background;
   } else {
     auto texture_path = base_path / config.m_background_file_path;
