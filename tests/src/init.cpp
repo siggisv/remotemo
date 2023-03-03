@@ -2,28 +2,10 @@
 
 #include "remotemo/remotemo.hpp"
 
-#include <catch2/catch_all.hpp>
-#include <catch2/trompeloeil.hpp>
-
-#include "mock_sdl_all.hpp"
+#include "init.hpp"
 
 using trompeloeil::eq;
 using trompeloeil::re;
-
-Dummy_object dummy_w {{"Dummy window."}, 5};
-SDL_Window* dummy_window = reinterpret_cast<SDL_Window*>(&dummy_w);
-
-Dummy_object dummy_r {{"Dummy renderer."}, 5};
-SDL_Renderer* dummy_renderer = reinterpret_cast<SDL_Renderer*>(&dummy_r);
-
-Dummy_object dummy_f {{"Dummy font bitmap."}, 5};
-SDL_Texture* dummy_font_bitmap = reinterpret_cast<SDL_Texture*>(&dummy_f);
-
-Dummy_object dummy_b {{"Dummy background."}, 5};
-SDL_Texture* dummy_background = reinterpret_cast<SDL_Texture*>(&dummy_b);
-
-Dummy_object dummy_ta {{"Dummy text area."}, 5};
-SDL_Texture* dummy_text_area = reinterpret_cast<SDL_Texture*>(&dummy_ta);
 
 #ifdef _WIN32
 constexpr char dummy_basepath[] = "\\dummy\\base\\path\\";
@@ -57,14 +39,13 @@ enum Resources {
 
 TEST_CASE("Test create() ...")
 {
-  trompeloeil::sequence main_seq, basepath_seq, font_seq, backgr_seq,
-      text_area_seq;
-  std::unique_ptr<trompeloeil::expectation> setups[Res_MAX_NUM];
-  std::unique_ptr<trompeloeil::expectation> cleanups[Res_MAX_NUM];
-  std::unique_ptr<trompeloeil::expectation> dummy_exp;
+  tr_seq main_seq, basepath_seq, font_seq, backgr_seq, text_area_seq;
+  tr_exp setups[Res_MAX_NUM];
+  tr_exp cleanups[Res_MAX_NUM];
+  tr_exp dummy_exp;
   bool should_succeed = true;
 
-  ALLOW_CALL(mock_SDL, mock_GetRenderer(dummy_window)).RETURN(nullptr);
+  ALLOW_CALL(mock_SDL, mock_GetRenderer(d_new_win)).RETURN(nullptr);
   auto do_cleanup_all = GENERATE(true, false);
   UNSCOPED_INFO(separator);
   UNSCOPED_INFO("... with config.cleanup_all("
@@ -92,10 +73,10 @@ TEST_CASE("Test create() ...")
                               .IN_SEQUENCE(main_seq);
 
     auto create_win_ret =
-        GENERATE(static_cast<SDL_Window*>(nullptr), dummy_window);
+        GENERATE(static_cast<SDL_Window*>(nullptr), d_new_win);
     UNSCOPED_INFO(
         "... SDL_CreateWindow() "
-        << (create_win_ret == dummy_window ? "succeeds, ..." : "fails!"));
+        << (create_win_ret == d_new_win ? "succeeds, ..." : "fails!"));
     setups[Res_CreateWin] = NAMED_REQUIRE_CALL(
         mock_SDL, mock_CreateWindow(re("^Retro Monochrome Text Monitor$"),
                       SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280,
@@ -106,12 +87,12 @@ TEST_CASE("Test create() ...")
       should_succeed = false;
     } else {
       auto create_render_ret =
-          GENERATE(static_cast<SDL_Renderer*>(nullptr), dummy_renderer);
+          GENERATE(static_cast<SDL_Renderer*>(nullptr), d_new_render);
       UNSCOPED_INFO("... SDL_CreateRenderer() "
-                    << (create_render_ret == dummy_renderer ? "succeeds, ..."
-                                                            : "fails!"));
+                    << (create_render_ret == d_new_render ? "succeeds, ..."
+                                                          : "fails!"));
       setups[Res_CreateRender] = NAMED_REQUIRE_CALL(mock_SDL,
-          mock_CreateRenderer(dummy_window, -1, SDL_RENDERER_TARGETTEXTURE))
+          mock_CreateRenderer(d_new_win, -1, SDL_RENDERER_TARGETTEXTURE))
                                      .RETURN(create_render_ret)
                                      .IN_SEQUENCE(main_seq);
       if (create_render_ret == nullptr) {
@@ -133,40 +114,40 @@ TEST_CASE("Test create() ...")
               mock_SDL, mock_free(static_cast<void*>(get_basepath_ret)))
                                           .IN_SEQUENCE(basepath_seq);
           auto load_font_ret =
-              GENERATE(static_cast<SDL_Texture*>(nullptr), dummy_font_bitmap);
+              GENERATE(static_cast<SDL_Texture*>(nullptr), d_new_font_bitmap);
           UNSCOPED_INFO(
               "... SDL_LoadTexture(font_bitmap) "
-              << (load_font_ret == dummy_font_bitmap ? "succeeds, ..."
+              << (load_font_ret == d_new_font_bitmap ? "succeeds, ..."
                                                      : "fails!"));
           setups[Res_Load_Font] = NAMED_REQUIRE_CALL(mock_SDL,
-              mock_LoadTexture(dummy_renderer, re(regex_dummy_font_path)))
+              mock_LoadTexture(d_new_render, re(regex_dummy_font_path)))
                                       .RETURN(load_font_ret)
                                       .IN_SEQUENCE(main_seq, font_seq);
           if (load_font_ret == nullptr) {
             should_succeed = false;
           } else {
             // Load background
-            auto load_backgr_ret = GENERATE(
-                static_cast<SDL_Texture*>(nullptr), dummy_background);
+            auto load_backgr_ret =
+                GENERATE(static_cast<SDL_Texture*>(nullptr), d_new_backgr);
             UNSCOPED_INFO(
                 "... SDL_LoadTexture(background) "
-                << (load_backgr_ret == dummy_background ? "succeeds, ..."
-                                                        : "fails!"));
+                << (load_backgr_ret == d_new_backgr ? "succeeds, ..."
+                                                    : "fails!"));
             setups[Res_Load_Backgr] = NAMED_REQUIRE_CALL(mock_SDL,
-                mock_LoadTexture(dummy_renderer, re(regex_dummy_backgr_path)))
+                mock_LoadTexture(d_new_render, re(regex_dummy_backgr_path)))
                                           .RETURN(load_backgr_ret)
                                           .IN_SEQUENCE(main_seq, backgr_seq);
             if (load_backgr_ret == nullptr) {
               should_succeed = false;
             } else {
               auto create_text_area_ret = GENERATE(
-                  static_cast<SDL_Texture*>(nullptr), dummy_text_area);
+                  static_cast<SDL_Texture*>(nullptr), d_new_text_area);
               UNSCOPED_INFO("... SDL_CreateTexture(text area) "
-                            << (create_text_area_ret == dummy_text_area
+                            << (create_text_area_ret == d_new_text_area
                                        ? "succeeds, ..."
                                        : "fails!"));
               setups[Res_Create_Text_area] = NAMED_REQUIRE_CALL(mock_SDL,
-                  mock_CreateTexture(dummy_renderer, SDL_PIXELFORMAT_RGBA32,
+                  mock_CreateTexture(d_new_render, SDL_PIXELFORMAT_RGBA32,
                       SDL_TEXTUREACCESS_TARGET, (40 * 7) + 2, (24 * 18) + 2))
                                                  .RETURN(create_text_area_ret)
                                                  .IN_SEQUENCE(
@@ -181,24 +162,24 @@ TEST_CASE("Test create() ...")
                                     text_area_seq);
                 cleanups[Res_Create_Text_area] =
                     NAMED_REQUIRE_CALL(
-                        mock_SDL, mock_DestroyTexture(dummy_text_area))
+                        mock_SDL, mock_DestroyTexture(d_new_text_area))
                         .IN_SEQUENCE(text_area_seq);
               }
               cleanups[Res_Load_Backgr] = NAMED_REQUIRE_CALL(
-                  mock_SDL, mock_DestroyTexture(dummy_background))
+                  mock_SDL, mock_DestroyTexture(d_new_backgr))
                                               .IN_SEQUENCE(backgr_seq);
             }
             cleanups[Res_Load_Font] = NAMED_REQUIRE_CALL(
-                mock_SDL, mock_DestroyTexture(dummy_font_bitmap))
+                mock_SDL, mock_DestroyTexture(d_new_font_bitmap))
                                           .IN_SEQUENCE(font_seq);
           }
         }
         cleanups[Res_CreateRender] =
-            NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyRenderer(dummy_renderer))
+            NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyRenderer(d_new_render))
                 .IN_SEQUENCE(main_seq, font_seq, backgr_seq, text_area_seq);
       }
       cleanups[Res_CreateWin] =
-          NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyWindow(dummy_window))
+          NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyWindow(d_new_win))
               .IN_SEQUENCE(main_seq);
     }
     if (!do_cleanup_all) {
@@ -226,13 +207,7 @@ TEST_CASE("Test create() ...")
   // This is just to trigger output of all unscoped_info messages:
   SUCCEED(separator);
 
-  {
-    auto t = remotemo::create(remotemo::Config().cleanup_all(do_cleanup_all));
-    REQUIRE(t.has_value() == should_succeed);
-    // This dummy function is here so we can check if cleanup happens before
-    // `t` goes out of scope or after:
-    dummy_t.func();
-  }
+  REQUIRE(try_running_create(do_cleanup_all) == should_succeed);
   if (!do_cleanup_all && init_ret == 0) {
     REQUIRE(init_flags == quit_flags);
   }

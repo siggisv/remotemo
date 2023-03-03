@@ -4,6 +4,10 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
+#include <catch2/trompeloeil.hpp>
+
 class Mock_SDL {
   MAKE_MOCK1(mock_Init, int(Uint32));
   MAKE_MOCK0(mock_Quit, void());
