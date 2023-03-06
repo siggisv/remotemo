@@ -10,7 +10,6 @@ using trompeloeil::_;
 using trompeloeil::eq;
 using trompeloeil::re;
 
-
 // Test cases:
 
 TEST_CASE("create() - config resources invalid - invalid window")
@@ -25,9 +24,7 @@ TEST_CASE("create() - config resources invalid - invalid window")
       {d_conf_win, nullptr, d_conf_backgr, d_conf_font_bitmap}}));
   DYNAMIC_SECTION("Checking cleanup...\nShould clean up all: "
                   << std::boolalpha << do_cleanup_all << "\n"
-                  << std::noboolalpha << "Textures in conf: "
-                  << (res.conf_backgr == nullptr ? "" : "background ")
-                  << (res.conf_font == nullptr ? "" : "font_bitmap "))
+                  << std::noboolalpha << res.list_textures())
   {
     Test_seqs seqs;
 
@@ -61,9 +58,7 @@ TEST_CASE("create() - config resources invalid - texture(s) but no renderer")
       {d_conf_win, nullptr, d_conf_backgr, d_conf_font_bitmap}}));
   DYNAMIC_SECTION("Checking cleanup...\nShould clean up all: "
                   << std::boolalpha << do_cleanup_all << "\n"
-                  << std::noboolalpha << "Textures in conf: "
-                  << (res.conf_backgr == nullptr ? "" : "background ")
-                  << (res.conf_font == nullptr ? "" : "font_bitmap "))
+                  << std::noboolalpha << res.list_textures())
   {
     Test_seqs seqs;
 
@@ -96,9 +91,7 @@ TEST_CASE("create() - config resources invalid - can't get renderer settings")
       {d_conf_win, d_conf_render, d_conf_backgr, d_conf_font_bitmap}}));
   DYNAMIC_SECTION("Checking cleanup...\nShould clean up all: "
                   << std::boolalpha << do_cleanup_all << "\n"
-                  << std::noboolalpha << "Textures in conf: "
-                  << (res.conf_backgr == nullptr ? "" : "background ")
-                  << (res.conf_font == nullptr ? "" : "font_bitmap "))
+                  << std::noboolalpha << res.list_textures())
   {
     Test_seqs seqs;
 
@@ -133,9 +126,7 @@ TEST_CASE("create() - config resources invalid - incorrect renderer settings")
       {d_conf_win, d_conf_render, d_conf_backgr, d_conf_font_bitmap}}));
   DYNAMIC_SECTION("Checking cleanup...\nShould clean up all: "
                   << std::boolalpha << do_cleanup_all << "\n"
-                  << std::noboolalpha << "Textures in conf: "
-                  << (res.conf_backgr == nullptr ? "" : "background ")
-                  << (res.conf_font == nullptr ? "" : "font_bitmap "))
+                  << std::noboolalpha << res.list_textures())
   {
     Test_seqs seqs;
 
@@ -171,9 +162,7 @@ TEST_CASE(
           false}}));
   DYNAMIC_SECTION("Checking cleanup...\nShould clean up all: "
                   << std::boolalpha << do_cleanup_all << "\n"
-                  << std::noboolalpha << "Textures in conf: "
-                  << (res.conf_backgr == nullptr ? "" : "background ")
-                  << (res.conf_font == nullptr ? "" : "font_bitmap "))
+                  << std::noboolalpha << res.list_textures())
   {
     Test_seqs seqs;
     tr_exp exp_backgr, exp_font;

@@ -5,6 +5,7 @@
 #include <SDL_image.h>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators_adapters.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/trompeloeil.hpp>
 
@@ -30,12 +31,12 @@ class Mock_SDL {
   MAKE_MOCK5(
       mock_CreateTexture, SDL_Texture*(SDL_Renderer*, Uint32, int, int, int));
 };
-Mock_SDL mock_SDL;
+extern Mock_SDL mock_SDL;
 
 class Dummy_test {
   MAKE_MOCK0(func, void());
 };
-Dummy_test dummy_t;
+extern Dummy_test dummy_t;
 
 struct Dummy_object {
   char dummy_text[2000];
