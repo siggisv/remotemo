@@ -110,7 +110,7 @@ SDL_Texture* d_conf_backgr = reinterpret_cast<SDL_Texture*>(&dummies[6]);
 SDL_Texture* d_new_backgr = reinterpret_cast<SDL_Texture*>(&dummies[7]);
 SDL_Texture* d_new_text_area = reinterpret_cast<SDL_Texture*>(&dummies[8]);
 
-const std::vector<Conf_resources> valid_resources {
+const std::vector<Conf_resources> valid_conf_res {
     {{nullptr, nullptr, nullptr, nullptr},
         {d_conf_win, nullptr, nullptr, nullptr},
         {d_conf_win, d_conf_render, nullptr, nullptr},
@@ -126,9 +126,9 @@ std::string Conf_resources::list_textures() const
   std::ostringstream oss;
 
   oss << "Textures in conf: "
-      << (conf_backgr == nullptr ? "" : "background ")
-      << (conf_font == nullptr ? "" : "font_bitmap");
-  if (conf_backgr == nullptr && conf_font == nullptr) {
+      << (res.backgr == nullptr ? "" : "background ")
+      << (res.font == nullptr ? "" : "font_bitmap");
+  if (res.backgr == nullptr && res.font == nullptr) {
     oss << "None";
   }
   return oss.str();
@@ -139,8 +139,8 @@ std::string Conf_resources::describe() const
   std::ostringstream oss;
 
   oss << std::boolalpha
-      << "Window in conf: " << (conf_win != nullptr) << "\n"
-      << "Has a renderer : " << (conf_render != nullptr) << "\n"
+      << "Window in conf: " << (res.win != nullptr) << "\n"
+      << "Has a renderer : " << (res.render != nullptr) << "\n"
       << std::noboolalpha << list_textures();
   return oss.str();
 }
@@ -148,23 +148,23 @@ std::string Conf_resources::describe() const
 void Conf_resources::check_cleanup(
     std::list<tr_exp>* exps, Test_seqs* seqs) const
 {
-  if (conf_font != nullptr) {
+  if (res.font != nullptr) {
     exps->push_back(
-        NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyTexture(conf_font))
+        NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyTexture(res.font))
             .IN_SEQUENCE(seqs->font));
   }
-  if (conf_backgr != nullptr) {
+  if (res.backgr != nullptr) {
     exps->push_back(
-        NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyTexture(conf_backgr))
+        NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyTexture(res.backgr))
             .IN_SEQUENCE(seqs->backgr));
   }
-  if (conf_render != nullptr) {
+  if (res.render != nullptr) {
     exps->push_back(
-        NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyRenderer(conf_render))
+        NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyRenderer(res.render))
             .IN_SEQUENCE(seqs->main, seqs->font, seqs->backgr));
   }
-  if (conf_win != nullptr) {
-    exps->push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyWindow(conf_win))
+  if (res.win != nullptr) {
+    exps->push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyWindow(res.win))
                         .IN_SEQUENCE(seqs->main, seqs->font, seqs->backgr));
   }
   exps->push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_Quit())
@@ -174,9 +174,9 @@ void Conf_resources::check_cleanup(
 void Conf_resources::check_win_has_renderer(
     std::list<tr_exp>* exps, Test_seqs* seqs) const
 {
-  exps->push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_GetRenderer(conf_win))
+  exps->push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_GetRenderer(res.win))
                       .TIMES(AT_LEAST(1))
-                      .RETURN(conf_render)
+                      .RETURN(res.render)
                       .IN_SEQUENCE(seqs->main, seqs->font, seqs->backgr));
 }
 
@@ -200,36 +200,36 @@ void check_renderer_settings(std::list<tr_exp>* exps, SDL_Renderer* renderer,
 void Conf_resources::all_checks_succeeds(
     std::list<tr_exp>* exps, Test_seqs* seqs) const
 {
-  if (conf_win != nullptr) {
+  if (res.win != nullptr) {
     exps->push_back(
-        NAMED_REQUIRE_CALL(mock_SDL, mock_GetWindowID(conf_win)).RETURN(1));
+        NAMED_REQUIRE_CALL(mock_SDL, mock_GetWindowID(res.win)).RETURN(1));
     check_win_has_renderer(exps, seqs);
   }
-  if (conf_render != nullptr) {
+  if (res.render != nullptr) {
     check_renderer_settings(
-        exps, conf_render, seqs, SDL_RENDERER_TARGETTEXTURE, 0);
+        exps, res.render, seqs, SDL_RENDERER_TARGETTEXTURE, 0);
   }
-  if (conf_backgr != nullptr) {
+  if (res.backgr != nullptr) {
     exps->push_back(NAMED_REQUIRE_CALL(
-        mock_SDL, mock_RenderCopy(conf_render, conf_backgr, _, _))
+        mock_SDL, mock_RenderCopy(res.render, res.backgr, _, _))
                         .IN_SEQUENCE(seqs->backgr)
                         .RETURN(0));
   }
-  if (conf_font != nullptr) {
+  if (res.font != nullptr) {
     exps->push_back(NAMED_REQUIRE_CALL(
-        mock_SDL, mock_RenderCopy(conf_render, conf_font, _, _))
+        mock_SDL, mock_RenderCopy(res.render, res.font, _, _))
                         .IN_SEQUENCE(seqs->font)
                         .RETURN(0));
   }
 }
 
-bool try_running_create(bool do_cleanup_all, const Conf_resources& res)
+bool try_running_create(bool do_cleanup_all, const Conf_resources& conf)
 {
   remotemo::Config config;
   config.cleanup_all(do_cleanup_all)
-      .the_window(res.conf_win)
-      .background(res.conf_backgr)
-      .font_bitmap(res.conf_font);
+      .the_window(conf.res.win)
+      .background(conf.res.backgr)
+      .font_bitmap(conf.res.font);
   auto t = remotemo::create(config);
   // This dummy function is here so we can check if cleanup happens before
   // `t` goes out of scope or after:

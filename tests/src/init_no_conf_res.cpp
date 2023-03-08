@@ -25,7 +25,7 @@ constexpr char regex_hint_name[] = "^" SDL_HINT_RENDER_SCALE_QUALITY "$";
 constexpr char separator[] = "====================================="
                              "====================================";
 
-enum Resources {
+enum Res_expectations {
   Res_Init = 0,
   Res_SetHint,
   Res_CreateWin,

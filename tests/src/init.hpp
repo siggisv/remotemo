@@ -33,13 +33,18 @@ struct Test_seqs {
   tr_seq t_area;
 };
 
+struct Resources {
+  SDL_Window* win {nullptr};
+  SDL_Renderer* render {nullptr};
+  SDL_Texture* backgr {nullptr};
+  SDL_Texture* font {nullptr};
+  SDL_Texture* text {nullptr};
+};
+
 struct Conf_resources {
-  SDL_Window* conf_win;
-  SDL_Renderer* conf_render;
-  SDL_Texture* conf_backgr;
-  SDL_Texture* conf_font;
-  bool conf_backgr_is_valid {true};
-  bool conf_font_is_valid {true};
+  Resources res;
+  bool backgr_is_valid {true};
+  bool font_is_valid {true};
 
   void check_cleanup(std::list<tr_exp>* exps, Test_seqs* seqs) const;
   void check_win_has_renderer(std::list<tr_exp>* exps, Test_seqs* seqs) const;
@@ -47,8 +52,8 @@ struct Conf_resources {
   std::string list_textures() const;
   std::string describe() const;
 };
+extern const std::vector<Conf_resources> valid_conf_res;
 
-extern const std::vector<Conf_resources> valid_resources;
 
 // Helper functions:
 
