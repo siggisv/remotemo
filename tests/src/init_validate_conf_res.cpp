@@ -7,8 +7,6 @@
 #include "init.hpp"
 
 using trompeloeil::_;
-using trompeloeil::eq;
-using trompeloeil::re;
 
 // Test cases:
 
@@ -34,7 +32,7 @@ TEST_CASE("create() - config resources invalid - invalid window")
     ALLOW_CALL(mock_SDL, mock_GetRenderer(conf.res.win))
         .RETURN(conf.res.render);
     if (do_cleanup_all) {
-      conf.check_cleanup(&exps, &seqs);
+      conf.expected_cleanup(&exps, &seqs);
     }
     REQUIRE_CALL(dummy_t, func())
         .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr);
@@ -69,7 +67,7 @@ TEST_CASE("create() - config resources invalid - texture(s) but no renderer")
       conf.check_win_has_renderer(&exps, &seqs);
     }
     if (do_cleanup_all) {
-      conf.check_cleanup(&exps, &seqs);
+      conf.expected_cleanup(&exps, &seqs);
     }
     REQUIRE_CALL(dummy_t, func())
         .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr);
@@ -100,7 +98,7 @@ TEST_CASE("create() - config resources invalid - can't get renderer settings")
     check_renderer_settings(&exps, conf.res.render, &seqs, 0, -1);
 
     if (do_cleanup_all) {
-      conf.check_cleanup(&exps, &seqs);
+      conf.expected_cleanup(&exps, &seqs);
     }
     REQUIRE_CALL(dummy_t, func())
         .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr);
@@ -135,7 +133,7 @@ TEST_CASE("create() - config resources invalid - incorrect renderer settings")
     check_renderer_settings(&exps, conf.res.render, &seqs, render_flag, 0);
 
     if (do_cleanup_all) {
-      conf.check_cleanup(&exps, &seqs);
+      conf.expected_cleanup(&exps, &seqs);
     }
     REQUIRE_CALL(dummy_t, func())
         .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr);
@@ -152,7 +150,8 @@ TEST_CASE(
   Uint32 conf_winID = 1;
   auto do_cleanup_all = GENERATE(false, true);
   auto conf = GENERATE(values<Conf_resources>({//
-      {{d_conf_win, d_conf_render, nullptr, d_conf_font_bitmap}, false, false},
+      {{d_conf_win, d_conf_render, nullptr, d_conf_font_bitmap}, false,
+          false},
       {{d_conf_win, d_conf_render, d_conf_backgr, nullptr}, false, false},
       {{d_conf_win, d_conf_render, d_conf_backgr, d_conf_font_bitmap}, false,
           false},
@@ -165,7 +164,8 @@ TEST_CASE(
                   << std::noboolalpha << conf.list_textures())
   {
     Test_seqs seqs;
-    tr_exp exp_backgr, exp_font;
+    tr_exp exp_backgr;
+    tr_exp exp_font;
 
     REQUIRE_CALL(mock_SDL, mock_GetWindowID(conf.res.win)).RETURN(conf_winID);
     conf.check_win_has_renderer(&exps, &seqs);
@@ -210,7 +210,7 @@ TEST_CASE(
     }
 
     if (do_cleanup_all) {
-      conf.check_cleanup(&exps, &seqs);
+      conf.expected_cleanup(&exps, &seqs);
     }
     REQUIRE_CALL(dummy_t, func())
         .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr);

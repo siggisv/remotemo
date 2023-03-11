@@ -7,19 +7,6 @@
 using trompeloeil::eq;
 using trompeloeil::re;
 
-#ifdef _WIN32
-constexpr char dummy_basepath[] = "\\dummy\\base\\path\\";
-constexpr char regex_dummy_font_path[] = "^\\dummy\\base\\path\\"
-                                         "res\\img\\font_bitmap.png$";
-constexpr char regex_dummy_backgr_path[] = "^\\dummy\\base\\path\\"
-                                           "res\\img\\terminal_screen.png$";
-#else
-constexpr char dummy_basepath[] = "/dummy/base/path/";
-constexpr char regex_dummy_font_path[] = "^/dummy/base/path/"
-                                         "res/img/font_bitmap.png$";
-constexpr char regex_dummy_backgr_path[] = "^/dummy/base/path/"
-                                           "res/img/terminal_screen.png$";
-#endif
 Uint32 init_flags = 0, quit_flags = 0;
 constexpr char regex_hint_name[] = "^" SDL_HINT_RENDER_SCALE_QUALITY "$";
 constexpr char separator[] = "====================================="
@@ -99,10 +86,10 @@ TEST_CASE("Test create() ...")
         should_succeed = false;
       } else {
         auto get_basepath_ret =
-            GENERATE(static_cast<char*>(nullptr), dummy_basepath);
-        UNSCOPED_INFO("... SDL_GetBasePath() "
-                      << (get_basepath_ret == dummy_basepath ? "succeeds, ..."
-                                                             : "fails!"));
+            GENERATE(static_cast<char*>(nullptr), d_basepath);
+        UNSCOPED_INFO(
+            "... SDL_GetBasePath() "
+            << (get_basepath_ret == d_basepath ? "succeeds, ..." : "fails!"));
         setups[Res_GetBasePath] =
             NAMED_REQUIRE_CALL(mock_SDL, mock_GetBasePath())
                 .RETURN(get_basepath_ret)

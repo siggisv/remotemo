@@ -37,3 +37,11 @@ target_link_libraries(init_validate_conf_res PRIVATE
     trompeloeil::trompeloeil
 )
 add_test(test_init_validate_conf_res init_validate_conf_res ${TEST_ARG})
+
+add_executable(init_setup src/init_helpers.cpp src/init_setup.cpp)
+target_link_libraries(init_setup PRIVATE
+    remotemo
+    Catch2::Catch2WithMain
+    trompeloeil::trompeloeil
+)
+add_test(test_init_setup init_setup ${TEST_ARG})

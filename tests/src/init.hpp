@@ -2,9 +2,8 @@
 #define REMOTEMO_TESTS_SRC_INIT_HPP
 
 #include <string>
-#include <sstream>
 #include <list>
-#include <vector>
+#include <array>
 #include <memory>
 
 #include "mock_sdl.hpp"
@@ -15,15 +14,29 @@
 using tr_seq = trompeloeil::sequence;
 using tr_exp = std::unique_ptr<trompeloeil::expectation>;
 
-extern SDL_Window* d_conf_win;
-extern SDL_Window* d_new_win;
-extern SDL_Renderer* d_conf_render;
-extern SDL_Renderer* d_new_render;
-extern SDL_Texture* d_conf_font_bitmap;
-extern SDL_Texture* d_new_font_bitmap;
-extern SDL_Texture* d_conf_backgr;
-extern SDL_Texture* d_new_backgr;
-extern SDL_Texture* d_new_text_area;
+extern SDL_Window* const d_conf_win;
+extern SDL_Window* const d_new_win;
+extern SDL_Renderer* const d_conf_render;
+extern SDL_Renderer* const d_new_render;
+extern SDL_Texture* const d_conf_font_bitmap;
+extern SDL_Texture* const d_new_font_bitmap;
+extern SDL_Texture* const d_conf_backgr;
+extern SDL_Texture* const d_new_backgr;
+extern SDL_Texture* const d_new_text_area;
+
+#ifdef _WIN32
+constexpr char d_basepath[] = "\\dummy\\base\\path\\";
+constexpr char regex_dummy_font_path[] = "^\\dummy\\base\\path\\"
+                                         "res\\img\\font_bitmap.png$";
+constexpr char regex_dummy_backgr_path[] = "^\\dummy\\base\\path\\"
+                                           "res\\img\\terminal_screen.png$";
+#else
+constexpr char d_basepath[] = "/dummy/base/path/";
+constexpr char regex_dummy_font_path[] = "^/dummy/base/path/"
+                                         "res/img/font_bitmap.png$";
+constexpr char regex_dummy_backgr_path[] = "^/dummy/base/path/"
+                                           "res/img/terminal_screen.png$";
+#endif
 
 struct Test_seqs {
   tr_seq main;
@@ -38,7 +51,9 @@ struct Resources {
   SDL_Renderer* render {nullptr};
   SDL_Texture* backgr {nullptr};
   SDL_Texture* font {nullptr};
-  SDL_Texture* text {nullptr};
+  SDL_Texture* t_area {nullptr};
+
+  void expected_cleanup(std::list<tr_exp>* exps, Test_seqs* seqs) const;
 };
 
 struct Conf_resources {
@@ -46,19 +61,47 @@ struct Conf_resources {
   bool backgr_is_valid {true};
   bool font_is_valid {true};
 
-  void check_cleanup(std::list<tr_exp>* exps, Test_seqs* seqs) const;
+  void expected_cleanup(std::list<tr_exp>* exps, Test_seqs* seqs) const;
   void check_win_has_renderer(std::list<tr_exp>* exps, Test_seqs* seqs) const;
   void all_checks_succeeds(std::list<tr_exp>* exps, Test_seqs* seqs) const;
   std::string list_textures() const;
   std::string describe() const;
 };
-extern const std::vector<Conf_resources> valid_conf_res;
+extern const std::array<Conf_resources, 6> valid_conf_res;
 
+struct Texture_results {
+  char* basepath {nullptr};
+  SDL_Texture* backgr {nullptr};
+  SDL_Texture* font {nullptr};
+  SDL_Texture* t_area {nullptr};
+
+  std::string describe() const;
+};
+extern const std::array<Texture_results, 10> all_texture_results;
+
+struct Init_status {
+  bool do_cleanup_all {false};
+  Uint32 init_flags {0};
+  Uint32 quit_flags {0};
+  std::list<tr_exp> exps {};
+  Test_seqs seqs;
+  bool init_did_succeed {false};
+  Resources to_be_cleaned_up {};
+  Resources ready_res {};
+
+  void set_from_config(const Conf_resources& conf);
+  void attempt_init(bool should_success);
+  void attempt_set_hint(bool should_success);
+  void attempt_create_window(bool should_success);
+  void attempt_create_renderer(bool should_success);
+  void expected_cleanup();
+};
 
 // Helper functions:
 
 void check_renderer_settings(std::list<tr_exp>* exps, SDL_Renderer* renderer,
     Test_seqs* seqs, Uint32 render_flag, int ret_val);
-bool try_running_create(bool do_cleanup_all, const Conf_resources& res = {});
+bool try_running_create(bool do_cleanup_all, const Conf_resources& conf = {});
+void require_init_has_ended(std::list<tr_exp>* exps, Test_seqs* seqs);
 
 #endif // REMOTEMO_TESTS_SRC_INIT_HPP
