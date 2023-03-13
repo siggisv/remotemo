@@ -84,17 +84,25 @@ struct Init_status {
   Uint32 init_flags {0};
   Uint32 quit_flags {0};
   std::list<tr_exp> exps {};
+  tr_exp exp_get_basepath {};
+  tr_exp exp_free_basepath {};
+  tr_exp exp_load_font {};
+  tr_exp exp_load_backgr {};
+  tr_exp exp_create_t_area {};
   Test_seqs seqs;
   bool init_did_succeed {false};
   Resources to_be_cleaned_up {};
   Resources ready_res {};
+  Texture_results exp_results {};
 
   void set_from_config(const Conf_resources& conf);
   void attempt_init(bool should_success);
   void attempt_set_hint(bool should_success);
   void attempt_create_window(bool should_success);
   void attempt_create_renderer(bool should_success);
+  void attempt_setup_textures(Texture_results expected_results);
   void expected_cleanup();
+  bool check_texture_setup();
 };
 
 // Helper functions:

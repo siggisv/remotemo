@@ -65,6 +65,7 @@ char* SDL_GetBasePath()
 {
   return mock_SDL.mock_GetBasePath();
 }
+// NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name)
 void SDL_free(void* mem)
 {
   mock_SDL.mock_free(mem);
@@ -313,6 +314,64 @@ void Init_status::attempt_create_renderer(bool should_success)
                      .IN_SEQUENCE(seqs.main, seqs.t_area));
   ready_res.render = create_render_ret;
   to_be_cleaned_up.render = create_render_ret;
+}
+
+void Init_status::attempt_setup_textures(Texture_results expected_results)
+{
+  exp_results = expected_results;
+  /*
+  if (exp_get_basepath) {
+    UNSCOPED_INFO("WOW! Wasn't expecting 'exp_get_basepath' to be == true");
+  } else {
+    UNSCOPED_INFO("Ok. That is what I expected. :D");
+  }
+  */
+  if (ready_res.backgr == nullptr || ready_res.font == nullptr) {
+    exp_get_basepath =
+        NAMED_REQUIRE_CALL(mock_SDL, mock_GetBasePath())
+            .TIMES(0, 1)
+            .RETURN(exp_results.basepath)
+            .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr, seqs.opt);
+    exp_free_basepath = NAMED_REQUIRE_CALL(
+        mock_SDL, mock_free(static_cast<void*>(exp_results.basepath)))
+                            .TIMES(0, 1)
+                            .IN_SEQUENCE(seqs.opt);
+  }
+  if (exp_results.basepath != nullptr && ready_res.font == nullptr) {
+    exp_load_font = NAMED_REQUIRE_CALL(mock_SDL,
+        mock_LoadTexture(ready_res.render, re(&regex_dummy_font_path[0])))
+                        .TIMES(0, 1)
+                        .RETURN(exp_results.font)
+                        .IN_SEQUENCE(seqs.font);
+    ready_res.font = exp_results.font;
+    to_be_cleaned_up.font = exp_results.font;
+  }
+  if (exp_results.basepath != nullptr && ready_res.backgr == nullptr) {
+    exp_load_backgr = NAMED_REQUIRE_CALL(mock_SDL,
+        mock_LoadTexture(ready_res.render, re(&regex_dummy_backgr_path[0])))
+                          .TIMES(0, 1)
+                          .RETURN(exp_results.backgr)
+                          .IN_SEQUENCE(seqs.backgr);
+    ready_res.backgr = exp_results.backgr;
+    to_be_cleaned_up.backgr = exp_results.backgr;
+  }
+  exp_create_t_area = NAMED_REQUIRE_CALL(
+      mock_SDL, mock_CreateTexture(ready_res.render, SDL_PIXELFORMAT_RGBA32,
+                    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+                    SDL_TEXTUREACCESS_TARGET, (40 * 7) + 2, (24 * 18) + 2))
+                          .TIMES(0, 1)
+                          .RETURN(exp_results.t_area)
+                          .IN_SEQUENCE(seqs.t_area);
+  ready_res.t_area = exp_results.t_area;
+  to_be_cleaned_up.t_area = exp_results.t_area;
+  /*
+  if (exp_get_basepath) {
+    UNSCOPED_INFO("Ok. That is still what I expected. :D");
+  } else {
+    UNSCOPED_INFO("Wasn't expecting 'exp_get_basepath' to be false anymore!");
+  }
+  SUCCEED("TEST..................................");
+  */
 }
 
 void Init_status::expected_cleanup()
