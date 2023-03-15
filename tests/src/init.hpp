@@ -100,7 +100,7 @@ struct Init_status {
   Resources ready_res {};
   Texture_results exp_results {};
 
-  void set_from_config(const Conf_resources& conf);
+  void set_res_from_config(const Conf_resources& conf);
   void attempt_init(bool should_success);
   void attempt_set_hint(bool should_success);
   void attempt_create_window(bool should_success);

@@ -264,7 +264,7 @@ std::string Texture_results::describe() const
   return oss.str();
 }
 
-void Init_status::set_from_config(const Conf_resources& conf)
+void Init_status::set_res_from_config(const Conf_resources& conf)
 {
   ready_res = conf.res;
   if (do_cleanup_all) {
