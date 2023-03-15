@@ -344,7 +344,7 @@ void Init_status::attempt_setup_textures(Texture_results expected_results)
                         .RETURN(exp_results.font)
                         .IN_SEQUENCE(seqs.font);
     ready_res.font = exp_results.font;
-    to_be_cleaned_up.font = exp_results.font;
+    might_be_cleaned_up.font = exp_results.font;
   }
   if (exp_results.basepath != nullptr && ready_res.backgr == nullptr) {
     exp_load_backgr = NAMED_REQUIRE_CALL(mock_SDL,
@@ -353,7 +353,7 @@ void Init_status::attempt_setup_textures(Texture_results expected_results)
                           .RETURN(exp_results.backgr)
                           .IN_SEQUENCE(seqs.backgr);
     ready_res.backgr = exp_results.backgr;
-    to_be_cleaned_up.backgr = exp_results.backgr;
+    might_be_cleaned_up.backgr = exp_results.backgr;
   }
   exp_create_t_area = NAMED_REQUIRE_CALL(
       mock_SDL, mock_CreateTexture(ready_res.render, SDL_PIXELFORMAT_RGBA32,
@@ -363,7 +363,7 @@ void Init_status::attempt_setup_textures(Texture_results expected_results)
                           .RETURN(exp_results.t_area)
                           .IN_SEQUENCE(seqs.t_area);
   ready_res.t_area = exp_results.t_area;
-  to_be_cleaned_up.t_area = exp_results.t_area;
+  might_be_cleaned_up.t_area = exp_results.t_area;
   /*
   if (exp_get_basepath) {
     UNSCOPED_INFO("Ok. That is still what I expected. :D");
@@ -376,6 +376,24 @@ void Init_status::attempt_setup_textures(Texture_results expected_results)
 
 void Init_status::expected_cleanup()
 {
+  if (might_be_cleaned_up.t_area != nullptr) {
+    exps.push_back(NAMED_REQUIRE_CALL(
+        mock_SDL, mock_DestroyTexture(might_be_cleaned_up.t_area))
+                       .TIMES(0, 1)
+                       .IN_SEQUENCE(seqs.t_area));
+  }
+  if (might_be_cleaned_up.font != nullptr) {
+    exps.push_back(NAMED_REQUIRE_CALL(
+        mock_SDL, mock_DestroyTexture(might_be_cleaned_up.font))
+                       .TIMES(0, 1)
+                       .IN_SEQUENCE(seqs.font));
+  }
+  if (might_be_cleaned_up.backgr != nullptr) {
+    exps.push_back(NAMED_REQUIRE_CALL(
+        mock_SDL, mock_DestroyTexture(might_be_cleaned_up.backgr))
+                       .TIMES(0, 1)
+                       .IN_SEQUENCE(seqs.backgr));
+  }
   to_be_cleaned_up.expected_cleanup(&exps, &seqs);
   if (do_cleanup_all) {
     exps.push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_Quit())

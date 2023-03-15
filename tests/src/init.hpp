@@ -92,6 +92,7 @@ struct Init_status {
   Test_seqs seqs;
   bool init_did_succeed {false};
   Resources to_be_cleaned_up {};
+  Resources might_be_cleaned_up {};
   Resources ready_res {};
   Texture_results exp_results {};
 
