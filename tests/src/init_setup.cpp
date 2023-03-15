@@ -228,7 +228,6 @@ TEST_CASE("create() - valid config - setup of textures fails:")
       init.attempt_create_renderer(true);
     }
 
-    // ...
     init.attempt_setup_textures(textures);
 
     init.expected_cleanup();
@@ -239,6 +238,7 @@ TEST_CASE("create() - valid config - setup of textures fails:")
     if (!do_cleanup_all) {
       REQUIRE(init.init_flags == init.quit_flags);
     }
-    // REQUIRE(init.check_texture_setup());
+    REQUIRE(init.check_a_texture_failed());
+    init.check_texture_cleanup();
   }
 }

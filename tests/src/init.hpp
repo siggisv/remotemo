@@ -79,16 +79,20 @@ struct Texture_results {
 };
 extern const std::array<Texture_results, 10> all_texture_results;
 
+struct Setup_cleanup_exps {
+  tr_exp setup {};
+  tr_exp cleanup {};
+};
+
 struct Init_status {
   bool do_cleanup_all {false};
   Uint32 init_flags {0};
   Uint32 quit_flags {0};
   std::list<tr_exp> exps {};
-  tr_exp exp_get_basepath {};
-  tr_exp exp_free_basepath {};
-  tr_exp exp_load_font {};
-  tr_exp exp_load_backgr {};
-  tr_exp exp_create_t_area {};
+  Setup_cleanup_exps exps_basepath {};
+  Setup_cleanup_exps exps_backgr {};
+  Setup_cleanup_exps exps_font {};
+  Setup_cleanup_exps exps_t_area {};
   Test_seqs seqs;
   bool init_did_succeed {false};
   Resources to_be_cleaned_up {};
@@ -103,7 +107,8 @@ struct Init_status {
   void attempt_create_renderer(bool should_success);
   void attempt_setup_textures(Texture_results expected_results);
   void expected_cleanup();
-  bool check_texture_setup();
+  bool check_a_texture_failed();
+  void check_texture_cleanup();
 };
 
 // Helper functions:

@@ -327,35 +327,35 @@ void Init_status::attempt_setup_textures(Texture_results expected_results)
   }
   */
   if (ready_res.backgr == nullptr || ready_res.font == nullptr) {
-    exp_get_basepath =
+    exps_basepath.setup =
         NAMED_REQUIRE_CALL(mock_SDL, mock_GetBasePath())
             .TIMES(0, 1)
             .RETURN(exp_results.basepath)
             .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr, seqs.opt);
-    exp_free_basepath = NAMED_REQUIRE_CALL(
+    exps_basepath.cleanup = NAMED_REQUIRE_CALL(
         mock_SDL, mock_free(static_cast<void*>(exp_results.basepath)))
-                            .TIMES(0, 1)
-                            .IN_SEQUENCE(seqs.opt);
+                                .TIMES(0, 1)
+                                .IN_SEQUENCE(seqs.opt);
   }
   if (exp_results.basepath != nullptr && ready_res.font == nullptr) {
-    exp_load_font = NAMED_REQUIRE_CALL(mock_SDL,
+    exps_font.setup = NAMED_REQUIRE_CALL(mock_SDL,
         mock_LoadTexture(ready_res.render, re(&regex_dummy_font_path[0])))
-                        .TIMES(0, 1)
-                        .RETURN(exp_results.font)
-                        .IN_SEQUENCE(seqs.font);
+                          .TIMES(0, 1)
+                          .RETURN(exp_results.font)
+                          .IN_SEQUENCE(seqs.font);
     ready_res.font = exp_results.font;
     might_be_cleaned_up.font = exp_results.font;
   }
   if (exp_results.basepath != nullptr && ready_res.backgr == nullptr) {
-    exp_load_backgr = NAMED_REQUIRE_CALL(mock_SDL,
+    exps_backgr.setup = NAMED_REQUIRE_CALL(mock_SDL,
         mock_LoadTexture(ready_res.render, re(&regex_dummy_backgr_path[0])))
-                          .TIMES(0, 1)
-                          .RETURN(exp_results.backgr)
-                          .IN_SEQUENCE(seqs.backgr);
+                            .TIMES(0, 1)
+                            .RETURN(exp_results.backgr)
+                            .IN_SEQUENCE(seqs.backgr);
     ready_res.backgr = exp_results.backgr;
     might_be_cleaned_up.backgr = exp_results.backgr;
   }
-  exp_create_t_area = NAMED_REQUIRE_CALL(
+  exps_t_area.setup = NAMED_REQUIRE_CALL(
       mock_SDL, mock_CreateTexture(ready_res.render, SDL_PIXELFORMAT_RGBA32,
                     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
                     SDL_TEXTUREACCESS_TARGET, (40 * 7) + 2, (24 * 18) + 2))
@@ -377,22 +377,22 @@ void Init_status::attempt_setup_textures(Texture_results expected_results)
 void Init_status::expected_cleanup()
 {
   if (might_be_cleaned_up.t_area != nullptr) {
-    exps.push_back(NAMED_REQUIRE_CALL(
+    exps_t_area.cleanup = NAMED_REQUIRE_CALL(
         mock_SDL, mock_DestroyTexture(might_be_cleaned_up.t_area))
-                       .TIMES(0, 1)
-                       .IN_SEQUENCE(seqs.t_area));
+                              .TIMES(0, 1)
+                              .IN_SEQUENCE(seqs.t_area);
   }
   if (might_be_cleaned_up.font != nullptr) {
-    exps.push_back(NAMED_REQUIRE_CALL(
+    exps_font.cleanup = NAMED_REQUIRE_CALL(
         mock_SDL, mock_DestroyTexture(might_be_cleaned_up.font))
-                       .TIMES(0, 1)
-                       .IN_SEQUENCE(seqs.font));
+                            .TIMES(0, 1)
+                            .IN_SEQUENCE(seqs.font);
   }
   if (might_be_cleaned_up.backgr != nullptr) {
-    exps.push_back(NAMED_REQUIRE_CALL(
+    exps_backgr.cleanup = NAMED_REQUIRE_CALL(
         mock_SDL, mock_DestroyTexture(might_be_cleaned_up.backgr))
-                       .TIMES(0, 1)
-                       .IN_SEQUENCE(seqs.backgr));
+                              .TIMES(0, 1)
+                              .IN_SEQUENCE(seqs.backgr);
   }
   to_be_cleaned_up.expected_cleanup(&exps, &seqs);
   if (do_cleanup_all) {
@@ -404,6 +404,47 @@ void Init_status::expected_cleanup()
         NAMED_REQUIRE_CALL(mock_SDL, mock_QuitSubSystem(ANY(Uint32)))
             .LR_SIDE_EFFECT(quit_flags = _1)
             .IN_SEQUENCE(seqs.main, seqs.opt));
+  }
+}
+
+bool Init_status::check_a_texture_failed()
+{
+  if (exp_results.basepath == nullptr && exps_basepath.setup &&
+      exps_basepath.setup->is_saturated()) {
+    return true;
+  }
+  if (might_be_cleaned_up.font == nullptr && exps_font.setup &&
+      exps_font.setup->is_saturated()) {
+    return true;
+  }
+  if (might_be_cleaned_up.backgr == nullptr && exps_backgr.setup &&
+      exps_backgr.setup->is_saturated()) {
+    return true;
+  }
+  if (might_be_cleaned_up.t_area == nullptr && exps_t_area.setup &&
+      exps_t_area.setup->is_saturated()) {
+    return true;
+  }
+  return false;
+}
+
+void Init_status::check_texture_cleanup()
+{
+  if (exp_results.basepath != nullptr && exps_basepath.setup) {
+    REQUIRE(exps_basepath.setup->is_saturated() ==
+            exps_basepath.cleanup->is_saturated());
+  }
+  if (might_be_cleaned_up.font != nullptr) {
+    REQUIRE(
+        exps_font.setup->is_saturated() == exps_font.cleanup->is_saturated());
+  }
+  if (might_be_cleaned_up.backgr != nullptr) {
+    REQUIRE(exps_backgr.setup->is_saturated() ==
+            exps_backgr.cleanup->is_saturated());
+  }
+  if (might_be_cleaned_up.font != nullptr) {
+    REQUIRE(
+        exps_font.setup->is_saturated() == exps_font.cleanup->is_saturated());
   }
 }
 
