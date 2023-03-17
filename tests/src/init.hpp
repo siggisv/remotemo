@@ -5,6 +5,7 @@
 #include <list>
 #include <array>
 #include <memory>
+#include <optional>
 
 #include "mock_sdl.hpp"
 
@@ -79,6 +80,16 @@ struct Texture_results {
 };
 extern const std::array<Texture_results, 10> all_texture_results;
 
+struct Win_conf {
+  std::optional<std::string> title {};
+  std::optional<SDL_Point> size {};
+  std::optional<SDL_Point> pos {};
+  std::optional<bool> is_resizable {};
+  std::optional<bool> is_fullscreen {};
+
+  std::string describe() const;
+};
+
 struct Setup_cleanup_exps {
   tr_exp setup {};
   tr_exp cleanup {};
@@ -103,7 +114,8 @@ struct Init_status {
   void set_res_from_config(const Conf_resources& conf);
   void attempt_init(bool should_success);
   void attempt_set_hint(bool should_success);
-  void attempt_create_window(bool should_success);
+  void attempt_create_window(
+      bool should_success, const Win_conf& win_conf = {});
   void attempt_create_renderer(bool should_success);
   void attempt_setup_textures(Texture_results expected_results);
   void expected_cleanup();
@@ -115,7 +127,8 @@ struct Init_status {
 
 void check_renderer_settings(std::list<tr_exp>* exps, SDL_Renderer* renderer,
     Test_seqs* seqs, Uint32 render_flag, int ret_val);
-bool try_running_create(bool do_cleanup_all, const Conf_resources& conf = {});
+bool try_running_create(bool do_cleanup_all,
+    const Conf_resources& conf_res = {}, const Win_conf& win_conf = {});
 void require_init_has_ended(std::list<tr_exp>* exps, Test_seqs* seqs);
 
 #endif // REMOTEMO_TESTS_SRC_INIT_HPP

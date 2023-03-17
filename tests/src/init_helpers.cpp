@@ -4,6 +4,8 @@
 
 #include "init.hpp"
 
+using std::string_literals::operator""s;
+
 ///////////////////////////////////
 // Functions redirecting to the mock-functions:
 
@@ -237,13 +239,29 @@ void Conf_resources::all_checks_succeeds(
   }
 }
 
-bool try_running_create(bool do_cleanup_all, const Conf_resources& conf)
+bool try_running_create(bool do_cleanup_all, const Conf_resources& conf_res,
+    const Win_conf& win_conf)
 {
   remotemo::Config config;
   config.cleanup_all(do_cleanup_all)
-      .the_window(conf.res.win)
-      .background(conf.res.backgr)
-      .font_bitmap(conf.res.font);
+      .the_window(conf_res.res.win)
+      .background(conf_res.res.backgr)
+      .font_bitmap(conf_res.res.font);
+  if (win_conf.title.has_value()) {
+    config.window_title(*win_conf.title);
+  }
+  if (win_conf.size.has_value()) {
+    config.window_size(*win_conf.size);
+  }
+  if (win_conf.pos.has_value()) {
+    config.window_position(*win_conf.pos);
+  }
+  if (win_conf.is_resizable.has_value()) {
+    config.window_resizable(*win_conf.is_resizable);
+  }
+  if (win_conf.is_fullscreen.has_value()) {
+    config.window_fullscreen(*win_conf.is_fullscreen);
+  }
   auto t = remotemo::create(config);
   // This dummy function is here so we can check if cleanup happens before
   // `t` goes out of scope or after:
@@ -261,6 +279,30 @@ std::string Texture_results::describe() const
       << "Load backgr succeeds:      " << (backgr != nullptr) << "\n"
       << "Create text area succeeds: " << (t_area != nullptr) << "\n"
       << std::noboolalpha;
+  return oss.str();
+}
+
+std::string Win_conf::describe() const
+{
+  std::ostringstream oss;
+
+  oss << std::boolalpha;
+  if (title.has_value()) {
+    oss << "Title:           " << *title << "\n";
+  }
+  if (size.has_value()) {
+    oss << "Size:            (" << size->x << ", " << size->y << ")\n";
+  }
+  if (pos.has_value()) {
+    oss << "Position:        (" << pos->x << ", " << pos->y << ")\n";
+  }
+  if (is_resizable.has_value()) {
+    oss << "Is resizable:    " << *is_resizable << "\n";
+  }
+  if (is_fullscreen.has_value()) {
+    oss << "Is fullscreened: " << *is_fullscreen << "\n";
+  }
+  oss << std::noboolalpha;
   return oss.str();
 }
 
@@ -292,15 +334,24 @@ void Init_status::attempt_set_hint(bool should_success)
                      .IN_SEQUENCE(seqs.main));
 }
 
-void Init_status::attempt_create_window(bool should_success)
+void Init_status::attempt_create_window(
+    bool should_success, const Win_conf& win_conf)
 {
+  std::string regex_title =
+      "^"s + win_conf.title.value_or("Retro Monochrome Text Monitor") + "$";
+  SDL_Point size = win_conf.size.value_or(SDL_Point {1280, 720});
+  SDL_Point pos = win_conf.pos.value_or(
+      SDL_Point {SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED});
+  Uint32 flags =
+      (win_conf.is_resizable.value_or(true) ? SDL_WINDOW_RESIZABLE : 0) |
+      (win_conf.is_fullscreen.value_or(false) ? SDL_WINDOW_FULLSCREEN_DESKTOP
+                                              : 0);
   SDL_Window* create_win_ret = should_success ? d_new_win : nullptr;
-  exps.push_back(NAMED_REQUIRE_CALL(
-      mock_SDL, mock_CreateWindow(re("^Retro Monochrome Text Monitor$"),
-                    SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280,
-                    720, SDL_WINDOW_RESIZABLE))
-                     .RETURN(create_win_ret)
-                     .IN_SEQUENCE(seqs.main, seqs.t_area));
+  exps.push_back(
+      NAMED_REQUIRE_CALL(mock_SDL, mock_CreateWindow(re(regex_title.c_str()),
+                                       pos.x, pos.y, size.x, size.y, flags))
+          .RETURN(create_win_ret)
+          .IN_SEQUENCE(seqs.main, seqs.t_area));
   ready_res.win = create_win_ret;
   to_be_cleaned_up.win = create_win_ret;
 }
@@ -319,13 +370,6 @@ void Init_status::attempt_create_renderer(bool should_success)
 void Init_status::attempt_setup_textures(Texture_results expected_results)
 {
   exp_results = expected_results;
-  /*
-  if (exp_get_basepath) {
-    UNSCOPED_INFO("WOW! Wasn't expecting 'exp_get_basepath' to be == true");
-  } else {
-    UNSCOPED_INFO("Ok. That is what I expected. :D");
-  }
-  */
   if (ready_res.backgr == nullptr || ready_res.font == nullptr) {
     exps_basepath.setup =
         NAMED_REQUIRE_CALL(mock_SDL, mock_GetBasePath())
@@ -364,14 +408,6 @@ void Init_status::attempt_setup_textures(Texture_results expected_results)
                           .IN_SEQUENCE(seqs.t_area);
   ready_res.t_area = exp_results.t_area;
   might_be_cleaned_up.t_area = exp_results.t_area;
-  /*
-  if (exp_get_basepath) {
-    UNSCOPED_INFO("Ok. That is still what I expected. :D");
-  } else {
-    UNSCOPED_INFO("Wasn't expecting 'exp_get_basepath' to be false anymore!");
-  }
-  SUCCEED("TEST..................................");
-  */
 }
 
 void Init_status::expected_cleanup()
