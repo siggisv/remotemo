@@ -30,6 +30,8 @@ class Mock_SDL {
   MAKE_MOCK1(mock_DestroyTexture, void(SDL_Texture*));
   MAKE_MOCK5(
       mock_CreateTexture, SDL_Texture*(SDL_Renderer*, Uint32, int, int, int));
+  MAKE_MOCK2(mock_SetTextureBlendMode, int(SDL_Texture*, SDL_BlendMode));
+  MAKE_MOCK4(mock_SetTextureColorMod, int(SDL_Texture*, Uint8, Uint8, Uint8));
 };
 extern Mock_SDL mock_SDL;
 

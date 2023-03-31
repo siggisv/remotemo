@@ -95,7 +95,7 @@ bool Remotemo::initialize(const Config& config)
     return false;
   }
   if (conf_renderer == nullptr) {
-    if (config.m_background != nullptr || config.m_font_bitmap) {
+    if (config.m_background != nullptr || config.m_font_bitmap != nullptr) {
       return false;
     }
   } else {
@@ -190,7 +190,8 @@ bool Remotemo::initialize(const Config& config)
       return false;
     }
     base_path = c_base_path;
-    ::SDL_free(c_base_path);
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
+    ::SDL_free(c_base_path); // NOLINT(cppcoreguidelines-owning-memory)
     SDL_Log("Base path: %s", base_path.c_str());
   }
   if (config.m_font_bitmap != nullptr) {
@@ -211,7 +212,7 @@ bool Remotemo::initialize(const Config& config)
     m_background = config.m_background;
   } else {
     auto texture_path = base_path / config.m_background_file_path;
-    SDL_Log("Font bitmap path: %s", texture_path.c_str());
+    SDL_Log("Background path: %s", texture_path.c_str());
     m_background = ::IMG_LoadTexture(m_renderer, texture_path.c_str());
     if (m_background == nullptr) {
       ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,

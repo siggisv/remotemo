@@ -1,4 +1,5 @@
 #include <sstream>
+#include <filesystem>
 
 #include "remotemo/remotemo.hpp"
 
@@ -84,6 +85,14 @@ SDL_Texture* SDL_CreateTexture(
     SDL_Renderer* renderer, Uint32 format, int access, int w, int h)
 {
   return mock_SDL.mock_CreateTexture(renderer, format, access, w, h);
+}
+int SDL_SetTextureBlendMode(SDL_Texture* texture, SDL_BlendMode blendMode)
+{
+  return mock_SDL.mock_SetTextureBlendMode(texture, blendMode);
+}
+int SDL_SetTextureColorMod(SDL_Texture* texture, Uint8 r, Uint8 g, Uint8 b)
+{
+  return mock_SDL.mock_SetTextureColorMod(texture, r, g, b);
 }
 } // extern "C"
 
@@ -240,7 +249,7 @@ void Conf_resources::all_checks_succeeds(
 }
 
 bool try_running_create(bool do_cleanup_all, const Conf_resources& conf_res,
-    const Win_conf& win_conf)
+    const Win_conf& win_conf, const Texture_conf& texture_conf)
 {
   remotemo::Config config;
   config.cleanup_all(do_cleanup_all)
@@ -261,6 +270,24 @@ bool try_running_create(bool do_cleanup_all, const Conf_resources& conf_res,
   }
   if (win_conf.is_fullscreen.has_value()) {
     config.window_fullscreen(*win_conf.is_fullscreen);
+  }
+  if (texture_conf.backgr_file_path.has_value()) {
+    config.background_file_path(*texture_conf.backgr_file_path);
+  }
+  if (texture_conf.font_bitmap_file_path.has_value()) {
+    config.font_bitmap_file_path(*texture_conf.font_bitmap_file_path);
+  }
+  if (texture_conf.font_size.has_value()) {
+    config.font_size(*texture_conf.font_size);
+  }
+  if (texture_conf.text_area_size.has_value()) {
+    config.text_area_size(*texture_conf.text_area_size);
+  }
+  if (texture_conf.text_blend_mode.has_value()) {
+    config.text_blend_mode(*texture_conf.text_blend_mode);
+  }
+  if (texture_conf.text_color.has_value()) {
+    config.text_color(*texture_conf.text_color);
   }
   auto t = remotemo::create(config);
   // This dummy function is here so we can check if cleanup happens before
@@ -306,6 +333,55 @@ std::string Win_conf::describe() const
   return oss.str();
 }
 
+std::string Texture_conf::describe() const
+{
+  std::ostringstream oss;
+
+  if (backgr_file_path.has_value()) {
+    oss << "Backgr. path:    " << *backgr_file_path << "\n";
+  }
+  if (font_bitmap_file_path.has_value()) {
+    oss << "Font bitm. path: " << *font_bitmap_file_path << "\n";
+  }
+  if (font_size.has_value()) {
+    oss << "Font size:       (" << font_size->x << ", " << font_size->y
+        << ")\n";
+  }
+  if (text_area_size.has_value()) {
+    oss << "Text area size:  (" << text_area_size->x << ", "
+        << text_area_size->y << ")\n";
+  }
+  if (text_blend_mode.has_value()) {
+    oss << "Text blend mode: ";
+    switch (*text_blend_mode) {
+      case SDL_BLENDMODE_NONE:
+        oss << "[No blending]\n";
+        break;
+      case SDL_BLENDMODE_BLEND:
+        oss << "[Alpha blending]\n";
+        break;
+      case SDL_BLENDMODE_ADD:
+        oss << "[Additive blending]\n";
+        break;
+      case SDL_BLENDMODE_MOD:
+        oss << "[Color modulate]\n";
+        break;
+      /*
+      case SDL_BLENDMODE_MUL:
+        oss << "[Color multiply]\n";
+        break;
+      */
+      default:
+        oss << "[UNKNOWN: " << *text_blend_mode << "] (Custom blend mode?)\n";
+    }
+  }
+  if (text_color.has_value()) {
+    oss << "Text color:      (r:" << text_color->red
+        << " g:" << text_color->green << " b:" << text_color->blue << ")\n";
+  }
+  return oss.str();
+}
+
 void Init_status::set_res_from_config(const Conf_resources& conf)
 {
   ready_res = conf.res;
@@ -339,6 +415,7 @@ void Init_status::attempt_create_window(
 {
   std::string regex_title =
       "^"s + win_conf.title.value_or("Retro Monochrome Text Monitor") + "$";
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   SDL_Point size = win_conf.size.value_or(SDL_Point {1280, 720});
   SDL_Point pos = win_conf.pos.value_or(
       SDL_Point {SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED});
@@ -347,11 +424,11 @@ void Init_status::attempt_create_window(
       (win_conf.is_fullscreen.value_or(false) ? SDL_WINDOW_FULLSCREEN_DESKTOP
                                               : 0);
   SDL_Window* create_win_ret = should_success ? d_new_win : nullptr;
-  exps.push_back(
-      NAMED_REQUIRE_CALL(mock_SDL, mock_CreateWindow(re(regex_title.c_str()),
-                                       pos.x, pos.y, size.x, size.y, flags))
-          .RETURN(create_win_ret)
-          .IN_SEQUENCE(seqs.main, seqs.t_area));
+  exps.push_back(NAMED_REQUIRE_CALL(mock_SDL,
+      mock_CreateWindow(re(regex_title), pos.x, pos.y, size.x, size.y, flags))
+                     .RETURN(create_win_ret)
+                     .IN_SEQUENCE(
+                         seqs.main, seqs.font, seqs.backgr, seqs.t_area));
   ready_res.win = create_win_ret;
   to_be_cleaned_up.win = create_win_ret;
 }
@@ -359,55 +436,89 @@ void Init_status::attempt_create_window(
 void Init_status::attempt_create_renderer(bool should_success)
 {
   SDL_Renderer* create_render_ret = should_success ? d_new_render : nullptr;
-  exps.push_back(NAMED_REQUIRE_CALL(mock_SDL,
-      mock_CreateRenderer(ready_res.win, -1, SDL_RENDERER_TARGETTEXTURE))
-                     .RETURN(create_render_ret)
-                     .IN_SEQUENCE(seqs.main, seqs.t_area));
+  exps.push_back(
+      NAMED_REQUIRE_CALL(mock_SDL,
+          mock_CreateRenderer(ready_res.win, -1, SDL_RENDERER_TARGETTEXTURE))
+          .RETURN(create_render_ret)
+          .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr, seqs.t_area));
   ready_res.render = create_render_ret;
   to_be_cleaned_up.render = create_render_ret;
 }
 
-void Init_status::attempt_setup_textures(Texture_results expected_results)
+void Init_status::attempt_setup_textures(
+    Texture_results expected_results, const Texture_conf& texture_conf)
 {
   exp_results = expected_results;
   if (ready_res.backgr == nullptr || ready_res.font == nullptr) {
-    exps_basepath.setup =
-        NAMED_REQUIRE_CALL(mock_SDL, mock_GetBasePath())
-            .TIMES(0, 1)
-            .RETURN(exp_results.basepath)
-            .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr, seqs.opt);
+    exps_basepath.setup = NAMED_REQUIRE_CALL(mock_SDL, mock_GetBasePath())
+                              .TIMES(0, 1)
+                              .RETURN(exp_results.basepath)
+                              .IN_SEQUENCE(seqs.font, seqs.backgr, seqs.opt);
     exps_basepath.cleanup = NAMED_REQUIRE_CALL(
         mock_SDL, mock_free(static_cast<void*>(exp_results.basepath)))
                                 .TIMES(0, 1)
                                 .IN_SEQUENCE(seqs.opt);
   }
-  if (exp_results.basepath != nullptr && ready_res.font == nullptr) {
-    exps_font.setup = NAMED_REQUIRE_CALL(mock_SDL,
-        mock_LoadTexture(ready_res.render, re(&regex_dummy_font_path[0])))
-                          .TIMES(0, 1)
-                          .RETURN(exp_results.font)
-                          .IN_SEQUENCE(seqs.font);
-    ready_res.font = exp_results.font;
-    might_be_cleaned_up.font = exp_results.font;
-  }
-  if (exp_results.basepath != nullptr && ready_res.backgr == nullptr) {
-    exps_backgr.setup = NAMED_REQUIRE_CALL(mock_SDL,
-        mock_LoadTexture(ready_res.render, re(&regex_dummy_backgr_path[0])))
+  if (exp_results.basepath != nullptr) {
+    std::filesystem::path base_path {exp_results.basepath};
+    if (ready_res.font == nullptr) {
+      auto font_full_path =
+          base_path / texture_conf.font_bitmap_file_path.value_or(
+                          "res/img/font_bitmap.png");
+      std::string regex_path = "^"s + font_full_path.string() + "$";
+      exps_font.setup = NAMED_REQUIRE_CALL(
+          mock_SDL, mock_LoadTexture(ready_res.render, re(regex_path)))
                             .TIMES(0, 1)
-                            .RETURN(exp_results.backgr)
-                            .IN_SEQUENCE(seqs.backgr);
-    ready_res.backgr = exp_results.backgr;
-    might_be_cleaned_up.backgr = exp_results.backgr;
+                            .RETURN(exp_results.font)
+                            .IN_SEQUENCE(seqs.font);
+      ready_res.font = exp_results.font;
+      might_be_cleaned_up.font = exp_results.font;
+    }
+    if (ready_res.backgr == nullptr) {
+      auto backgr_full_path =
+          base_path / texture_conf.backgr_file_path.value_or(
+                          "res/img/terminal_screen.png");
+      std::string regex_path = "^"s + backgr_full_path.string() + "$";
+      exps_backgr.setup = NAMED_REQUIRE_CALL(
+          mock_SDL, mock_LoadTexture(ready_res.render, re(regex_path)))
+                              .TIMES(0, 1)
+                              .RETURN(exp_results.backgr)
+                              .IN_SEQUENCE(seqs.backgr);
+      ready_res.backgr = exp_results.backgr;
+      might_be_cleaned_up.backgr = exp_results.backgr;
+    }
   }
-  exps_t_area.setup = NAMED_REQUIRE_CALL(
-      mock_SDL, mock_CreateTexture(ready_res.render, SDL_PIXELFORMAT_RGBA32,
-                    // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-                    SDL_TEXTUREACCESS_TARGET, (40 * 7) + 2, (24 * 18) + 2))
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+  auto font_size = texture_conf.font_size.value_or(SDL_Point {7, 18});
+  auto t_area_size = texture_conf.text_area_size.value_or(
+      SDL_Point {40, 24}); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+  exps_t_area.setup = NAMED_REQUIRE_CALL(mock_SDL,
+      mock_CreateTexture(ready_res.render, SDL_PIXELFORMAT_RGBA32,
+          SDL_TEXTUREACCESS_TARGET, (t_area_size.x * font_size.x) + 2,
+          (t_area_size.y * font_size.y) + 2))
                           .TIMES(0, 1)
                           .RETURN(exp_results.t_area)
-                          .IN_SEQUENCE(seqs.t_area);
+                          .IN_SEQUENCE(seqs.main, seqs.t_area);
   ready_res.t_area = exp_results.t_area;
   might_be_cleaned_up.t_area = exp_results.t_area;
+  if (ready_res.t_area != nullptr) {
+    SDL_BlendMode text_blend_mode =
+        texture_conf.text_blend_mode.value_or(SDL_BLENDMODE_ADD);
+    exps_text_blend = NAMED_REQUIRE_CALL(
+        mock_SDL, mock_SetTextureBlendMode(ready_res.t_area, text_blend_mode))
+                          .TIMES(0, 1)
+                          .RETURN(0)
+                          .IN_SEQUENCE(seqs.main);
+    auto text_color =
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+        texture_conf.text_color.value_or(remotemo::Color {89, 221, 0});
+    exps_text_color = NAMED_REQUIRE_CALL(
+        mock_SDL, mock_SetTextureColorMod(ready_res.t_area, text_color.red,
+                      text_color.green, text_color.blue))
+                          .TIMES(0, 1)
+                          .RETURN(0)
+                          .IN_SEQUENCE(seqs.t_area);
+  }
 }
 
 void Init_status::expected_cleanup()
@@ -416,7 +527,7 @@ void Init_status::expected_cleanup()
     exps_t_area.cleanup = NAMED_REQUIRE_CALL(
         mock_SDL, mock_DestroyTexture(might_be_cleaned_up.t_area))
                               .TIMES(0, 1)
-                              .IN_SEQUENCE(seqs.t_area);
+                              .IN_SEQUENCE(seqs.main, seqs.t_area);
   }
   if (might_be_cleaned_up.font != nullptr) {
     exps_font.cleanup = NAMED_REQUIRE_CALL(
@@ -443,7 +554,7 @@ void Init_status::expected_cleanup()
   }
 }
 
-bool Init_status::check_a_texture_failed()
+bool Init_status::check_a_texture_failed() const
 {
   if (exp_results.basepath == nullptr && exps_basepath.setup &&
       exps_basepath.setup->is_saturated()) {
@@ -464,7 +575,7 @@ bool Init_status::check_a_texture_failed()
   return false;
 }
 
-void Init_status::check_texture_cleanup()
+void Init_status::check_texture_cleanup() const
 {
   if (exp_results.basepath != nullptr && exps_basepath.setup) {
     REQUIRE(exps_basepath.setup->is_saturated() ==
@@ -478,9 +589,13 @@ void Init_status::check_texture_cleanup()
     REQUIRE(exps_backgr.setup->is_saturated() ==
             exps_backgr.cleanup->is_saturated());
   }
-  if (might_be_cleaned_up.font != nullptr) {
+  if (might_be_cleaned_up.t_area != nullptr) {
+    REQUIRE(exps_t_area.setup->is_saturated() ==
+            exps_t_area.cleanup->is_saturated());
     REQUIRE(
-        exps_font.setup->is_saturated() == exps_font.cleanup->is_saturated());
+        exps_t_area.setup->is_saturated() == exps_text_blend->is_saturated());
+    REQUIRE(
+        exps_t_area.setup->is_saturated() == exps_text_color->is_saturated());
   }
 }
 

@@ -321,3 +321,64 @@ TEST_CASE("create() succeeds - test if config is used to create the window:")
     init.check_texture_cleanup();
   }
 }
+
+TEST_CASE("create() succeeds - test if config is used to setup the textures:")
+{
+  auto do_cleanup_all = GENERATE(false, true);
+  auto conf_res = valid_conf_res[0];
+  auto set_hint = GENERATE(false, true);
+
+  const std::vector<Texture_conf> texture_config_settings {{
+      {std::nullopt, std::nullopt, {{8, 12}}, {{40, 24}}, std::nullopt,
+          std::nullopt},
+      {std::nullopt, std::nullopt, {{5, 14}}, {{80, 25}}, SDL_BLENDMODE_BLEND,
+          {{128, 32, 255}}},
+      {std::nullopt, "try/this/valid_path.png", {{10, 24}}, {{40, 28}},
+          std::nullopt, std::nullopt},
+      {"/var/tmp/valid_but_not_smart.png", std::nullopt, {{7, 18}},
+          {{40, 24}}, std::nullopt, std::nullopt},
+  }};
+  auto texture_conf = GENERATE_REF(from_range(texture_config_settings));
+
+  char* d_bpath = const_cast<char*>(&d_basepath[0]);
+  Texture_results textures {
+      d_bpath, d_new_font_bitmap, d_new_backgr, d_new_text_area};
+  DYNAMIC_SECTION(
+      "... SDL_Init() succeeds, ...\n"
+      << "... SDL_SetHint() "
+      << (set_hint ? "succeeds, ..." : "fails! (but isn't fatal), ...")
+      << "\n"
+      << "... SDL_CreateWindow() succeeds, ...\n"
+      << "... SDL_CreateRenderer() succeeds, ...\n"
+      << "... Texture generation with settings from config:\n"
+      << texture_conf.describe() << "...\n"
+      << "Should clean up all: " << std::boolalpha << do_cleanup_all
+      << std::noboolalpha << "\n")
+  {
+    Init_status init {};
+    auto& exps = init.exps;
+    auto& seqs = init.seqs;
+    init.do_cleanup_all = do_cleanup_all;
+
+    conf_res.all_checks_succeeds(&exps, &seqs);
+    init.set_res_from_config(conf_res);
+
+    init.attempt_init(true);
+    init.attempt_set_hint(set_hint);
+    init.attempt_create_window(true);
+    init.attempt_create_renderer(true);
+    init.attempt_setup_textures(textures, texture_conf);
+
+    require_init_has_ended(&exps, &seqs);
+    init.expected_cleanup();
+
+    bool success = try_running_create(
+        do_cleanup_all, conf_res, Win_conf {}, texture_conf);
+    REQUIRE(success);
+    if (!do_cleanup_all) {
+      REQUIRE(init.init_flags == init.quit_flags);
+    }
+    REQUIRE(init.check_a_texture_failed() == false);
+    init.check_texture_cleanup();
+  }
+}
