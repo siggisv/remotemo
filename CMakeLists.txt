@@ -50,7 +50,7 @@ find_package(SDL2 REQUIRED)
 find_library(SDL2_IMAGE_LIBRARIES SDL2_image REQUIRED)
 set(SDL2_IMAGE_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
 
-add_library(remotemo src/remotemo.cpp)
+add_library(remotemo src/remotemo.cpp src/texture.cpp)
 # How to prevent warnings in header files (when used in other projects):
 # https://www.foonathan.net/2018/10/cmake-warnings
 target_include_directories(remotemo PRIVATE

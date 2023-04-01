@@ -12,9 +12,11 @@ namespace remotemo {
 using std::string_literals::operator""s;
 
 class Remotemo;
+class Texture;
 
 class Config {
   friend Remotemo;
+  friend Texture;
 
 public:
   constexpr Config() = default;

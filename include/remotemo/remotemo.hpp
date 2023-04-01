@@ -16,6 +16,7 @@
 #include <SDL.h>
 
 namespace remotemo {
+class Texture;
 class Remotemo {
   friend std::optional<Remotemo> create(const Config& config);
 
@@ -36,9 +37,10 @@ private:
 
   SDL_Window* m_window {nullptr};
   SDL_Renderer* m_renderer {nullptr};
-  SDL_Texture* m_background {nullptr};
-  SDL_Texture* m_font_bitmap {nullptr};
-  SDL_Texture* m_text_area {nullptr};
+
+  std::unique_ptr<Texture> m_background {};
+  std::unique_ptr<Texture> m_font_bitmap {};
+  std::unique_ptr<Texture> m_text_area {};
   static constexpr Uint32 sdl_init_flags {SDL_INIT_VIDEO};
 };
 

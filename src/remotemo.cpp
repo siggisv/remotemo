@@ -3,6 +3,8 @@
 
 #include <filesystem>
 
+#include "texture.hpp"
+
 namespace remotemo {
 class Remotemo::Cleanup_handler {
   friend Remotemo;
@@ -30,14 +32,10 @@ private:
   ::SDL_Renderer* m_renderer {nullptr};
   ::SDL_Texture* m_background {nullptr};
   ::SDL_Texture* m_font_bitmap {nullptr};
-  ::SDL_Texture* m_text_area {nullptr};
 };
 
 Remotemo::Cleanup_handler::~Cleanup_handler()
 {
-  if (m_text_area != nullptr) {
-    ::SDL_DestroyTexture(m_text_area);
-  }
   if (m_font_bitmap != nullptr) {
     ::SDL_DestroyTexture(m_font_bitmap);
   }
@@ -65,7 +63,10 @@ Remotemo::Cleanup_handler::~Cleanup_handler()
 
 Remotemo::~Remotemo() noexcept = default;
 Remotemo::Remotemo(Remotemo&& other) noexcept
-    : m_cleanup_handler(std::move(other.m_cleanup_handler))
+    : m_cleanup_handler(std::move(other.m_cleanup_handler)),
+      m_background(std::move(other.m_background)),
+      m_font_bitmap(std::move(other.m_font_bitmap)),
+      m_text_area(std::move(other.m_text_area))
 {}
 bool Remotemo::initialize(const Config& config)
 {
@@ -181,60 +182,29 @@ bool Remotemo::initialize(const Config& config)
     }
     m_cleanup_handler->m_renderer = m_renderer;
   }
-  std::filesystem::path base_path {};
-  if (config.m_font_bitmap == nullptr || config.m_background == nullptr) {
-    char* c_base_path = SDL_GetBasePath();
-    if (c_base_path == nullptr) {
-      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "SDL_GetBasePath() failed: %s\n", ::SDL_GetError());
-      return false;
-    }
-    base_path = c_base_path;
-    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
-    ::SDL_free(c_base_path); // NOLINT(cppcoreguidelines-owning-memory)
-    SDL_Log("Base path: %s", base_path.c_str());
-  }
   if (config.m_font_bitmap != nullptr) {
-    m_font_bitmap = config.m_font_bitmap;
+    m_font_bitmap =
+        Texture::create(config.m_font_bitmap, config.m_cleanup_all);
+    m_cleanup_handler->m_font_bitmap = nullptr;
   } else {
-    auto texture_path = base_path / config.m_font_bitmap_file_path;
-    SDL_Log("Font bitmap path: %s", texture_path.c_str());
-    m_font_bitmap = ::IMG_LoadTexture(m_renderer, texture_path.c_str());
-    if (m_font_bitmap == nullptr) {
-      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "IMG_LoadTexture(renderer, \"%s\") failed: %s\n",
-          texture_path.c_str(), ::SDL_GetError());
+    m_font_bitmap = Texture::load(m_renderer, config.m_font_bitmap_file_path);
+    if (!m_font_bitmap) {
       return false;
     }
-    m_cleanup_handler->m_font_bitmap = m_font_bitmap;
   }
   if (config.m_background != nullptr) {
-    m_background = config.m_background;
+    m_background = Texture::create(config.m_background, config.m_cleanup_all);
+    m_cleanup_handler->m_background = nullptr;
   } else {
-    auto texture_path = base_path / config.m_background_file_path;
-    SDL_Log("Background path: %s", texture_path.c_str());
-    m_background = ::IMG_LoadTexture(m_renderer, texture_path.c_str());
-    if (m_background == nullptr) {
-      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "IMG_LoadTexture(renderer, \"%s\") failed: %s\n",
-          texture_path.c_str(), ::SDL_GetError());
+    m_background = Texture::load(m_renderer, config.m_background_file_path);
+    if (!m_background) {
       return false;
     }
-    m_cleanup_handler->m_background = m_background;
   }
-  m_text_area = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_RGBA32,
-      SDL_TEXTUREACCESS_TARGET,
-      (config.m_font_width * config.m_text_area_columns) + 2,
-      (config.m_font_height * config.m_text_area_lines) + 2);
-  if (m_text_area == nullptr) {
-    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-        "SDL_CreateTexture() failed: %s\n", ::SDL_GetError());
+  m_text_area = Texture::create_text_area(m_renderer, config);
+  if (!m_text_area) {
     return false;
   }
-  SDL_SetTextureBlendMode(m_text_area, config.m_text_blend_mode);
-  SDL_SetTextureColorMod(m_text_area, config.m_text_color.red,
-      config.m_text_color.green, config.m_text_color.blue);
-  m_cleanup_handler->m_text_area = m_text_area;
   return true;
 }
 

@@ -2,6 +2,7 @@
 #include <filesystem>
 
 #include "remotemo/remotemo.hpp"
+#include "../../src/texture.hpp"
 
 #include "init.hpp"
 
@@ -251,6 +252,7 @@ void Conf_resources::all_checks_succeeds(
 bool try_running_create(bool do_cleanup_all, const Conf_resources& conf_res,
     const Win_conf& win_conf, const Texture_conf& texture_conf)
 {
+  remotemo::Texture::reset_base_path();
   remotemo::Config config;
   config.cleanup_all(do_cleanup_all)
       .the_window(conf_res.res.win)
