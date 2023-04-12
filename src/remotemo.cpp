@@ -3,7 +3,6 @@
 
 #include <filesystem>
 
-#include "texture.hpp"
 #include "engine.hpp"
 
 namespace remotemo {

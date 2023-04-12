@@ -148,34 +148,26 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     }
     cleanup_handler->m_renderer = renderer;
   }
-  std::unique_ptr<Texture> font_bitmap;
-  if (config.m_font_bitmap != nullptr) {
-    font_bitmap =
-        std::make_unique<Texture>(config.m_font_bitmap, config.m_cleanup_all);
+  auto font_bitmap = Texture::create_or_load(config.m_font_bitmap,
+      config.m_cleanup_all, renderer, config.m_font_bitmap_file_path);
+  if (font_bitmap) {
     cleanup_handler->m_font_bitmap = nullptr;
   } else {
-    font_bitmap = Texture::load(renderer, config.m_font_bitmap_file_path);
-    if (!font_bitmap) {
-      return nullptr;
-    }
+    return nullptr;
   }
-  std::unique_ptr<Texture> background;
-  if (config.m_background != nullptr) {
-    background =
-        std::make_unique<Texture>(config.m_background, config.m_cleanup_all);
+  auto background = Texture::create_or_load(config.m_background,
+      config.m_cleanup_all, renderer, config.m_background_file_path);
+  if (background) {
     cleanup_handler->m_background = nullptr;
   } else {
-    background = Texture::load(renderer, config.m_background_file_path);
-    if (!background) {
-      return nullptr;
-    }
+    return nullptr;
   }
   auto text_area = Texture::create_text_area(renderer, config);
   if (!text_area) {
     return nullptr;
   }
   return std::make_unique<Engine>(std::move(cleanup_handler), window,
-      renderer, std::move(background), std::move(font_bitmap),
-      std::move(text_area));
+      renderer, std::move(*background), std::move(*font_bitmap),
+      std::move(*text_area));
 }
 } // namespace remotemo

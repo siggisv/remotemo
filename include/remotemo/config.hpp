@@ -1,6 +1,7 @@
 #ifndef REMOTEMO_CONFIG_HPP
 #define REMOTEMO_CONFIG_HPP
 
+#include <optional>
 #include <functional>
 #include <string>
 

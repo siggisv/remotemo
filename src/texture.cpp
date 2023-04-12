@@ -4,6 +4,7 @@
 
 namespace remotemo {
 std::optional<std::filesystem::path> Texture::base_path {};
+
 Texture::~Texture() noexcept
 {
   if (m_is_owned && m_texture != nullptr) {
@@ -11,7 +12,23 @@ Texture::~Texture() noexcept
   }
 }
 
-std::unique_ptr<Texture> Texture::load(
+Texture::Texture(Texture&& other) noexcept
+    : m_texture(other.m_texture), m_is_owned(other.m_is_owned)
+{
+  other.m_is_owned = false;
+  other.m_texture = nullptr;
+}
+
+std::optional<Texture> Texture::create_or_load(SDL_Texture* texture,
+    bool is_owned, SDL_Renderer* renderer, const std::string& file_path)
+{
+  if (texture != nullptr) {
+    return Texture {texture, is_owned};
+  }
+  return Texture::load(renderer, file_path);
+}
+
+std::optional<Texture> Texture::load(
     SDL_Renderer* renderer, const std::string& file_path)
 {
   if (!base_path.has_value()) {
@@ -19,7 +36,7 @@ std::unique_ptr<Texture> Texture::load(
     if (c_base_path == nullptr) {
       ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
           "SDL_GetBasePath() failed: %s\n", ::SDL_GetError());
-      return nullptr;
+      return {};
     }
     base_path = c_base_path;
     // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
@@ -33,26 +50,26 @@ std::unique_ptr<Texture> Texture::load(
     ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
         "IMG_LoadTexture(renderer, \"%s\") failed: %s\n",
         texture_path.c_str(), ::SDL_GetError());
-    return nullptr;
+    return {};
   }
-  return std::make_unique<Texture>(texture);
+  return Texture {texture};
 }
 
-std::unique_ptr<Texture> Texture::create_text_area(
+std::optional<Texture> Texture::create_text_area(
     SDL_Renderer* renderer, const Config& config)
 {
-  auto* text_area = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
+  auto* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
       SDL_TEXTUREACCESS_TARGET,
       (config.m_font_width * config.m_text_area_columns) + 2,
       (config.m_font_height * config.m_text_area_lines) + 2);
-  if (text_area == nullptr) {
+  if (texture == nullptr) {
     ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
         "SDL_CreateTexture() failed: %s\n", ::SDL_GetError());
-    return nullptr;
+    return {};
   }
-  SDL_SetTextureBlendMode(text_area, config.m_text_blend_mode);
-  SDL_SetTextureColorMod(text_area, config.m_text_color.red,
+  SDL_SetTextureBlendMode(texture, config.m_text_blend_mode);
+  SDL_SetTextureColorMod(texture, config.m_text_color.red,
       config.m_text_color.green, config.m_text_color.blue);
-  return std::make_unique<Texture>(text_area);
+  return Texture {texture};
 }
 } // namespace remotemo

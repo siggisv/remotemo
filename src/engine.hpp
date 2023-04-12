@@ -41,10 +41,8 @@ private:
 class Engine {
 public:
   explicit Engine(std::unique_ptr<Cleanup_handler> cleanup_handler,
-      SDL_Window* window, SDL_Renderer* renderer,
-      std::unique_ptr<Texture> background,
-      std::unique_ptr<Texture> font_bitmap,
-      std::unique_ptr<Texture> text_area) noexcept
+      SDL_Window* window, SDL_Renderer* renderer, Texture background,
+      Texture font_bitmap, Texture text_area) noexcept
       : m_cleanup_handler(std::move(cleanup_handler)),
         m_window(std::move(window)), m_renderer(std::move(renderer)),
         m_background(std::move(background)),
@@ -67,9 +65,9 @@ private:
   SDL_Window* m_window {nullptr};
   SDL_Renderer* m_renderer {nullptr};
 
-  std::unique_ptr<Texture> m_background {};
-  std::unique_ptr<Texture> m_font_bitmap {};
-  std::unique_ptr<Texture> m_text_area {};
+  Texture m_background {};
+  Texture m_font_bitmap {};
+  Texture m_text_area {};
   static constexpr Uint32 sdl_init_flags {SDL_INIT_VIDEO};
 };
 } // namespace remotemo
