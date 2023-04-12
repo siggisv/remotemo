@@ -11,11 +11,11 @@
 namespace remotemo {
 using std::string_literals::operator""s;
 
-class Remotemo;
+class Engine;
 class Texture;
 
 class Config {
-  friend Remotemo;
+  friend Engine;
   friend Texture;
 
 public:
