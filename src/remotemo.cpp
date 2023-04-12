@@ -184,7 +184,7 @@ bool Remotemo::initialize(const Config& config)
   }
   if (config.m_font_bitmap != nullptr) {
     m_font_bitmap =
-        Texture::create(config.m_font_bitmap, config.m_cleanup_all);
+        std::make_unique<Texture>(config.m_font_bitmap, config.m_cleanup_all);
     m_cleanup_handler->m_font_bitmap = nullptr;
   } else {
     m_font_bitmap = Texture::load(m_renderer, config.m_font_bitmap_file_path);
@@ -193,7 +193,8 @@ bool Remotemo::initialize(const Config& config)
     }
   }
   if (config.m_background != nullptr) {
-    m_background = Texture::create(config.m_background, config.m_cleanup_all);
+    m_background =
+        std::make_unique<Texture>(config.m_background, config.m_cleanup_all);
     m_cleanup_handler->m_background = nullptr;
   } else {
     m_background = Texture::load(m_renderer, config.m_background_file_path);

@@ -12,6 +12,10 @@
 namespace remotemo {
 class Texture {
 public:
+  constexpr explicit Texture(
+      SDL_Texture* texture, bool is_owned = true) noexcept
+      : m_texture(texture), m_is_owned(is_owned)
+  {}
   ~Texture() noexcept;
   Texture(Texture&& other) noexcept;
   Texture& operator=(Texture&& other) noexcept;
@@ -20,7 +24,6 @@ public:
   Texture(const Texture&) = delete;
   Texture& operator=(const Texture&) = delete;
 
-  static std::unique_ptr<Texture> create(SDL_Texture* texture, bool is_owned);
   static std::unique_ptr<Texture> load(
       SDL_Renderer* renderer, const std::string& file_path);
   static std::unique_ptr<Texture> create_text_area(
@@ -28,11 +31,6 @@ public:
   static void reset_base_path() { base_path.reset(); }
 
 private:
-  constexpr explicit Texture(
-      SDL_Texture* texture, bool is_owned = true) noexcept
-      : m_texture(texture), m_is_owned(is_owned)
-  {}
-
   SDL_Texture* const m_texture;
   const bool m_is_owned;
   static std::optional<std::filesystem::path> base_path;

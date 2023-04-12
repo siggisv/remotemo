@@ -11,11 +11,6 @@ Texture::~Texture() noexcept
   }
 }
 
-std::unique_ptr<Texture> Texture::create(SDL_Texture* texture, bool is_owned)
-{
-  return std::unique_ptr<Texture>(new Texture(texture, is_owned));
-}
-
 std::unique_ptr<Texture> Texture::load(
     SDL_Renderer* renderer, const std::string& file_path)
 {
@@ -40,7 +35,7 @@ std::unique_ptr<Texture> Texture::load(
         texture_path.c_str(), ::SDL_GetError());
     return nullptr;
   }
-  return std::unique_ptr<Texture>(new Texture(texture));
+  return std::make_unique<Texture>(texture);
 }
 
 std::unique_ptr<Texture> Texture::create_text_area(
@@ -58,6 +53,6 @@ std::unique_ptr<Texture> Texture::create_text_area(
   SDL_SetTextureBlendMode(text_area, config.m_text_blend_mode);
   SDL_SetTextureColorMod(text_area, config.m_text_color.red,
       config.m_text_color.green, config.m_text_color.blue);
-  return std::unique_ptr<Texture>(new Texture(text_area));
+  return std::make_unique<Texture>(text_area);
 }
 } // namespace remotemo
