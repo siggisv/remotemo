@@ -13,7 +13,6 @@ namespace remotemo {
 using std::string_literals::operator""s;
 
 class Engine;
-class Texture;
 
 struct Texture_config {
   SDL_Texture* raw_sdl;
@@ -77,17 +76,26 @@ public:
   Config& background_min_area(const SDL_Rect& area);
   Config& background_text_area(float x, float y, float w, float h);
   Config& background_text_area(const SDL_FRect& area);
+  [[nodiscard]] const Backgr_config& background() const
+  {
+    return m_background;
+  }
 
   Config& font_bitmap(SDL_Texture* font_bitmap);
   Config& font_bitmap_file_path(const std::string& file_path);
   Config& font_size(int width, int height);
   Config& font_size(const SDL_Point& size);
+  [[nodiscard]] const Font_config& font() const { return m_font; }
 
   Config& text_area_size(int columns, int lines);
   Config& text_area_size(const SDL_Point& size);
   Config& text_blend_mode(SDL_BlendMode mode);
   Config& text_color(Uint8 red, Uint8 green, Uint8 blue);
   Config& text_color(const Color& color);
+  [[nodiscard]] const Text_area_config& text_area() const
+  {
+    return m_text_area;
+  }
 
 private:
   bool m_cleanup_all {true};

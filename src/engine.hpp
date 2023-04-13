@@ -10,6 +10,7 @@
 #include <SDL.h>
 
 namespace remotemo {
+class Engine;
 class Cleanup_handler {
   friend Engine;
 

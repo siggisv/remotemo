@@ -39,19 +39,19 @@ Engine::Engine(Engine&& other) noexcept
 std::unique_ptr<Engine> Engine::create(const Config& config)
 {
   ::SDL_Log("Remotemo::initialize() with config.m_cleanup_all: %s",
-      config.m_cleanup_all ? "True" : "False");
+      config.cleanup_all() ? "True" : "False");
   SDL_Renderer* conf_renderer = (config.m_window == nullptr)
                                     ? nullptr
                                     : ::SDL_GetRenderer(config.m_window);
 
   std::unique_ptr<Cleanup_handler> cleanup_handler;
-  if (config.m_cleanup_all) {
+  if (config.cleanup_all()) {
     // Set cleanup_handler to handle SDL_Quit() AND all resources in config.
     // This is done right here at the start so that if something fails, then
     // everything that was handed over will be taken care of no matter where
     // in the setup process something failed.
     cleanup_handler = std::make_unique<Cleanup_handler>(true, config.m_window,
-        conf_renderer, config.m_background.raw_sdl, config.m_font.raw_sdl);
+        conf_renderer, config.background().raw_sdl, config.font().raw_sdl);
   } else {
     cleanup_handler = std::make_unique<Cleanup_handler>(false);
   }
@@ -63,8 +63,8 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     return nullptr;
   }
   if (conf_renderer == nullptr) {
-    if (config.m_background.raw_sdl != nullptr ||
-        config.m_font.raw_sdl != nullptr) {
+    if (config.background().raw_sdl != nullptr ||
+        config.font().raw_sdl != nullptr) {
       return nullptr;
     }
   } else {
@@ -83,11 +83,11 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
           "have the correct flags (SDL_RENDERER_TARGETTEXTURE missing).\n");
       return nullptr;
     }
-    if (config.m_font.raw_sdl != nullptr) {
+    if (config.font().raw_sdl != nullptr) {
       // Have not found a more direct way to check if the texture has got the
       // correct renderer:
       ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
-      if (::SDL_RenderCopy(conf_renderer, config.m_font.raw_sdl, nullptr,
+      if (::SDL_RenderCopy(conf_renderer, config.font().raw_sdl, nullptr,
               &noop_rect) != 0) {
         ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
             "The font bitmap texture that was handed to remotemo::create() "
@@ -95,11 +95,11 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
         return nullptr;
       }
     }
-    if (config.m_background.raw_sdl != nullptr) {
+    if (config.background().raw_sdl != nullptr) {
       // Have not found a more direct way to check if the texture has got the
       // correct renderer:
       ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
-      if (::SDL_RenderCopy(conf_renderer, config.m_background.raw_sdl,
+      if (::SDL_RenderCopy(conf_renderer, config.background().raw_sdl,
               nullptr, &noop_rect) != 0) {
         ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
             "The background texture that was handed to remotemo::create() "
@@ -148,21 +148,21 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     cleanup_handler->m_renderer = renderer;
   }
   auto font_bitmap =
-      Texture::create_or_load(config.m_font, config.cleanup_all(), renderer);
+      Texture::create_or_load(config.font(), config.cleanup_all(), renderer);
   if (font_bitmap) {
     cleanup_handler->m_font_bitmap = nullptr;
   } else {
     return nullptr;
   }
   auto background = Texture::create_or_load(
-      config.m_background, config.cleanup_all(), renderer);
+      config.background(), config.cleanup_all(), renderer);
   if (background) {
     cleanup_handler->m_background = nullptr;
   } else {
     return nullptr;
   }
   auto text_area =
-      Texture::create_text_area(renderer, config.m_font, config.m_text_area);
+      Texture::create_text_area(renderer, config.font(), config.text_area());
   if (!text_area) {
     return nullptr;
   }
