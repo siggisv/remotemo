@@ -156,35 +156,37 @@ Config& Config::background_file_path(const std::string& file_path)
 }
 Config& Config::background_min_area(int x, int y, int w, int h)
 {
-  m_background_min_area.x = x;
-  m_background_min_area.y = y;
-  m_background_min_area.w = w;
-  m_background_min_area.h = h;
+  return background_min_area(SDL_Rect {x, y, w, h});
+}
+Config& Config::background_min_area(const SDL_Rect& area)
+{
+  m_background.min_area = area;
   return *this;
 }
 Config& Config::background_text_area(float x, float y, float w, float h)
 {
-  m_background_text_area.x = x;
-  m_background_text_area.y = y;
-  m_background_text_area.w = w;
-  m_background_text_area.h = h;
+  return background_text_area(SDL_FRect {x, y, w, h});
+}
+Config& Config::background_text_area(const SDL_FRect& area)
+{
+  m_background.text_area = area;
   return *this;
 }
 
 Config& Config::font_bitmap(SDL_Texture* font_bitmap)
 {
-  m_font_bitmap.raw_sdl = font_bitmap;
+  m_font.raw_sdl = font_bitmap;
   return *this;
 }
 Config& Config::font_bitmap_file_path(const std::string& file_path)
 {
-  m_font_bitmap.file_path = file_path;
+  m_font.file_path = file_path;
   return *this;
 }
 Config& Config::font_size(int width, int height)
 {
-  m_font_width = width;
-  m_font_height = height;
+  m_font.width = width;
+  m_font.height = height;
   return *this;
 }
 Config& Config::font_size(const SDL_Point& size)
@@ -194,8 +196,8 @@ Config& Config::font_size(const SDL_Point& size)
 
 Config& Config::text_area_size(int columns, int lines)
 {
-  m_text_area_columns = columns;
-  m_text_area_lines = lines;
+  m_text_area.columns = columns;
+  m_text_area.lines = lines;
   return *this;
 }
 Config& Config::text_area_size(const SDL_Point& size)
@@ -204,18 +206,16 @@ Config& Config::text_area_size(const SDL_Point& size)
 }
 Config& Config::text_blend_mode(SDL_BlendMode mode)
 {
-  m_text_blend_mode = mode;
+  m_text_area.blend_mode = mode;
   return *this;
 }
 Config& Config::text_color(Uint8 red, Uint8 green, Uint8 blue)
 {
-  m_text_color.red = red;
-  m_text_color.green = green;
-  m_text_color.blue = blue;
-  return *this;
+  return text_color(Color {red, green, blue});
 }
 Config& Config::text_color(const Color& color)
 {
-  return text_color(color.red, color.green, color.blue);
+  m_text_area.color = color;
+  return *this;
 }
 } // namespace remotemo

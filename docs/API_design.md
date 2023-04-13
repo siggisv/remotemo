@@ -355,8 +355,10 @@ object has been created:
   ```C++
   remotemo::Config& remotemo::Config::background_min_area(int x, int y,
           int w, int h);
+  remotemo::Config& remotemo::Config::background_min_area(SDL_Rect area);
   remotemo::Config& remotemo::Config::background_text_area(float x, float y,
           float width, float height);
+  remotemo::Config& remotemo::Config::background_text_area(SDL_FRect area);
   ```
   > **Note** x and y are counted from the top-left corner, both starting at
   > zero.

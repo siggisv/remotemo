@@ -51,8 +51,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     // everything that was handed over will be taken care of no matter where
     // in the setup process something failed.
     cleanup_handler = std::make_unique<Cleanup_handler>(true, config.m_window,
-        conf_renderer, config.m_background.raw_sdl,
-        config.m_font_bitmap.raw_sdl);
+        conf_renderer, config.m_background.raw_sdl, config.m_font.raw_sdl);
   } else {
     cleanup_handler = std::make_unique<Cleanup_handler>(false);
   }
@@ -65,7 +64,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   }
   if (conf_renderer == nullptr) {
     if (config.m_background.raw_sdl != nullptr ||
-        config.m_font_bitmap.raw_sdl != nullptr) {
+        config.m_font.raw_sdl != nullptr) {
       return nullptr;
     }
   } else {
@@ -84,12 +83,12 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
           "have the correct flags (SDL_RENDERER_TARGETTEXTURE missing).\n");
       return nullptr;
     }
-    if (config.m_font_bitmap.raw_sdl != nullptr) {
+    if (config.m_font.raw_sdl != nullptr) {
       // Have not found a more direct way to check if the texture has got the
       // correct renderer:
       ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
-      if (::SDL_RenderCopy(conf_renderer, config.m_font_bitmap.raw_sdl,
-              nullptr, &noop_rect) != 0) {
+      if (::SDL_RenderCopy(conf_renderer, config.m_font.raw_sdl, nullptr,
+              &noop_rect) != 0) {
         ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
             "The font bitmap texture that was handed to remotemo::create() "
             "was created with a different renderer than the window.\n");
@@ -148,8 +147,8 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     }
     cleanup_handler->m_renderer = renderer;
   }
-  auto font_bitmap = Texture::create_or_load(
-      config.m_font_bitmap, config.cleanup_all(), renderer);
+  auto font_bitmap =
+      Texture::create_or_load(config.m_font, config.cleanup_all(), renderer);
   if (font_bitmap) {
     cleanup_handler->m_font_bitmap = nullptr;
   } else {
@@ -162,7 +161,8 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   } else {
     return nullptr;
   }
-  auto text_area = Texture::create_text_area(renderer, config);
+  auto text_area =
+      Texture::create_text_area(renderer, config.m_font, config.m_text_area);
   if (!text_area) {
     return nullptr;
   }

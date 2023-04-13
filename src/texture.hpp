@@ -27,8 +27,8 @@ public:
       const Texture_config& texture, bool is_owned, SDL_Renderer* renderer);
   static std::optional<Texture> load(
       SDL_Renderer* renderer, const std::string& file_path);
-  static std::optional<Texture> create_text_area(
-      SDL_Renderer* renderer, const Config& config);
+  static std::optional<Texture> create_text_area(SDL_Renderer* renderer,
+      const Font_config& font, const Text_area_config& text_area);
   static void reset_base_path() { base_path.reset(); }
 
 private:

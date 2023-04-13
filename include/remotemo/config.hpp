@@ -20,9 +20,25 @@ struct Texture_config {
   std::string file_path;
 };
 
+struct Backgr_config : Texture_config {
+  SDL_Rect min_area;
+  SDL_FRect text_area;
+};
+
+struct Font_config : Texture_config {
+  int width;
+  int height;
+};
+
+struct Text_area_config {
+  int columns;
+  int lines;
+  SDL_BlendMode blend_mode;
+  Color color;
+};
+
 class Config {
   friend Engine;
-  friend Texture;
 
 public:
   constexpr Config() = default;
@@ -58,7 +74,9 @@ public:
   Config& background(SDL_Texture* background);
   Config& background_file_path(const std::string& file_path);
   Config& background_min_area(int x, int y, int w, int h);
+  Config& background_min_area(const SDL_Rect& area);
   Config& background_text_area(float x, float y, float w, float h);
+  Config& background_text_area(const SDL_FRect& area);
 
   Config& font_bitmap(SDL_Texture* font_bitmap);
   Config& font_bitmap_file_path(const std::string& file_path);
@@ -90,19 +108,16 @@ private:
   bool m_is_closing_same_as_quit {true};
   std::function<bool()> m_pre_close_function {[]() -> bool { return true; }};
   std::function<bool()> m_pre_quit_function {[]() -> bool { return true; }};
-  Texture_config m_background {nullptr, "res/img/terminal_screen.png"s};
+  Backgr_config m_background {nullptr, "res/img/terminal_screen.png"s,
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+      SDL_Rect {118, 95, 700, 540},
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+      SDL_FRect {188.25f, 149.25f, 560.0f, 432.0f}};
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  SDL_Rect m_background_min_area {118, 95, 700, 540};
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  SDL_FRect m_background_text_area {188.25f, 149.25f, 560.0f, 432.0f};
-  Texture_config m_font_bitmap {nullptr, "res/img/font_bitmap.png"s};
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  int m_font_width {7}, m_font_height {18};
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  int m_text_area_columns {40}, m_text_area_lines {24};
-  SDL_BlendMode m_text_blend_mode {SDL_BLENDMODE_ADD};
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  Color m_text_color {89, 221, 0};
+  Font_config m_font {nullptr, "res/img/font_bitmap.png"s, 7, 18};
+  Text_area_config m_text_area {
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+      40, 24, SDL_BLENDMODE_ADD, Color {89, 221, 0}};
 };
 } // namespace remotemo
 #endif // REMOTEMO_CONFIG_HPP
