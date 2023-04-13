@@ -23,8 +23,8 @@ public:
   Texture(const Texture&) = delete;
   Texture& operator=(const Texture&) = delete;
 
-  static std::optional<Texture> create_or_load(SDL_Texture* texture,
-      bool is_owned, SDL_Renderer* renderer, const std::string& file_path);
+  static std::optional<Texture> create_or_load(
+      const Texture_config& texture, bool is_owned, SDL_Renderer* renderer);
   static std::optional<Texture> load(
       SDL_Renderer* renderer, const std::string& file_path);
   static std::optional<Texture> create_text_area(

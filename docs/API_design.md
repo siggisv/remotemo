@@ -168,9 +168,9 @@ object has been created:
     none of those you passed to it). You must then handle cleaning up those
     and quit SDL afterwards yourself.
 
-- The window: `nullptr`
+- Window: `nullptr`
   ```C++
-  remotemo::Config& remotemo::Config::the_window(SDL_Window* window);
+  remotemo::Config& remotemo::Config::window(SDL_Window* window);
   ```
   - If set to `nullptr` then `remotemo::create()` will create the window with
     the following settings and set it as being owned by this object (meaning

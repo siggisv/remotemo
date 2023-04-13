@@ -19,13 +19,13 @@ Texture::Texture(Texture&& other) noexcept
   other.m_texture = nullptr;
 }
 
-std::optional<Texture> Texture::create_or_load(SDL_Texture* texture,
-    bool is_owned, SDL_Renderer* renderer, const std::string& file_path)
+std::optional<Texture> Texture::create_or_load(
+    const Texture_config& texture, bool is_owned, SDL_Renderer* renderer)
 {
-  if (texture != nullptr) {
-    return Texture {texture, is_owned};
+  if (texture.raw_sdl != nullptr) {
+    return Texture {texture.raw_sdl, is_owned};
   }
-  return Texture::load(renderer, file_path);
+  return Texture::load(renderer, texture.file_path);
 }
 
 std::optional<Texture> Texture::load(

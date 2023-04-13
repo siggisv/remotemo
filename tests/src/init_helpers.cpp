@@ -255,7 +255,7 @@ bool try_running_create(bool do_cleanup_all, const Conf_resources& conf_res,
   remotemo::Texture::reset_base_path();
   remotemo::Config config;
   config.cleanup_all(do_cleanup_all)
-      .the_window(conf_res.res.win)
+      .window(conf_res.res.win)
       .background(conf_res.res.backgr)
       .font_bitmap(conf_res.res.font);
   if (win_conf.title.has_value()) {

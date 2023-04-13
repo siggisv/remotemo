@@ -40,9 +40,9 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
 {
   ::SDL_Log("Remotemo::initialize() with config.m_cleanup_all: %s",
       config.m_cleanup_all ? "True" : "False");
-  SDL_Renderer* conf_renderer = (config.m_the_window == nullptr)
+  SDL_Renderer* conf_renderer = (config.m_window == nullptr)
                                     ? nullptr
-                                    : ::SDL_GetRenderer(config.m_the_window);
+                                    : ::SDL_GetRenderer(config.m_window);
 
   std::unique_ptr<Cleanup_handler> cleanup_handler;
   if (config.m_cleanup_all) {
@@ -50,22 +50,22 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     // This is done right here at the start so that if something fails, then
     // everything that was handed over will be taken care of no matter where
     // in the setup process something failed.
-    cleanup_handler =
-        std::make_unique<Cleanup_handler>(true, config.m_the_window,
-            conf_renderer, config.m_background, config.m_font_bitmap);
+    cleanup_handler = std::make_unique<Cleanup_handler>(true, config.m_window,
+        conf_renderer, config.m_background.raw_sdl,
+        config.m_font_bitmap.raw_sdl);
   } else {
     cleanup_handler = std::make_unique<Cleanup_handler>(false);
   }
 
   // Validate config resources:
-  if (config.m_the_window != nullptr &&
-      ::SDL_GetWindowID(config.m_the_window) == 0) {
+  if (config.m_window != nullptr && ::SDL_GetWindowID(config.m_window) == 0) {
     ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
         "Window in config is invalid: %s\n", ::SDL_GetError());
     return nullptr;
   }
   if (conf_renderer == nullptr) {
-    if (config.m_background != nullptr || config.m_font_bitmap != nullptr) {
+    if (config.m_background.raw_sdl != nullptr ||
+        config.m_font_bitmap.raw_sdl != nullptr) {
       return nullptr;
     }
   } else {
@@ -84,24 +84,24 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
           "have the correct flags (SDL_RENDERER_TARGETTEXTURE missing).\n");
       return nullptr;
     }
-    if (config.m_font_bitmap != nullptr) {
+    if (config.m_font_bitmap.raw_sdl != nullptr) {
       // Have not found a more direct way to check if the texture has got the
       // correct renderer:
       ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
-      if (::SDL_RenderCopy(conf_renderer, config.m_font_bitmap, nullptr,
-              &noop_rect) != 0) {
+      if (::SDL_RenderCopy(conf_renderer, config.m_font_bitmap.raw_sdl,
+              nullptr, &noop_rect) != 0) {
         ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
             "The font bitmap texture that was handed to remotemo::create() "
             "was created with a different renderer than the window.\n");
         return nullptr;
       }
     }
-    if (config.m_background != nullptr) {
+    if (config.m_background.raw_sdl != nullptr) {
       // Have not found a more direct way to check if the texture has got the
       // correct renderer:
       ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
-      if (::SDL_RenderCopy(
-              conf_renderer, config.m_background, nullptr, &noop_rect) != 0) {
+      if (::SDL_RenderCopy(conf_renderer, config.m_background.raw_sdl,
+              nullptr, &noop_rect) != 0) {
         ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
             "The background texture that was handed to remotemo::create() "
             "was created with a different renderer than the window.\n");
@@ -123,7 +123,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
         "SDL_SetHint() (scale quality to linear) failed: %s\n",
         ::SDL_GetError());
   }
-  auto* window = config.m_the_window;
+  auto* window = config.m_window;
   if (window == nullptr) {
     window = ::SDL_CreateWindow(config.m_window_title.c_str(),
         config.m_window_pos_x, config.m_window_pos_y, config.m_window_width,
@@ -148,15 +148,15 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     }
     cleanup_handler->m_renderer = renderer;
   }
-  auto font_bitmap = Texture::create_or_load(config.m_font_bitmap,
-      config.m_cleanup_all, renderer, config.m_font_bitmap_file_path);
+  auto font_bitmap = Texture::create_or_load(
+      config.m_font_bitmap, config.cleanup_all(), renderer);
   if (font_bitmap) {
     cleanup_handler->m_font_bitmap = nullptr;
   } else {
     return nullptr;
   }
-  auto background = Texture::create_or_load(config.m_background,
-      config.m_cleanup_all, renderer, config.m_background_file_path);
+  auto background = Texture::create_or_load(
+      config.m_background, config.cleanup_all(), renderer);
   if (background) {
     cleanup_handler->m_background = nullptr;
   } else {

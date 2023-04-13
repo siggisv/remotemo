@@ -43,9 +43,8 @@ public:
   explicit Engine(std::unique_ptr<Cleanup_handler> cleanup_handler,
       SDL_Window* window, SDL_Renderer* renderer, Texture background,
       Texture font_bitmap, Texture text_area) noexcept
-      : m_cleanup_handler(std::move(cleanup_handler)),
-        m_window(std::move(window)), m_renderer(std::move(renderer)),
-        m_background(std::move(background)),
+      : m_cleanup_handler(std::move(cleanup_handler)), m_window(window),
+        m_renderer(renderer), m_background(std::move(background)),
         m_font_bitmap(std::move(font_bitmap)),
         m_text_area(std::move(text_area))
   {}
