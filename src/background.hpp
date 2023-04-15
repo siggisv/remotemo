@@ -11,7 +11,6 @@
 namespace remotemo {
 class Background : public Texture {
 public:
-  constexpr Background() noexcept = default;
   constexpr Background(
       const Backgr_config& backgr_config, bool is_owned) noexcept
       : Texture(backgr_config.raw_sdl, is_owned),
@@ -23,8 +22,8 @@ public:
       bool is_owned, SDL_Renderer* renderer);
 
 protected:
-  SDL_Rect m_min_area {0, 0, 0, 0};
-  SDL_FRect m_text_area {0.0f, 0.0f, 0.0f, 0.0f};
+  SDL_Rect m_min_area;
+  SDL_FRect m_text_area;
 };
 } // namespace remotemo
 #endif // REMOTEMO_SRC_BACKGROUND_HPP

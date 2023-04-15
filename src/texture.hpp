@@ -11,7 +11,6 @@
 namespace remotemo {
 class Texture {
 public:
-  constexpr Texture() noexcept = default;
   constexpr explicit Texture(
       SDL_Texture* texture, bool is_owned = true) noexcept
       : m_texture(texture), m_is_owned(is_owned)
@@ -20,6 +19,7 @@ public:
   Texture(Texture&& other) noexcept;
   Texture& operator=(Texture&& other) noexcept;
 
+  Texture() = delete;
   Texture(const Texture&) = delete;
   Texture& operator=(const Texture&) = delete;
 
@@ -30,8 +30,8 @@ public:
   static bool set_base_path();
 
 protected:
-  SDL_Texture* m_texture {nullptr};
-  bool m_is_owned {false};
+  SDL_Texture* m_texture;
+  bool m_is_owned;
 
 private:
   static std::optional<std::filesystem::path> m_base_path;

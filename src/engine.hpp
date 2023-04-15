@@ -63,12 +63,12 @@ public:
 private:
   std::unique_ptr<Cleanup_handler> m_cleanup_handler;
 
-  SDL_Window* m_window {nullptr};
-  SDL_Renderer* m_renderer {nullptr};
+  SDL_Window* m_window;
+  SDL_Renderer* m_renderer;
 
-  Background m_background {};
-  Font m_font {};
-  Texture m_text_area {};
+  Background m_background;
+  Font m_font;
+  Texture m_text_area;
   static constexpr Uint32 sdl_init_flags {SDL_INIT_VIDEO};
 };
 } // namespace remotemo
