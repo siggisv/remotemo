@@ -32,7 +32,7 @@ Engine::~Engine() noexcept = default;
 Engine::Engine(Engine&& other) noexcept
     : m_cleanup_handler(std::move(other.m_cleanup_handler)),
       m_background(std::move(other.m_background)),
-      m_font_bitmap(std::move(other.m_font_bitmap)),
+      m_font(std::move(other.m_font)),
       m_text_area(std::move(other.m_text_area))
 {}
 
@@ -147,15 +147,14 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     }
     cleanup_handler->m_renderer = renderer;
   }
-  auto font_bitmap =
-      Texture::create_or_load(config.font(), config.cleanup_all(), renderer);
-  if (font_bitmap) {
+  auto font = Font::create(config.font(), config.cleanup_all(), renderer);
+  if (font) {
     cleanup_handler->m_font_bitmap = nullptr;
   } else {
     return nullptr;
   }
-  auto background = Texture::create_or_load(
-      config.background(), config.cleanup_all(), renderer);
+  auto background =
+      Background::create(config.background(), config.cleanup_all(), renderer);
   if (background) {
     cleanup_handler->m_background = nullptr;
   } else {
@@ -167,7 +166,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     return nullptr;
   }
   return std::make_unique<Engine>(std::move(cleanup_handler), window,
-      renderer, std::move(*background), std::move(*font_bitmap),
+      renderer, std::move(*background), std::move(*font),
       std::move(*text_area));
 }
 } // namespace remotemo

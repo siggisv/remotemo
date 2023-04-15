@@ -53,8 +53,10 @@ set(SDL2_IMAGE_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
 add_library(remotemo
     src/remotemo.cpp
     src/config.cpp
-    src/texture.cpp
     src/engine.cpp
+    src/texture.cpp
+    src/font.cpp
+    src/background.cpp
 )
 # How to prevent warnings in header files (when used in other projects):
 # https://www.foonathan.net/2018/10/cmake-warnings
