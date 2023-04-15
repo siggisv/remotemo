@@ -116,13 +116,13 @@ private:
   bool m_is_closing_same_as_quit {true};
   std::function<bool()> m_pre_close_function {[]() -> bool { return true; }};
   std::function<bool()> m_pre_quit_function {[]() -> bool { return true; }};
-  Backgr_config m_background {nullptr, "res/img/terminal_screen.png"s,
+  Backgr_config m_background {{nullptr, "res/img/terminal_screen.png"s},
       // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
       SDL_Rect {118, 95, 700, 540},
       // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
       SDL_FRect {188.25f, 149.25f, 560.0f, 432.0f}};
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  Font_config m_font {nullptr, "res/img/font_bitmap.png"s, 7, 18};
+  Font_config m_font {{nullptr, "res/img/font_bitmap.png"s}, 7, 18};
   Text_area_config m_text_area {
       // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
       40, 24, SDL_BLENDMODE_ADD, Color {89, 221, 0}};
