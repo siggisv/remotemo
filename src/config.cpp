@@ -218,4 +218,60 @@ Config& Config::text_color(const Color& color)
   m_text_area.color = color;
   return *this;
 }
+
+bool Config::validate_texture(SDL_Texture* texture, SDL_Renderer* renderer,
+    const std::string& texture_name)
+{
+  if (texture == nullptr) {
+    return true;
+  }
+  // Have not found a more direct way to check if the texture has got the
+  // correct renderer:
+  ::SDL_Rect noop_rect {-3, -3, 1, 1}; // Definetly not inside window
+  if (::SDL_RenderCopy(renderer, texture, nullptr, &noop_rect) != 0) {
+    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+        "The %s texture that was handed to remotemo::create() "
+        "was created with a different renderer than the window.\n",
+        texture_name.c_str());
+    return false;
+  }
+  return true;
+}
+
+bool Config::validate(SDL_Renderer* renderer) const
+{
+  if (m_window != nullptr && ::SDL_GetWindowID(m_window) == 0) {
+    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+        "Window in config is invalid: %s\n", ::SDL_GetError());
+    return false;
+  }
+  if (renderer == nullptr) {
+    if (m_background.raw_sdl != nullptr || m_font.raw_sdl != nullptr) {
+      return false;
+    }
+  } else {
+    ::SDL_RendererInfo info;
+    if (::SDL_GetRendererInfo(renderer, &info) != 0) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "SDL_GetRendererInfo() failed when trying to get info on the "
+          "renderer of the window handed to remotemo::create(): %s\n",
+          ::SDL_GetError());
+      return false;
+    }
+    if ((info.flags & SDL_RENDERER_TARGETTEXTURE) !=
+        SDL_RENDERER_TARGETTEXTURE) {
+      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+          "The renderer of the window handed to remotemo::create() did not "
+          "have the correct flags (SDL_RENDERER_TARGETTEXTURE missing).\n");
+      return false;
+    }
+    if (!validate_texture(m_font.raw_sdl, renderer, "font bitmap"s)) {
+      return false;
+    }
+    if (!validate_texture(m_background.raw_sdl, renderer, "background"s)) {
+      return false;
+    }
+  }
+  return true;
+}
 } // namespace remotemo

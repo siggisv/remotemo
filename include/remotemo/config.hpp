@@ -98,6 +98,10 @@ public:
   }
 
 private:
+  static bool validate_texture(SDL_Texture* texture, SDL_Renderer* renderer,
+      const std::string& texture_name);
+  bool validate(SDL_Renderer* renderer) const;
+
   bool m_cleanup_all {true};
   SDL_Window* m_window {nullptr};
   std::string m_window_title {"Retro Monochrome Text Monitor"s};
