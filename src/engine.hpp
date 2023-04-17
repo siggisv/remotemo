@@ -18,13 +18,9 @@ class Cleanup_handler {
 
 public:
   constexpr explicit Cleanup_handler(bool do_sdl_quit, ::SDL_Window* window,
-      ::SDL_Renderer* renderer, ::SDL_Texture* background,
-      ::SDL_Texture* font_bitmap) noexcept
-      : m_do_sdl_quit(do_sdl_quit), m_window(window), m_renderer(renderer),
-        m_background(background), m_font_bitmap(font_bitmap)
-  {}
-  constexpr explicit Cleanup_handler(bool do_sdl_quit) noexcept
-      : m_do_sdl_quit(do_sdl_quit)
+      ::SDL_Renderer* renderer) noexcept
+      : m_do_sdl_quit(do_sdl_quit), m_window(do_sdl_quit ? window : nullptr),
+        m_renderer(do_sdl_quit ? renderer : nullptr)
   {}
   ~Cleanup_handler();
   Cleanup_handler(const Cleanup_handler&) = delete;
@@ -37,8 +33,6 @@ private:
   ::Uint32 m_sdl_subsystems {0};
   ::SDL_Window* m_window {nullptr};
   ::SDL_Renderer* m_renderer {nullptr};
-  ::SDL_Texture* m_background {nullptr};
-  ::SDL_Texture* m_font_bitmap {nullptr};
 };
 
 class Engine {

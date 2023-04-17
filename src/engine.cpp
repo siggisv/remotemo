@@ -3,12 +3,6 @@
 namespace remotemo {
 Cleanup_handler::~Cleanup_handler()
 {
-  if (m_font_bitmap != nullptr) {
-    ::SDL_DestroyTexture(m_font_bitmap);
-  }
-  if (m_background != nullptr) {
-    ::SDL_DestroyTexture(m_background);
-  }
   if (m_renderer != nullptr) {
     ::SDL_DestroyRenderer(m_renderer);
   }
@@ -44,17 +38,15 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
                                     ? nullptr
                                     : ::SDL_GetRenderer(config.m_window);
 
-  std::unique_ptr<Cleanup_handler> cleanup_handler;
-  if (config.cleanup_all()) {
-    // Set cleanup_handler to handle SDL_Quit() AND all resources in config.
-    // This is done right here at the start so that if something fails, then
-    // everything that was handed over will be taken care of no matter where
-    // in the setup process something failed.
-    cleanup_handler = std::make_unique<Cleanup_handler>(true, config.m_window,
-        conf_renderer, config.background().raw_sdl, config.font().raw_sdl);
-  } else {
-    cleanup_handler = std::make_unique<Cleanup_handler>(false);
-  }
+  // Setup handling of cleanup.
+  // This is done right here at the start so that if something fails, then
+  // everything that was handed over will be taken care of no matter where
+  // in the setup process something failed.
+  auto cleanup_handler = std::make_unique<Cleanup_handler>(
+        config.cleanup_all(), config.m_window, conf_renderer);
+  auto backgr_texture =
+      Texture {config.background().raw_sdl, config.cleanup_all()};
+  auto font_texture = Texture {config.font().raw_sdl, config.cleanup_all()};
 
   // Validate config resources:
   if (config.m_window != nullptr && ::SDL_GetWindowID(config.m_window) == 0) {
@@ -147,17 +139,13 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     }
     cleanup_handler->m_renderer = renderer;
   }
-  auto font = Font::create(config.font(), config.cleanup_all(), renderer);
-  if (font) {
-    cleanup_handler->m_font_bitmap = nullptr;
-  } else {
+  auto font = Font::create(config.font(), std::move(font_texture), renderer);
+  if (!font) {
     return nullptr;
   }
-  auto background =
-      Background::create(config.background(), config.cleanup_all(), renderer);
-  if (background) {
-    cleanup_handler->m_background = nullptr;
-  } else {
+  auto background = Background::create(
+      config.background(), std::move(backgr_texture), renderer);
+  if (!background) {
     return nullptr;
   }
   auto text_area =

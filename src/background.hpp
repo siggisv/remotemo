@@ -1,6 +1,7 @@
 #ifndef REMOTEMO_SRC_BACKGROUND_HPP
 #define REMOTEMO_SRC_BACKGROUND_HPP
 
+#include <utility>
 #include <string>
 #include <optional>
 
@@ -11,17 +12,17 @@
 namespace remotemo {
 class Background : public Texture {
 public:
-  constexpr Background(
-      const Backgr_config& backgr_config, bool is_owned) noexcept
-      : Texture(backgr_config.raw_sdl, is_owned),
+  Background(
+      const Backgr_config& backgr_config, Texture&& backgr_texture) noexcept
+      : Texture(std::move(backgr_texture)),
         m_min_area(backgr_config.min_area),
         m_text_area(backgr_config.text_area)
   {}
 
   static std::optional<Background> create(const Backgr_config& backgr_config,
-      bool is_owned, SDL_Renderer* renderer);
+      Texture&& backgr_texture, SDL_Renderer* renderer);
 
-protected:
+private:
   SDL_Rect m_min_area;
   SDL_FRect m_text_area;
 };

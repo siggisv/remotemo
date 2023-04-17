@@ -1,6 +1,7 @@
 #ifndef REMOTEMO_SRC_FONT_HPP
 #define REMOTEMO_SRC_FONT_HPP
 
+#include <utility>
 #include <string>
 #include <optional>
 
@@ -11,15 +12,15 @@
 namespace remotemo {
 class Font : public Texture {
 public:
-  constexpr Font(const Font_config& font_config, bool is_owned) noexcept
-      : Texture(font_config.raw_sdl, is_owned), m_width(font_config.width),
+  Font(const Font_config& font_config, Texture&& font_texture) noexcept
+      : Texture(std::move(font_texture)), m_width(font_config.width),
         m_height(font_config.height)
   {}
 
-  static std::optional<Font> create(
-      const Font_config& font_config, bool is_owned, SDL_Renderer* renderer);
+  static std::optional<Font> create(const Font_config& font_config,
+      Texture&& font_texture, SDL_Renderer* renderer);
 
-protected:
+private:
   int m_width;
   int m_height;
 };

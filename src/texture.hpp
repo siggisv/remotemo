@@ -29,11 +29,9 @@ public:
   static void reset_base_path() { m_base_path.reset(); }
   static bool set_base_path();
 
-protected:
+private:
   SDL_Texture* m_texture;
   bool m_is_owned;
-
-private:
   static std::optional<std::filesystem::path> m_base_path;
 };
 } // namespace remotemo
