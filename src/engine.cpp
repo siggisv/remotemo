@@ -33,16 +33,16 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
 {
   ::SDL_Log("Remotemo::initialize() with config.m_cleanup_all: %s",
       config.cleanup_all() ? "True" : "False");
-  SDL_Renderer* conf_renderer = (config.m_window == nullptr)
+  SDL_Renderer* conf_renderer = (config.window().raw_sdl == nullptr)
                                     ? nullptr
-                                    : ::SDL_GetRenderer(config.m_window);
+                                    : ::SDL_GetRenderer(config.window().raw_sdl);
 
   // Setup handling of cleanup.
   // This is done right here at the start so that if something fails, then
   // everything that was handed over will be taken care of no matter where
   // in the setup process something failed.
   auto cleanup_handler = std::make_unique<Cleanup_handler>(
-      config.cleanup_all(), config.m_window, conf_renderer);
+      config.cleanup_all(), config.window().raw_sdl, conf_renderer);
   auto backgr_texture =
       Texture {config.background().raw_sdl, config.cleanup_all()};
   auto font_texture = Texture {config.font().raw_sdl, config.cleanup_all()};
@@ -64,13 +64,13 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
         "SDL_SetHint() (scale quality to linear) failed: %s\n",
         ::SDL_GetError());
   }
-  auto* window = config.m_window;
+  auto* window = config.window().raw_sdl;
   if (window == nullptr) {
-    window = ::SDL_CreateWindow(config.m_window_title.c_str(),
-        config.m_window_pos_x, config.m_window_pos_y, config.m_window_width,
-        config.m_window_height,
-        (config.m_window_is_resizable ? SDL_WINDOW_RESIZABLE : 0) |
-            (config.m_window_is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP
+    window = ::SDL_CreateWindow(config.window().title.c_str(),
+        config.window().pos_x, config.window().pos_y, config.window().width,
+        config.window().height,
+        (config.window().is_resizable ? SDL_WINDOW_RESIZABLE : 0) |
+            (config.window().is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP
                                            : 0));
     if (window == nullptr) {
       ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,

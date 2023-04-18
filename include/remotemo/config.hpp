@@ -36,6 +36,17 @@ struct Text_area_config {
   Color color;
 };
 
+struct Window_config {
+  SDL_Window* raw_sdl;
+  std::string title;
+  int width;
+  int height;
+  int pos_x;
+  int pos_y;
+  bool is_resizable;
+  bool is_fullscreen;
+};
+
 class Config {
   friend Engine;
 
@@ -53,6 +64,7 @@ public:
   Config& window_position(const SDL_Point& pos);
   Config& window_resizable(bool is_resizable);
   Config& window_fullscreen(bool is_fullscreen);
+  [[nodiscard]] const Window_config& window() const { return m_window; }
 
   Config& key_fullscreen();
   Config& key_fullscreen(Mod_keys modifier_keys, F_key key);
@@ -103,14 +115,10 @@ private:
   bool validate(SDL_Renderer* renderer) const;
 
   bool m_cleanup_all {true};
-  SDL_Window* m_window {nullptr};
-  std::string m_window_title {"Retro Monochrome Text Monitor"s};
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  int m_window_width {1280}, m_window_height {720};
-  int m_window_pos_x {SDL_WINDOWPOS_UNDEFINED};
-  int m_window_pos_y {SDL_WINDOWPOS_UNDEFINED};
-  bool m_window_is_resizable {true};
-  bool m_window_is_fullscreen {false};
+  Window_config m_window {nullptr, "Retro Monochrome Text Monitor"s,
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+      1280, 720, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, true,
+      false};
   std::optional<Key_combo> m_key_fullscreen {
       std::in_place, Mod_keys::None, F_key::F11};
   std::optional<Key_combo> m_key_close_window {

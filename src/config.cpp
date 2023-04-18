@@ -9,18 +9,18 @@ Config& Config::cleanup_all(bool cleanup_all)
 
 Config& Config::window(SDL_Window* window)
 {
-  m_window = window;
+  m_window.raw_sdl = window;
   return *this;
 }
 Config& Config::window_title(const std::string& title)
 {
-  m_window_title = title;
+  m_window.title = title;
   return *this;
 }
 Config& Config::window_size(int width, int height)
 {
-  m_window_width = width;
-  m_window_height = height;
+  m_window.width = width;
+  m_window.height = height;
   return *this;
 }
 Config& Config::window_size(const SDL_Point& size)
@@ -29,8 +29,8 @@ Config& Config::window_size(const SDL_Point& size)
 }
 Config& Config::window_position(int x, int y)
 {
-  m_window_pos_x = x;
-  m_window_pos_y = y;
+  m_window.pos_x = x;
+  m_window.pos_y = y;
   return *this;
 }
 Config& Config::window_position(const SDL_Point& pos)
@@ -39,12 +39,12 @@ Config& Config::window_position(const SDL_Point& pos)
 }
 Config& Config::window_resizable(bool is_resizable)
 {
-  m_window_is_resizable = is_resizable;
+  m_window.is_resizable = is_resizable;
   return *this;
 }
 Config& Config::window_fullscreen(bool is_fullscreen)
 {
-  m_window_is_fullscreen = is_fullscreen;
+  m_window.is_fullscreen = is_fullscreen;
   return *this;
 }
 
@@ -240,7 +240,8 @@ bool Config::validate_texture(SDL_Texture* texture, SDL_Renderer* renderer,
 
 bool Config::validate(SDL_Renderer* renderer) const
 {
-  if (m_window != nullptr && ::SDL_GetWindowID(m_window) == 0) {
+  if (m_window.raw_sdl != nullptr &&
+      ::SDL_GetWindowID(m_window.raw_sdl) == 0) {
     ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
         "Window in config is invalid: %s\n", ::SDL_GetError());
     return false;
