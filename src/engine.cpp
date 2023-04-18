@@ -22,9 +22,9 @@ Cleanup_handler::~Cleanup_handler()
   }
 }
 
-Engine::~Engine() noexcept = default;
 Engine::Engine(Engine&& other) noexcept
     : m_cleanup_handler(std::move(other.m_cleanup_handler)),
+      m_window(other.m_window), m_renderer(other.m_renderer),
       m_background(std::move(other.m_background)),
       m_font(std::move(other.m_font)),
       m_text_area(std::move(other.m_text_area))

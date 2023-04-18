@@ -44,7 +44,7 @@ public:
         m_renderer(renderer), m_background(std::move(background)),
         m_font(std::move(font)), m_text_area(std::move(text_area))
   {}
-  ~Engine() noexcept;
+  ~Engine() noexcept = default;
   Engine(Engine&& other) noexcept;
   Engine& operator=(Engine&& other) noexcept;
 
