@@ -53,21 +53,4 @@ bool Texture::load(SDL_Renderer* renderer, const std::string& file_path)
   m_is_owned = true;
   return true;
 }
-
-std::optional<Texture> Texture::create_text_area(SDL_Renderer* renderer,
-    const Font_config& font, const Text_area_config& text_area)
-{
-  auto* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
-      SDL_TEXTUREACCESS_TARGET, (font.width * text_area.columns) + 2,
-      (font.height * text_area.lines) + 2);
-  if (texture == nullptr) {
-    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-        "SDL_CreateTexture() failed: %s\n", ::SDL_GetError());
-    return {};
-  }
-  SDL_SetTextureBlendMode(texture, text_area.blend_mode);
-  SDL_SetTextureColorMod(texture, text_area.color.red, text_area.color.green,
-      text_area.color.blue);
-  return Texture {texture};
-}
 } // namespace remotemo

@@ -57,6 +57,7 @@ add_library(remotemo
     src/texture.cpp
     src/font.cpp
     src/background.cpp
+    src/text_display.cpp
 )
 # How to prevent warnings in header files (when used in other projects):
 # https://www.foonathan.net/2018/10/cmake-warnings

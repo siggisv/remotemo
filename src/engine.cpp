@@ -26,8 +26,7 @@ Engine::Engine(Engine&& other) noexcept
     : m_cleanup_handler(std::move(other.m_cleanup_handler)),
       m_window(other.m_window), m_renderer(other.m_renderer),
       m_background(std::move(other.m_background)),
-      m_font(std::move(other.m_font)),
-      m_text_area(std::move(other.m_text_area))
+      m_text_display(std::move(other.m_text_display))
 {}
 
 std::unique_ptr<Engine> Engine::create(const Config& config)
@@ -99,13 +98,12 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   if (!background) {
     return nullptr;
   }
-  auto text_area =
-      Texture::create_text_area(renderer, config.font(), config.text_area());
-  if (!text_area) {
+  auto text_display =
+      Text_display::create(std::move(*font), config.text_area(), renderer);
+  if (!text_display) {
     return nullptr;
   }
   return std::make_unique<Engine>(std::move(cleanup_handler), window,
-      renderer, std::move(*background), std::move(*font),
-      std::move(*text_area));
+      renderer, std::move(*background), std::move(*text_display));
 }
 } // namespace remotemo

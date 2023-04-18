@@ -24,8 +24,6 @@ public:
   Texture& operator=(const Texture&) = delete;
 
   bool load(SDL_Renderer* renderer, const std::string& file_path);
-  static std::optional<Texture> create_text_area(SDL_Renderer* renderer,
-      const Font_config& font, const Text_area_config& text_area);
   static void reset_base_path() { m_base_path.reset(); }
   static bool set_base_path();
 

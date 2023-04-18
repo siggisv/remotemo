@@ -8,6 +8,7 @@
 #include "texture.hpp"
 #include "font.hpp"
 #include "background.hpp"
+#include "text_display.hpp"
 
 #include <SDL.h>
 
@@ -39,10 +40,10 @@ class Engine {
 public:
   explicit Engine(std::unique_ptr<Cleanup_handler> cleanup_handler,
       SDL_Window* window, SDL_Renderer* renderer, Background background,
-      Font font, Texture text_area) noexcept
+      Text_display text_display) noexcept
       : m_cleanup_handler(std::move(cleanup_handler)), m_window(window),
         m_renderer(renderer), m_background(std::move(background)),
-        m_font(std::move(font)), m_text_area(std::move(text_area))
+        m_text_display(std::move(text_display))
   {}
   ~Engine() noexcept = default;
   Engine(Engine&& other) noexcept;
@@ -61,8 +62,7 @@ private:
   SDL_Renderer* m_renderer;
 
   Background m_background;
-  Font m_font;
-  Texture m_text_area;
+  Text_display m_text_display;
   static constexpr Uint32 sdl_init_flags {SDL_INIT_VIDEO};
 };
 } // namespace remotemo
