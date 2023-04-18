@@ -19,8 +19,8 @@ public:
 
   static std::optional<Font> create(const Font_config& font_config,
       Texture&& font_texture, SDL_Renderer* renderer);
-  const int& width() const { return m_width; }
-  const int& height() const { return m_height; }
+  [[nodiscard]] const int& width() const { return m_width; }
+  [[nodiscard]] const int& height() const { return m_height; }
 
 private:
   int m_width;

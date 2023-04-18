@@ -21,8 +21,8 @@ public:
 
   static std::optional<Background> create(const Backgr_config& backgr_config,
       Texture&& backgr_texture, SDL_Renderer* renderer);
-  const SDL_Rect& min_area() const { return m_min_area; }
-  const SDL_FRect& text_area() const { return m_text_area; }
+  [[nodiscard]] const SDL_Rect& min_area() const { return m_min_area; }
+  [[nodiscard]] const SDL_FRect& text_area() const { return m_text_area; }
 
 private:
   SDL_Rect m_min_area;

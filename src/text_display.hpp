@@ -21,9 +21,9 @@ public:
 
   static std::optional<Text_display> create(Font&& font,
       const Text_area_config& text_area_config, SDL_Renderer* renderer);
-  const Font& font() const { return m_font; }
-  const int& columns() const { return m_columns; }
-  const int& lines() const { return m_lines; }
+  [[nodiscard]] const Font& font() const { return m_font; }
+  [[nodiscard]] const int& columns() const { return m_columns; }
+  [[nodiscard]] const int& lines() const { return m_lines; }
 
 private:
   Font m_font;
