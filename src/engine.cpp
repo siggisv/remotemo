@@ -3,9 +3,6 @@
 namespace remotemo {
 Cleanup_handler::~Cleanup_handler()
 {
-  if (m_renderer != nullptr) {
-    ::SDL_DestroyRenderer(m_renderer);
-  }
   if (m_window != nullptr) {
     ::SDL_DestroyWindow(m_window);
   }
@@ -22,9 +19,44 @@ Cleanup_handler::~Cleanup_handler()
   }
 }
 
+Cleanup_handler::Cleanup_handler(Cleanup_handler&& other) noexcept
+    : m_do_sdl_quit(other.m_do_sdl_quit),
+      m_sdl_subsystems(other.m_sdl_subsystems), m_window(other.m_window)
+{
+  other.m_do_sdl_quit = false;
+  other.m_sdl_subsystems = 0;
+  other.m_window = nullptr;
+}
+
+Renderer::~Renderer() noexcept
+{
+  if (m_is_owned && m_renderer != nullptr) {
+    SDL_DestroyRenderer(m_renderer);
+  }
+}
+
+Renderer::Renderer(Renderer&& other) noexcept
+    : m_renderer(other.m_renderer), m_is_owned(other.m_is_owned)
+{
+  other.m_is_owned = false;
+  other.m_renderer = nullptr;
+}
+
+bool Renderer::setup(SDL_Window* window)
+{
+  m_renderer = ::SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE);
+  if (m_renderer == nullptr) {
+    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+        "SDL_CreateRenderer() failed: %s\n", ::SDL_GetError());
+    return false;
+  }
+  m_is_owned = true;
+  return true;
+}
+
 Engine::Engine(Engine&& other) noexcept
     : m_cleanup_handler(std::move(other.m_cleanup_handler)),
-      m_window(other.m_window), m_renderer(other.m_renderer),
+      m_window(other.m_window), m_renderer(std::move(other.m_renderer)),
       m_background(std::move(other.m_background)),
       m_text_display(std::move(other.m_text_display))
 {}
@@ -33,21 +65,18 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
 {
   ::SDL_Log("Remotemo::initialize() with config.m_cleanup_all: %s",
       config.cleanup_all() ? "True" : "False");
-  SDL_Renderer* conf_renderer = (config.window().raw_sdl == nullptr)
-                                    ? nullptr
-                                    : ::SDL_GetRenderer(config.window().raw_sdl);
 
   // Setup handling of cleanup.
   // This is done right here at the start so that if something fails, then
   // everything that was handed over will be taken care of no matter where
   // in the setup process something failed.
-  auto cleanup_handler = std::make_unique<Cleanup_handler>(
-      config.cleanup_all(), config.window().raw_sdl, conf_renderer);
-  auto backgr_texture =
-      Texture {config.background().raw_sdl, config.cleanup_all()};
-  auto font_texture = Texture {config.font().raw_sdl, config.cleanup_all()};
+  Cleanup_handler cleanup_handler {
+      config.cleanup_all(), config.window().raw_sdl};
+  Renderer renderer {config.window().raw_sdl, config.cleanup_all()};
+  Texture backgr_texture {config.background().raw_sdl, config.cleanup_all()};
+  Texture font_texture {config.font().raw_sdl, config.cleanup_all()};
 
-  if (!config.validate(conf_renderer)) {
+  if (!config.validate(renderer.raw_sdl())) {
     return nullptr;
   }
 
@@ -57,7 +86,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
         ::SDL_GetError());
     return nullptr;
   }
-  cleanup_handler->m_sdl_subsystems = sdl_init_flags;
+  cleanup_handler.m_sdl_subsystems = sdl_init_flags;
 
   if (::SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear") == SDL_FALSE) {
     ::SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
@@ -77,33 +106,27 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
           "SDL_CreateWindow() failed: %s\n", ::SDL_GetError());
       return nullptr;
     }
-    cleanup_handler->m_window = window;
+    cleanup_handler.m_window = window;
   }
-  auto* renderer = conf_renderer;
-  if (renderer == nullptr) {
-    renderer = ::SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE);
-    if (renderer == nullptr) {
-      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "SDL_CreateRenderer() failed: %s\n", ::SDL_GetError());
-      return nullptr;
-    }
-    cleanup_handler->m_renderer = renderer;
+  if (renderer.raw_sdl() == nullptr && !renderer.setup(window)) {
+    return nullptr;
   }
-  auto font = Font::create(config.font(), std::move(font_texture), renderer);
+  auto font = Font::create(
+      config.font(), std::move(font_texture), renderer.raw_sdl());
   if (!font) {
     return nullptr;
   }
   auto background = Background::create(
-      config.background(), std::move(backgr_texture), renderer);
+      config.background(), std::move(backgr_texture), renderer.raw_sdl());
   if (!background) {
     return nullptr;
   }
-  auto text_display =
-      Text_display::create(std::move(*font), config.text_area(), renderer);
+  auto text_display = Text_display::create(
+      std::move(*font), config.text_area(), renderer.raw_sdl());
   if (!text_display) {
     return nullptr;
   }
   return std::make_unique<Engine>(std::move(cleanup_handler), window,
-      renderer, std::move(*background), std::move(*text_display));
+      std::move(renderer), std::move(*background), std::move(*text_display));
 }
 } // namespace remotemo

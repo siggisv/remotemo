@@ -18,31 +18,56 @@ class Cleanup_handler {
   friend Engine;
 
 public:
-  constexpr explicit Cleanup_handler(bool do_sdl_quit, ::SDL_Window* window,
-      ::SDL_Renderer* renderer) noexcept
-      : m_do_sdl_quit(do_sdl_quit), m_window(do_sdl_quit ? window : nullptr),
-        m_renderer(do_sdl_quit ? renderer : nullptr)
+  constexpr explicit Cleanup_handler(
+      bool do_sdl_quit, ::SDL_Window* window) noexcept
+      : m_do_sdl_quit(do_sdl_quit), m_window(do_sdl_quit ? window : nullptr)
   {}
   ~Cleanup_handler();
   Cleanup_handler(const Cleanup_handler&) = delete;
   Cleanup_handler& operator=(const Cleanup_handler&) = delete;
-  Cleanup_handler(Cleanup_handler&&) = default;
+  Cleanup_handler(Cleanup_handler&& other) noexcept;
   Cleanup_handler& operator=(Cleanup_handler&&) = default;
 
 private:
   bool m_do_sdl_quit {false};
   ::Uint32 m_sdl_subsystems {0};
   ::SDL_Window* m_window {nullptr};
-  ::SDL_Renderer* m_renderer {nullptr};
+};
+
+class Renderer {
+public:
+  constexpr explicit Renderer(
+      SDL_Renderer* renderer, bool is_owned = true) noexcept
+      : m_renderer(renderer), m_is_owned(is_owned)
+  {}
+  constexpr explicit Renderer(
+      SDL_Window* window, bool is_owned = true) noexcept
+      : m_renderer(window == nullptr ? nullptr : ::SDL_GetRenderer(window)),
+        m_is_owned(is_owned)
+  {}
+  ~Renderer() noexcept;
+  Renderer(Renderer&& other) noexcept;
+  Renderer& operator=(Renderer&& other) noexcept;
+
+  Renderer() = delete;
+  Renderer(const Renderer&) = delete;
+  Renderer& operator=(const Renderer&) = delete;
+
+  bool setup(SDL_Window* window);
+  [[nodiscard]] SDL_Renderer* const& raw_sdl() const { return m_renderer; }
+
+private:
+  SDL_Renderer* m_renderer;
+  bool m_is_owned;
 };
 
 class Engine {
 public:
-  explicit Engine(std::unique_ptr<Cleanup_handler> cleanup_handler,
-      SDL_Window* window, SDL_Renderer* renderer, Background background,
+  explicit Engine(Cleanup_handler cleanup_handler, SDL_Window* window,
+      Renderer renderer, Background background,
       Text_display text_display) noexcept
       : m_cleanup_handler(std::move(cleanup_handler)), m_window(window),
-        m_renderer(renderer), m_background(std::move(background)),
+        m_renderer(std::move(renderer)), m_background(std::move(background)),
         m_text_display(std::move(text_display))
   {}
   ~Engine() noexcept = default;
@@ -56,11 +81,11 @@ public:
   static std::unique_ptr<Engine> create(const Config& config);
 
 private:
-  std::unique_ptr<Cleanup_handler> m_cleanup_handler;
+  Cleanup_handler m_cleanup_handler;
 
   SDL_Window* m_window;
-  SDL_Renderer* m_renderer;
 
+  Renderer m_renderer;
   Background m_background;
   Text_display m_text_display;
   static constexpr Uint32 sdl_init_flags {SDL_INIT_VIDEO};
