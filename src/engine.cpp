@@ -28,29 +28,15 @@ Cleanup_handler::Cleanup_handler(Cleanup_handler&& other) noexcept
   other.m_window = nullptr;
 }
 
-Renderer::~Renderer() noexcept
-{
-  if (m_is_owned && m_renderer != nullptr) {
-    SDL_DestroyRenderer(m_renderer);
-  }
-}
-
-Renderer::Renderer(Renderer&& other) noexcept
-    : m_renderer(other.m_renderer), m_is_owned(other.m_is_owned)
-{
-  other.m_is_owned = false;
-  other.m_renderer = nullptr;
-}
-
 bool Renderer::setup(SDL_Window* window)
 {
-  m_renderer = ::SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE);
-  if (m_renderer == nullptr) {
+  res(::SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE));
+  if (res() == nullptr) {
     ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
         "SDL_CreateRenderer() failed: %s\n", ::SDL_GetError());
     return false;
   }
-  m_is_owned = true;
+  is_owned(true);
   return true;
 }
 
@@ -76,7 +62,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   Texture backgr_texture {config.background().raw_sdl, config.cleanup_all()};
   Texture font_texture {config.font().raw_sdl, config.cleanup_all()};
 
-  if (!config.validate(renderer.raw_sdl())) {
+  if (!config.validate(renderer.res())) {
     return nullptr;
   }
 
@@ -108,21 +94,21 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     }
     cleanup_handler.m_window = window;
   }
-  if (renderer.raw_sdl() == nullptr && !renderer.setup(window)) {
+  if (renderer.res() == nullptr && !renderer.setup(window)) {
     return nullptr;
   }
-  auto font = Font::create(
-      config.font(), std::move(font_texture), renderer.raw_sdl());
+  auto font =
+      Font::create(config.font(), std::move(font_texture), renderer.res());
   if (!font) {
     return nullptr;
   }
   auto background = Background::create(
-      config.background(), std::move(backgr_texture), renderer.raw_sdl());
+      config.background(), std::move(backgr_texture), renderer.res());
   if (!background) {
     return nullptr;
   }
   auto text_display = Text_display::create(
-      std::move(*font), config.text_area(), renderer.raw_sdl());
+      std::move(*font), config.text_area(), renderer.res());
   if (!text_display) {
     return nullptr;
   }

@@ -34,31 +34,19 @@ private:
   ::SDL_Window* m_window {nullptr};
 };
 
-class Renderer {
+class Renderer : public Res_handler<SDL_Renderer> {
 public:
   constexpr explicit Renderer(
       SDL_Renderer* renderer, bool is_owned = true) noexcept
-      : m_renderer(renderer), m_is_owned(is_owned)
+      : Res_handler<SDL_Renderer>(renderer, is_owned)
   {}
   constexpr explicit Renderer(
       SDL_Window* window, bool is_owned = true) noexcept
-      : m_renderer(window == nullptr ? nullptr : ::SDL_GetRenderer(window)),
-        m_is_owned(is_owned)
+      : Res_handler<SDL_Renderer>(
+            window == nullptr ? nullptr : ::SDL_GetRenderer(window), is_owned)
   {}
-  ~Renderer() noexcept;
-  Renderer(Renderer&& other) noexcept;
-  Renderer& operator=(Renderer&& other) noexcept;
-
-  Renderer() = delete;
-  Renderer(const Renderer&) = delete;
-  Renderer& operator=(const Renderer&) = delete;
 
   bool setup(SDL_Window* window);
-  [[nodiscard]] SDL_Renderer* const& raw_sdl() const { return m_renderer; }
-
-private:
-  SDL_Renderer* m_renderer;
-  bool m_is_owned;
 };
 
 class Engine {
