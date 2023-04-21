@@ -6,6 +6,7 @@
 namespace remotemo {
 template<typename T> class Res_handler {
 public:
+  constexpr Res_handler() noexcept = default;
   constexpr explicit Res_handler(T* resource, bool is_owned = true) noexcept
       : m_resource(resource), m_is_owned(is_owned)
   {}
@@ -13,7 +14,6 @@ public:
   constexpr Res_handler(Res_handler&& other) noexcept;
   Res_handler& operator=(Res_handler&& other) noexcept;
 
-  Res_handler() = delete;
   Res_handler(const Res_handler&) = delete;
   Res_handler& operator=(const Res_handler&) = delete;
 
@@ -29,8 +29,8 @@ private:
   void destroy_res(SDL_Renderer* renderer) { SDL_DestroyRenderer(renderer); }
   void destroy_res(SDL_Texture* texture) { SDL_DestroyTexture(texture); }
 
-  T* m_resource;
-  bool m_is_owned;
+  T* m_resource {nullptr};
+  bool m_is_owned {false};
 };
 
 template<typename T> Res_handler<T>::~Res_handler() noexcept
