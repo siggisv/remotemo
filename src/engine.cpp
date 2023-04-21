@@ -59,8 +59,10 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   Cleanup_handler cleanup_handler {
       config.cleanup_all(), config.window().raw_sdl};
   Renderer renderer {config.window().raw_sdl, config.cleanup_all()};
-  Texture backgr_texture {config.background().raw_sdl, config.cleanup_all()};
-  Texture font_texture {config.font().raw_sdl, config.cleanup_all()};
+  Res_handler<SDL_Texture> backgr_texture {
+      config.background().raw_sdl, config.cleanup_all()};
+  Res_handler<SDL_Texture> font_texture {
+      config.font().raw_sdl, config.cleanup_all()};
 
   if (!config.validate(renderer.res())) {
     return nullptr;

@@ -6,6 +6,7 @@
 #include <optional>
 
 #include "remotemo/config.hpp"
+#include "res_handler.hpp"
 #include "texture.hpp"
 #include <SDL.h>
 
@@ -18,7 +19,7 @@ public:
   {}
 
   static std::optional<Font> create(const Font_config& font_config,
-      Texture&& font_texture, SDL_Renderer* renderer);
+      Res_handler<SDL_Texture>&& font_texture, SDL_Renderer* renderer);
   [[nodiscard]] const int& width() const { return m_width; }
   [[nodiscard]] const int& height() const { return m_height; }
 

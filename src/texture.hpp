@@ -1,6 +1,7 @@
 #ifndef REMOTEMO_SRC_TEXTURE_HPP
 #define REMOTEMO_SRC_TEXTURE_HPP
 
+#include <utility>
 #include <filesystem>
 #include <string>
 #include <optional>
@@ -15,6 +16,9 @@ public:
   constexpr explicit Texture(
       SDL_Texture* texture, bool is_owned = true) noexcept
       : Res_handler<SDL_Texture>(texture, is_owned)
+  {}
+  constexpr explicit Texture(Res_handler<SDL_Texture>&& res_handler) noexcept
+      : Res_handler<SDL_Texture>(std::move(res_handler))
   {}
 
   bool load(SDL_Renderer* renderer, const std::string& file_path);

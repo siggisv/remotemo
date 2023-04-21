@@ -6,6 +6,7 @@
 #include <optional>
 
 #include "remotemo/config.hpp"
+#include "res_handler.hpp"
 #include "texture.hpp"
 #include <SDL.h>
 
@@ -20,7 +21,7 @@ public:
   {}
 
   static std::optional<Background> create(const Backgr_config& backgr_config,
-      Texture&& backgr_texture, SDL_Renderer* renderer);
+      Res_handler<SDL_Texture>&& backgr_texture, SDL_Renderer* renderer);
   [[nodiscard]] const SDL_Rect& min_area() const { return m_min_area; }
   [[nodiscard]] const SDL_FRect& text_area() const { return m_text_area; }
 

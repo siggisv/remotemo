@@ -5,8 +5,7 @@
 #include <memory>
 
 #include "remotemo/config.hpp"
-#include "texture.hpp"
-#include "font.hpp"
+#include "res_handler.hpp"
 #include "background.hpp"
 #include "text_display.hpp"
 

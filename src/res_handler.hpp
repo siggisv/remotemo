@@ -10,7 +10,7 @@ public:
       : m_resource(resource), m_is_owned(is_owned)
   {}
   virtual ~Res_handler() noexcept;
-  Res_handler(Res_handler&& other) noexcept;
+  constexpr Res_handler(Res_handler&& other) noexcept;
   Res_handler& operator=(Res_handler&& other) noexcept;
 
   Res_handler() = delete;
@@ -41,7 +41,7 @@ template<typename T> Res_handler<T>::~Res_handler() noexcept
 }
 
 template<typename T>
-Res_handler<T>::Res_handler(Res_handler&& other) noexcept
+constexpr Res_handler<T>::Res_handler(Res_handler&& other) noexcept
     : m_resource(other.m_resource), m_is_owned(other.m_is_owned)
 {
   other.m_is_owned = false;
