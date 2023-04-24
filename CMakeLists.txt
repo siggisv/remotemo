@@ -54,6 +54,7 @@ add_library(remotemo
     src/remotemo.cpp
     src/config.cpp
     src/engine.cpp
+    src/window.cpp
     src/renderer.cpp
     src/texture.cpp
     src/font.cpp

@@ -7,6 +7,7 @@
 
 #include "remotemo/config.hpp"
 #include "res_handler.hpp"
+#include "window.hpp"
 #include "renderer.hpp"
 #include "background.hpp"
 #include "text_display.hpp"
@@ -19,9 +20,8 @@ class Cleanup_handler {
   friend Engine;
 
 public:
-  constexpr explicit Cleanup_handler(
-      bool do_sdl_quit, ::SDL_Window* window) noexcept
-      : m_do_sdl_quit(do_sdl_quit), m_window(do_sdl_quit ? window : nullptr)
+  constexpr explicit Cleanup_handler(bool do_sdl_quit) noexcept
+      : m_do_sdl_quit(do_sdl_quit)
   {}
   ~Cleanup_handler();
   Cleanup_handler(Cleanup_handler&& other) noexcept;
@@ -33,16 +33,16 @@ public:
 private:
   bool m_do_sdl_quit {false};
   ::Uint32 m_sdl_subsystems {0};
-  ::SDL_Window* m_window {nullptr};
 };
 
 class Engine {
 public:
-  explicit Engine(Cleanup_handler cleanup_handler, SDL_Window* window,
+  explicit Engine(Cleanup_handler cleanup_handler, Window window,
       Renderer renderer, Background background,
       Text_display text_display) noexcept
-      : m_cleanup_handler(std::move(cleanup_handler)), m_window(window),
-        m_renderer(std::move(renderer)), m_background(std::move(background)),
+      : m_cleanup_handler(std::move(cleanup_handler)),
+        m_window(std::move(window)), m_renderer(std::move(renderer)),
+        m_background(std::move(background)),
         m_text_display(std::move(text_display))
   {}
   ~Engine() noexcept = default;
@@ -58,8 +58,7 @@ public:
 private:
   Cleanup_handler m_cleanup_handler;
 
-  SDL_Window* m_window;
-
+  Window m_window;
   Renderer m_renderer;
   Background m_background;
   Text_display m_text_display;

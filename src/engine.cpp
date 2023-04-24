@@ -4,9 +4,6 @@
 namespace remotemo {
 Cleanup_handler::~Cleanup_handler()
 {
-  if (m_window != nullptr) {
-    ::SDL_DestroyWindow(m_window);
-  }
   ::SDL_Log("Cleanup_handler Destructor: m_do_sdl_quit: %s",
       m_do_sdl_quit ? "True" : "False");
   if (m_do_sdl_quit) {
@@ -22,18 +19,16 @@ Cleanup_handler::~Cleanup_handler()
 
 Cleanup_handler::Cleanup_handler(Cleanup_handler&& other) noexcept
     : m_do_sdl_quit(other.m_do_sdl_quit),
-      m_sdl_subsystems(other.m_sdl_subsystems), m_window(other.m_window)
+      m_sdl_subsystems(other.m_sdl_subsystems)
 {
   other.m_do_sdl_quit = false;
   other.m_sdl_subsystems = 0;
-  other.m_window = nullptr;
 }
 
 Cleanup_handler& Cleanup_handler::operator=(Cleanup_handler&& other) noexcept
 {
   std::swap(m_do_sdl_quit, other.m_do_sdl_quit);
   std::swap(m_sdl_subsystems, other.m_sdl_subsystems);
-  std::swap(m_window, other.m_window);
   return *this;
 }
 
@@ -46,9 +41,10 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   // This is done right here at the start so that if something fails, then
   // everything that was handed over will be taken care of no matter where
   // in the setup process something failed.
-  Cleanup_handler cleanup_handler {
-      config.cleanup_all(), config.window().raw_sdl};
-
+  Cleanup_handler cleanup_handler {config.cleanup_all()};
+  std::optional<Window> window {};
+  Res_handler<SDL_Window> conf_window {
+      config.window().raw_sdl, config.cleanup_all()};
   std::optional<Renderer> renderer {};
   Res_handler<SDL_Renderer> conf_renderer {
       config.window().raw_sdl == nullptr
@@ -77,22 +73,11 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
         "SDL_SetHint() (scale quality to linear) failed: %s\n",
         ::SDL_GetError());
   }
-  auto* window = config.window().raw_sdl;
-  if (window == nullptr) {
-    window = ::SDL_CreateWindow(config.window().title.c_str(),
-        config.window().pos_x, config.window().pos_y, config.window().width,
-        config.window().height,
-        (config.window().is_resizable ? SDL_WINDOW_RESIZABLE : 0) |
-            (config.window().is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP
-                                           : 0));
-    if (window == nullptr) {
-      ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-          "SDL_CreateWindow() failed: %s\n", ::SDL_GetError());
-      return nullptr;
-    }
-    cleanup_handler.m_window = window;
+  window = Window::create(config.window(), std::move(conf_window));
+  if (!window) {
+    return nullptr;
   }
-  renderer = Renderer::create(window, std::move(conf_renderer));
+  renderer = Renderer::create(window->res(), std::move(conf_renderer));
   if (!renderer) {
     return nullptr;
   }
@@ -111,7 +96,8 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   if (!text_display) {
     return nullptr;
   }
-  return std::make_unique<Engine>(std::move(cleanup_handler), window,
-      std::move(*renderer), std::move(*background), std::move(*text_display));
+  return std::make_unique<Engine>(std::move(cleanup_handler),
+      std::move(*window), std::move(*renderer), std::move(*background),
+      std::move(*text_display));
 }
 } // namespace remotemo
