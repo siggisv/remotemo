@@ -3,6 +3,7 @@
 
 #include <utility>
 #include <memory>
+#include <optional>
 
 #include "remotemo/config.hpp"
 #include "res_handler.hpp"
@@ -45,8 +46,14 @@ public:
       : Res_handler<SDL_Renderer>(
             window == nullptr ? nullptr : ::SDL_GetRenderer(window), is_owned)
   {}
+  constexpr explicit Renderer(
+      Res_handler<SDL_Renderer>&& res_handler) noexcept
+      : Res_handler<SDL_Renderer>(std::move(res_handler))
+  {}
 
   bool setup(SDL_Window* window);
+  static std::optional<Renderer> create(
+      SDL_Window* window, Res_handler<SDL_Renderer>&& res_handler);
 };
 
 class Engine {

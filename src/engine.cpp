@@ -36,6 +36,18 @@ Cleanup_handler& Cleanup_handler::operator=(Cleanup_handler&& other) noexcept
   return *this;
 }
 
+std::optional<Renderer> Renderer::create(
+    SDL_Window* window, Res_handler<SDL_Renderer>&& res_handler)
+{
+  Renderer renderer {std::move(res_handler)};
+  if (renderer.res() == nullptr) {
+    if (!renderer.setup(window)) {
+      return {};
+    }
+  }
+  return renderer;
+}
+
 bool Renderer::setup(SDL_Window* window)
 {
   res(::SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE));
@@ -60,13 +72,18 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   Cleanup_handler cleanup_handler {
       config.cleanup_all(), config.window().raw_sdl};
 
-  Renderer renderer {config.window().raw_sdl, config.cleanup_all()};
+  std::optional<Renderer> renderer {};
+  Res_handler<SDL_Renderer> conf_renderer {
+      config.window().raw_sdl == nullptr
+          ? nullptr
+          : ::SDL_GetRenderer(config.window().raw_sdl),
+      config.cleanup_all()};
   Res_handler<SDL_Texture> backgr_texture {
       config.background().raw_sdl, config.cleanup_all()};
   Res_handler<SDL_Texture> font_texture {
       config.font().raw_sdl, config.cleanup_all()};
 
-  if (!config.validate(renderer.res())) {
+  if (!config.validate(conf_renderer.res())) {
     return nullptr;
   }
 
@@ -98,25 +115,26 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     }
     cleanup_handler.m_window = window;
   }
-  if (renderer.res() == nullptr && !renderer.setup(window)) {
+  renderer = Renderer::create(window, std::move(conf_renderer));
+  if (!renderer) {
     return nullptr;
   }
   auto font =
-      Font::create(config.font(), std::move(font_texture), renderer.res());
+      Font::create(config.font(), std::move(font_texture), renderer->res());
   if (!font) {
     return nullptr;
   }
   auto background = Background::create(
-      config.background(), std::move(backgr_texture), renderer.res());
+      config.background(), std::move(backgr_texture), renderer->res());
   if (!background) {
     return nullptr;
   }
   auto text_display = Text_display::create(
-      std::move(*font), config.text_area(), renderer.res());
+      std::move(*font), config.text_area(), renderer->res());
   if (!text_display) {
     return nullptr;
   }
   return std::make_unique<Engine>(std::move(cleanup_handler), window,
-      std::move(renderer), std::move(*background), std::move(*text_display));
+      std::move(*renderer), std::move(*background), std::move(*text_display));
 }
 } // namespace remotemo
