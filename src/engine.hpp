@@ -22,10 +22,11 @@ public:
       : m_do_sdl_quit(do_sdl_quit), m_window(do_sdl_quit ? window : nullptr)
   {}
   ~Cleanup_handler();
+  Cleanup_handler(Cleanup_handler&& other) noexcept;
+  Cleanup_handler& operator=(Cleanup_handler&&) noexcept;
+
   Cleanup_handler(const Cleanup_handler&) = delete;
   Cleanup_handler& operator=(const Cleanup_handler&) = delete;
-  Cleanup_handler(Cleanup_handler&& other) noexcept;
-  Cleanup_handler& operator=(Cleanup_handler&&) = default;
 
 private:
   bool m_do_sdl_quit {false};
@@ -58,8 +59,8 @@ public:
         m_text_display(std::move(text_display))
   {}
   ~Engine() noexcept = default;
-  Engine(Engine&& other) noexcept;
-  Engine& operator=(Engine&& other) noexcept;
+  Engine(Engine&& other) noexcept = default;
+  Engine& operator=(Engine&& other) noexcept = default;
 
   Engine() = delete;
   Engine(const Engine&) = delete;

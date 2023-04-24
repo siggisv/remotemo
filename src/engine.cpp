@@ -28,6 +28,14 @@ Cleanup_handler::Cleanup_handler(Cleanup_handler&& other) noexcept
   other.m_window = nullptr;
 }
 
+Cleanup_handler& Cleanup_handler::operator=(Cleanup_handler&& other) noexcept
+{
+  std::swap(m_do_sdl_quit, other.m_do_sdl_quit);
+  std::swap(m_sdl_subsystems, other.m_sdl_subsystems);
+  std::swap(m_window, other.m_window);
+  return *this;
+}
+
 bool Renderer::setup(SDL_Window* window)
 {
   res(::SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE));
@@ -40,13 +48,6 @@ bool Renderer::setup(SDL_Window* window)
   return true;
 }
 
-Engine::Engine(Engine&& other) noexcept
-    : m_cleanup_handler(std::move(other.m_cleanup_handler)),
-      m_window(other.m_window), m_renderer(std::move(other.m_renderer)),
-      m_background(std::move(other.m_background)),
-      m_text_display(std::move(other.m_text_display))
-{}
-
 std::unique_ptr<Engine> Engine::create(const Config& config)
 {
   ::SDL_Log("Remotemo::initialize() with config.m_cleanup_all: %s",
@@ -58,6 +59,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   // in the setup process something failed.
   Cleanup_handler cleanup_handler {
       config.cleanup_all(), config.window().raw_sdl};
+
   Renderer renderer {config.window().raw_sdl, config.cleanup_all()};
   Res_handler<SDL_Texture> backgr_texture {
       config.background().raw_sdl, config.cleanup_all()};

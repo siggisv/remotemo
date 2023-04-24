@@ -7,9 +7,9 @@
 
 namespace remotemo {
 Remotemo::~Remotemo() noexcept = default;
-Remotemo::Remotemo(Remotemo&& other) noexcept
-    : m_engine(std::move(other.m_engine))
-{}
+Remotemo::Remotemo(Remotemo&& other) noexcept = default;
+Remotemo& Remotemo::operator=(Remotemo&& other) noexcept = default;
+
 bool Remotemo::initialize(const Config& config)
 {
   m_engine = Engine::create(config);

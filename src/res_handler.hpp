@@ -1,6 +1,7 @@
 #ifndef REMOTEMO_SRC_RES_HANDLER_HPP
 #define REMOTEMO_SRC_RES_HANDLER_HPP
 
+#include <utility>
 #include <SDL.h>
 
 namespace remotemo {
@@ -12,7 +13,7 @@ public:
   {}
   virtual ~Res_handler() noexcept;
   constexpr Res_handler(Res_handler&& other) noexcept;
-  Res_handler& operator=(Res_handler&& other) noexcept;
+  constexpr Res_handler& operator=(Res_handler&& other) noexcept;
 
   Res_handler(const Res_handler&) = delete;
   Res_handler& operator=(const Res_handler&) = delete;
@@ -48,5 +49,13 @@ constexpr Res_handler<T>::Res_handler(Res_handler&& other) noexcept
   other.m_resource = nullptr;
 }
 
+template<typename T>
+constexpr Res_handler<T>& Res_handler<T>::operator=(
+    Res_handler&& other) noexcept
+{
+  std::swap(m_is_owned, other.m_is_owned);
+  std::swap(m_resource, other.m_resource);
+  return *this;
+}
 } // namespace remotemo
 #endif // REMOTEMO_SRC_RES_HANDLER_HPP
