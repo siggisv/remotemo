@@ -7,6 +7,7 @@
 
 #include "remotemo/config.hpp"
 #include "res_handler.hpp"
+#include "renderer.hpp"
 #include "background.hpp"
 #include "text_display.hpp"
 
@@ -33,27 +34,6 @@ private:
   bool m_do_sdl_quit {false};
   ::Uint32 m_sdl_subsystems {0};
   ::SDL_Window* m_window {nullptr};
-};
-
-class Renderer : public Res_handler<SDL_Renderer> {
-public:
-  constexpr explicit Renderer(
-      SDL_Renderer* renderer, bool is_owned = true) noexcept
-      : Res_handler<SDL_Renderer>(renderer, is_owned)
-  {}
-  constexpr explicit Renderer(
-      SDL_Window* window, bool is_owned = true) noexcept
-      : Res_handler<SDL_Renderer>(
-            window == nullptr ? nullptr : ::SDL_GetRenderer(window), is_owned)
-  {}
-  constexpr explicit Renderer(
-      Res_handler<SDL_Renderer>&& res_handler) noexcept
-      : Res_handler<SDL_Renderer>(std::move(res_handler))
-  {}
-
-  bool setup(SDL_Window* window);
-  static std::optional<Renderer> create(
-      SDL_Window* window, Res_handler<SDL_Renderer>&& res_handler);
 };
 
 class Engine {

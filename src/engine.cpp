@@ -1,4 +1,5 @@
 #include "engine.hpp"
+#include "font.hpp"
 
 namespace remotemo {
 Cleanup_handler::~Cleanup_handler()
@@ -34,30 +35,6 @@ Cleanup_handler& Cleanup_handler::operator=(Cleanup_handler&& other) noexcept
   std::swap(m_sdl_subsystems, other.m_sdl_subsystems);
   std::swap(m_window, other.m_window);
   return *this;
-}
-
-std::optional<Renderer> Renderer::create(
-    SDL_Window* window, Res_handler<SDL_Renderer>&& res_handler)
-{
-  Renderer renderer {std::move(res_handler)};
-  if (renderer.res() == nullptr) {
-    if (!renderer.setup(window)) {
-      return {};
-    }
-  }
-  return renderer;
-}
-
-bool Renderer::setup(SDL_Window* window)
-{
-  res(::SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE));
-  if (res() == nullptr) {
-    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
-        "SDL_CreateRenderer() failed: %s\n", ::SDL_GetError());
-    return false;
-  }
-  is_owned(true);
-  return true;
 }
 
 std::unique_ptr<Engine> Engine::create(const Config& config)
