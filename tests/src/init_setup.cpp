@@ -1,3 +1,4 @@
+#include <utility>
 #include <string>
 #include <iomanip>
 #include <iterator>
@@ -380,5 +381,45 @@ TEST_CASE("create() succeeds - test if config is used to setup the textures:")
     }
     REQUIRE(init.check_a_texture_failed() == false);
     init.check_texture_cleanup();
+  }
+}
+
+TEST_CASE("create() succeeds - test if move ctor and move assignment works:")
+{
+  bool do_cleanup_all {true};
+  auto conf_res = valid_conf_res[0];
+  bool set_hint {true};
+  char* d_bpath = const_cast<char*>(&d_basepath[0]);
+  Texture_results textures {
+      d_bpath, d_new_font_bitmap, d_new_backgr, d_new_text_area};
+
+  Init_status init {};
+  auto& exps = init.exps;
+  auto& seqs = init.seqs;
+  init.do_cleanup_all = do_cleanup_all;
+
+  conf_res.all_checks_succeeds(&exps, &seqs);
+  init.set_res_from_config(conf_res);
+  init.attempt_init(true);
+  init.attempt_set_hint(set_hint);
+  init.attempt_create_window(true);
+  init.attempt_create_renderer(true);
+  init.attempt_setup_textures(textures);
+  require_init_has_ended(&exps, &seqs);
+  init.expected_cleanup();
+
+  {
+    std::optional<remotemo::Remotemo> t4 {};
+    {
+      auto t = remotemo::create();
+      REQUIRE(t.has_value());
+      auto t2 = std::move(*t);
+      remotemo::Remotemo t3 {std::move(t2)};
+      t4 = std::move(t3);
+      // Scope of t, t2 and t3 ends here. Their content should have been
+      // moved over to t4 and therefore they should not clean up anything.
+    }
+    REQUIRE(t4.has_value());
+    dummy_t.func();
   }
 }
