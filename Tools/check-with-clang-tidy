@@ -1,6 +1,7 @@
 #! /bin/bash -x
 
 CPP_STANDARD=c++17
-INCLUDES=("-Iinclude/" "-I/usr/include/SDL2/")
+INCLUDES=("-Iinclude/" "-I/usr/include/SDL2/" "-Itests/tools/Catch2/src/"
+	"-Itests/tools/trompeloeil/include/" "-IDebug/generated-includes/")
 
-clang-tidy "$@" -header-filter=include/remotemo/* -- -std=${CPP_STANDARD} ${INCLUDES[*]}
+clang-tidy "$@" -header-filter="^include/|^src/" -- -std=${CPP_STANDARD} ${INCLUDES[*]}

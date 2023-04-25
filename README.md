@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     text_monitor->set_inverse(false);
     text_monitor->print("\n");
 
-    while (text_monitor->get_key() == remoTemo::Key::K_n) {
+    while (text_monitor->get_key() == remotemo::Key::K_n) {
         text_monitor->print("Actually no! Any key except that key :P\n");
     }
 }

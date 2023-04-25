@@ -27,19 +27,20 @@ _3rd draft_
 ### Initialization
 
 ```C++
-std::optional<remoTemo::Temo> remoTemo::create();
-std::optional<remoTemo::Temo> remoTemo::create(
-        const remoTemo::Config& config);
+std::optional<remotemo::Remotemo> remotemo::create();
+std::optional<remotemo::Remotemo> remotemo::create(
+        const remotemo::Config& config);
 ```
 
 This non-member function will create and initialize an object representing
 a text monitor, the window showing it, an ASCII-only keyboard and their
 properties (along with the needed properties for the underlying SDL2-library).
 
-- If successful, that function will return a `std::optional<remoTemo::Temo>`
-  containing the object. It will also create an internal list of the resources
-  that its destructor should take care of cleaning up.
-  > **Note** `remoTemo::Temo` is movable but not copyable. It is therefore
+- If successful, that function will return a
+  `std::optional<remotemo::Remotemo>` containing the object. It will also
+  create an internal list of the resources that its destructor should take
+  care of cleaning up.
+  > **Note** `remotemo::Remotemo` is movable but not copyable. It is therefore
   > recommended to pass it along by reference or to use a smart pointer.
 
 - On failure, it will log an error using `SDL_Log()`, free/release all
@@ -47,8 +48,8 @@ properties (along with the needed properties for the underlying SDL2-library).
   `std::optional` object.
 
   > **Warning**
-  > On failure, it will clean up all the resources that the `remoTemo::Temo`'s
-  > destructor is supposed to handle. Meaning that:
+  > On failure, it will clean up all the resources that the
+  > `remotemo::Remotemo`'s destructor is supposed to handle. Meaning that:
   > - by **default** it would **not only** clean up those resources it had
   >   succeeded setting up, but **also all** those resources handed over to
   >   it. **And** it will call `SDL_Quit()`.
@@ -70,35 +71,35 @@ providing you with a "config" object that when created, will contains the
 default initialization settings:
 
 ```C++
-remoTemo::Config::Config();
+remotemo::Config::Config();
 
 ```
 
-_The constructor that creates a `remoTemo::Config` object._
+_The constructor that creates a `remotemo::Config` object._
 
 You can then pick which settings to change by calling its setters. Then call
-`remoTemo::create(const remoTemo::Config& config)` to create and initialize
+`remotemo::create(const remotemo::Config& config)` to create and initialize
 everything with the settings you wanted.
 
-- You can store that `remoTemo::Config` object in a variable, work on it and
-  then pass it to `remoTemo::create()`:
+- You can store that `remotemo::Config` object in a variable, work on it and
+  then pass it to `remotemo::create()`:
 
   ```C++
-  remoTemo::Config my_config;
+  remotemo::Config my_config;
   if (some_condition) {
       my_config.window_size(1920, 1080);
   }
   my_config.background_file("background.png")
           .background_min_area(200, 120, 1000, 700);
-  auto text_monitor = remoTemo::create(my_config);
+  auto text_monitor = remotemo::create(my_config);
   ```
   
-- Or you could simply call `remoTemo::create()` directly with a temporary
-  `remoTemo::Config` object:
+- Or you could simply call `remotemo::create()` directly with a temporary
+  `remotemo::Config` object:
   
   ```C++
-  auto text_monitor = remoTemo::create(
-          remoTemo::Config()
+  auto text_monitor = remotemo::create(
+          remotemo::Config()
                   .window_size(1920, 1080)
                   .background_file("background.png")
                   .background_min_area(200, 120, 1000, 700));
@@ -108,17 +109,17 @@ everything with the settings you wanted.
 ### Cleanup
 
 ```C++
-remoTemo::Temo::~Temo();
+remotemo::Remotemo::~Remotemo();
 ```
 
 _The destructor, (by default) in charge of deleting/closing textures, the
 renderer, the window and quitting SDL._
 
-- By default, the destructor of the `remoTemo::Temo` object will handle cleaning
-  up all its resources (both those it did create itself and those passed to
-  it) and then call `SDL_Quit()` to clean up all SDL subsystems.
+- By default, the destructor of the `remotemo::Remotemo` object will handle
+  cleaning up all its resources (both those it did create itself and those
+  passed to it) and then call `SDL_Quit()` to clean up all SDL subsystems.
 
-- When created, the `remoTemo::Temo` object can be set to not have its
+- When created, the `remotemo::Remotemo` object can be set to not have its
   destructor handle cleaning up **all** its resources.
 
   In that case it will **only** clean up those resources it did create itself,
@@ -133,28 +134,29 @@ renderer, the window and quitting SDL._
 If, for some reason, you want to clean up sooner, you could call:
 
 ```C++
-void remoTemo::Temo::quit();
+void remotemo::Remotemo::quit();
 ```
 > **Warning**
-> Doing so will leave the `remoTemo::Temo` object invalid. If you really have
-> to do that, make sure not to touch any of the object's functions after that.
+> Doing so will leave the `remotemo::Remotemo` object invalid. If you really
+> have to do that, make sure not to touch any of the object's functions after
+> that.
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Configuration and default settings
 
-The following are the default settings when creating an `remoTemo::Temo`
+The following are the default settings when creating an `remotemo::Remotemo`
 object, with a short description of the different options for each setting and
-which of `remoTemo::Config`'s setters can be used to change that setting.
+which of `remotemo::Config`'s setters can be used to change that setting.
 
-Unless noted, the settings can not be changed after the `remoTemo::Temo`
+Unless noted, the settings can not be changed after the `remotemo::Remotemo`
 object has been created:
 
 - Cleanup all: `true`
   ```C++
-  remoTemo::Config& remoTemo::Config::cleanup_all(bool cleanup_all);
+  remotemo::Config& remotemo::Config::cleanup_all(bool cleanup_all);
   ```
-  - If `true`, then the destructor of the `remoTemo::Temo` object will handle
-    cleaning up all its resources and then call `SDL_Quit()` to clean
+  - If `true`, then the destructor of the `remotemo::Remotemo` object will
+    handle cleaning up all its resources and then call `SDL_Quit()` to clean
     up all SDL subsystems.
 
     > **Warning**
@@ -166,11 +168,11 @@ object has been created:
     none of those you passed to it). You must then handle cleaning up those
     and quit SDL afterwards yourself.
 
-- The window: `nullptr`
+- Window: `nullptr`
   ```C++
-  remoTemo::Config& remoTemo::Config::the_window(SDL_Window* window);
+  remotemo::Config& remotemo::Config::window(SDL_Window* window);
   ```
-  - If set to `nullptr` then `remoTemo::create()` will create the window with
+  - If set to `nullptr` then `remotemo::create()` will create the window with
     the following settings and set it as being owned by this object (meaning
     the destructor will be in charge of destroying it).
     - title: `"Retro Monochrome Text Monitor"` _(can be changed later)_
@@ -182,30 +184,30 @@ object has been created:
     - fullscreen: `false` _(can be changed later)_
 
     ```C++
-    remoTemo::Config& remoTemo::Config::window_title(const std::string& title);
-    remoTemo::Config& remoTemo::Config::window_size(int width, int height);
-    remoTemo::Config& remoTemo::Config::window_size(const SDL_Point& size);
-    remoTemo::Config& remoTemo::Config::window_position(int x, int y);
-    remoTemo::Config& remoTemo::Config::window_position(const SDL_Point& pos);
-    remoTemo::Config& remoTemo::Config::window_resizable(bool is_resizable);
-    remoTemo::Config& remoTemo::Config::window_fullscreen(bool is_fullscreen);
+    remotemo::Config& remotemo::Config::window_title(const std::string& title);
+    remotemo::Config& remotemo::Config::window_size(int width, int height);
+    remotemo::Config& remotemo::Config::window_size(const SDL_Point& size);
+    remotemo::Config& remotemo::Config::window_position(int x, int y);
+    remotemo::Config& remotemo::Config::window_position(const SDL_Point& pos);
+    remotemo::Config& remotemo::Config::window_resizable(bool is_resizable);
+    remotemo::Config& remotemo::Config::window_fullscreen(bool is_fullscreen);
     ```
 
   - If NOT set to `nullptr` then 'the window' must be a pointer to a valid
     `SDL_Window`.
 
     > **Warning** It will be your responsability to keep that pointed window
-    > valid while `remoTemo::Temo` is alive.
+    > valid while `remotemo::Remotemo` is alive.
     >
     > You also have to take care of closing it afterward (unless 'Cleanup all'
-    > is set to `true`, in which case `remoTemo::Temo`'s destructor will
+    > is set to `true`, in which case `remotemo::Remotemo`'s destructor will
     > handle that).
 
     [](ignored)
 
     > **Warning** If that window has a renderer associated with it, then that
     > renderer must have the `SDL_RENDERER_TARGETTEXTURE` flag set. Otherwise
-    > `remoTemo::create()` will fail.
+    > `remotemo::create()` will fail.
 
   No mater if 'the window' is set to `nullptr` or not, the following
   properties tied to the window will be set (with the following being the
@@ -213,32 +215,31 @@ object has been created:
   - Key to switch between fullscreen and windowed mode: `F11` _(can be changed
     later)_
     ```C++
-    remoTemo::Config& remoTemo::Config::key_fullscreen(); // Set to none
-    remoTemo::Config& remoTemo::Config::key_fullscreen(
-            remoTemo::Mod_keys modifier_keys, remoTemo::F_key key);
-    remoTemo::Config& remoTemo::Config::key_fullscreen(
-            remoTemo::Mod_keys_strict modifier_keys, remoTemo::Key key);
+    remotemo::Config& remotemo::Config::key_fullscreen(); // Set to none
+    remotemo::Config& remotemo::Config::key_fullscreen(
+            remotemo::Mod_keys modifier_keys, remotemo::F_key key);
+    remotemo::Config& remotemo::Config::key_fullscreen(
+            remotemo::Mod_keys_strict modifier_keys, remotemo::Key key);
     ```
   - Key combination to close the window: `Ctrl-w` _(can be changed later)_
     ```C++
-    remoTemo::Config& remoTemo::Config::key_close_window(); // Set to none
-    remoTemo::Config& remoTemo::Config::key_close_window(
-            remoTemo::Mod_keys modifier_keys, remoTemo::F_key key);
-    remoTemo::Config& remoTemo::Config::key_close_window(
-            remoTemo::Mod_keys_strict modifier_keys, remoTemo::Key key);
+    remotemo::Config& remotemo::Config::key_close_window(); // Set to none
+    remotemo::Config& remotemo::Config::key_close_window(
+            remotemo::Mod_keys modifier_keys, remotemo::F_key key);
+    remotemo::Config& remotemo::Config::key_close_window(
+            remotemo::Mod_keys_strict modifier_keys, remotemo::Key key);
     ```
   - Key combination to quit the application: `Ctrl-q` _(can be changed later)_
     ```C++
-    remoTemo::Config& remoTemo::Config::key_quit(); // Set to none
-    remoTemo::Config& remoTemo::Config::key_quit(
-            remoTemo::Mod_keys modifier_keys, remoTemo::F_key key);
-    remoTemo::Config& remoTemo::Config::key_quit(
-            remoTemo::Mod_keys_strict modifier_keys, remoTemo::Key key);
+    remotemo::Config& remotemo::Config::key_quit(); // Set to none
+    remotemo::Config& remotemo::Config::key_quit(
+            remotemo::Mod_keys modifier_keys, remotemo::F_key key);
+    remotemo::Config& remotemo::Config::key_quit(
+            remotemo::Mod_keys_strict modifier_keys, remotemo::Key key);
     ```
-  - Closing window is the same as quitting: `true` _(can be changed
-    later)_
+  - Closing window is the same as quitting: `true` _(can be changed later)_
     ```C++
-    remoTemo::Config& remoTemo::Config::closing_same_as_quit(
+    remotemo::Config& remotemo::Config::closing_same_as_quit(
             bool is_closing_same_as_quit);
     ```
     > **Note** Not recommended to change that setting to `false` unless you
@@ -248,7 +249,7 @@ object has been created:
   - Function to call before closing window: `[]() -> bool { return true; }`
     _(can be changed later)_
     ```C++
-    remoTemo::Config& remoTemo::Config::function_pre_close(
+    remotemo::Config& remotemo::Config::function_pre_close(
             const std::function<bool()>& func);
     ```
     That function must return a `bool`. If it returns `false`, closing the
@@ -261,7 +262,7 @@ object has been created:
   - Function to call before quitting: `[]() -> bool { return true; }`
     _(can be changed later)_
     ```C++
-    remoTemo::Config& remoTemo::Config::function_pre_quit(
+    remotemo::Config& remotemo::Config::function_pre_quit(
             const std::function<bool()>& func);
     ```
     > **Note** No mater if 'Closing window is the same as quitting' is set to
@@ -285,7 +286,7 @@ object has been created:
 
 - Background: `nullptr`
   ```C++
-  remoTemo::Config& remoTemo::Config::background(SDL_Texture* background);
+  remotemo::Config& remotemo::Config::background(SDL_Texture* background);
   ```
 
   - If set to `nullptr` then the background texture will be loaded from the
@@ -295,7 +296,7 @@ object has been created:
       converted to `"res\\img\\terminal_screen.png"` on operating systems that
       have `\` as a path separator).
       ```C++
-      remoTemo::Config& remoTemo::Config::background_file_path(
+      remotemo::Config& remotemo::Config::background_file_path(
               const std::string& file_path);
       ```
 
@@ -333,10 +334,10 @@ object has been created:
     [](ignored)
 
     > **Warning** It will be your responsability to keep that pointed texture
-    > valid while `remoTemo::Temo` is alive.
+    > valid while `remotemo::Remotemo` is alive.
     >
     > You also have to take care of closing it afterward (unless 'Cleanup all'
-    > is set to `true`, in which case `remoTemo::Temo`'s destructor will
+    > is set to `true`, in which case `remotemo::Remotemo`'s destructor will
     > handle that).
 
   No mater if 'background' is set to `nullptr` or not, the following settings
@@ -352,17 +353,19 @@ object has been created:
     `x: 188.25f, y: 149.25f, w: 560.0f, h: 432.0f`
 
   ```C++
-  remoTemo::Config& remoTemo::Config::background_min_area(int x, int y,
+  remotemo::Config& remotemo::Config::background_min_area(int x, int y,
           int w, int h);
-  remoTemo::Config& remoTemo::Config::background_text_area(float x, float y,
+  remotemo::Config& remotemo::Config::background_min_area(SDL_Rect area);
+  remotemo::Config& remotemo::Config::background_text_area(float x, float y,
           float width, float height);
+  remotemo::Config& remotemo::Config::background_text_area(SDL_FRect area);
   ```
   > **Note** x and y are counted from the top-left corner, both starting at
   > zero.
 
 - Font-bitmap: `nullptr`
   ```C++
-  remoTemo::Config& remoTemo::Config::font_bitmap(SDL_Texture* font_bitmap);
+  remotemo::Config& remotemo::Config::font_bitmap(SDL_Texture* font_bitmap);
   ```
   - If set to `nullptr` then the font-bitmap texture will be loaded from the
     following file and set as being owned by this object (meaning the
@@ -371,7 +374,7 @@ object has been created:
       converted to `"res\\img\\font_bitmap.png"` on operating systems that
       have `\` as a path separator).
       ```C++
-      remoTemo::Config& remoTemo::Config::font_bitmap_file_path(
+      remotemo::Config& remotemo::Config::font_bitmap_file_path(
               const std::string& file_path);
       ```
 
@@ -393,10 +396,10 @@ object has been created:
     [](ignored)
 
     > **Warning** It will be your responsability to keep that pointed texture
-    > valid while `remoTemo::Temo` is alive.
+    > valid while `remotemo::Remotemo` is alive.
     >
     > You also have to take care of closing it afterward (unless 'Cleanup all'
-    > is set to `true`, in which case `remoTemo::Temo`'s destructor will
+    > is set to `true`, in which case `remotemo::Remotemo`'s destructor will
     > handle that).
 
   No mater if 'font-bitmap' is set to `nullptr` or not, the following setting
@@ -406,8 +409,8 @@ object has been created:
     This is the size, in pixels, of each character as they are drawn in the
     font-bitmap file.
     ```C++
-    remoTemo::Config& remoTemo::Config::font_size(int width, int height);
-    remoTemo::Config& remoTemo::Config::font_size(const SDL_Point& size);
+    remotemo::Config& remotemo::Config::font_size(int width, int height);
+    remotemo::Config& remotemo::Config::font_size(const SDL_Point& size);
     ```
 
 - The following are the default setting used to create a texture buffer where
@@ -426,16 +429,16 @@ object has been created:
     > text that has already been printed to the screen and the text that is
     > going to be printed to the screen.
   ```C++
-  remoTemo::Config& remoTemo::Config::text_area_size(int columns, int lines);
-  remoTemo::Config& remoTemo::Config::text_area_size(const SDL_Point& size);
-  remoTemo::Config& remoTemo::Config::text_blend_mode(SDL_BlendMode mode);
-  remoTemo::Config& remoTemo::Config::text_color(Uint8 red, Uint8 green,
+  remotemo::Config& remotemo::Config::text_area_size(int columns, int lines);
+  remotemo::Config& remotemo::Config::text_area_size(const SDL_Point& size);
+  remotemo::Config& remotemo::Config::text_blend_mode(SDL_BlendMode mode);
+  remotemo::Config& remotemo::Config::text_color(Uint8 red, Uint8 green,
           Uint8 blue);
-  remoTemo::Config& remoTemo::Config::text_color(const remoTemo::Color& color);
+  remotemo::Config& remotemo::Config::text_color(const remotemo::Color& color);
   ```
 
 The following properties can not be changed before creating the
-`remoTemo::Temo` object. They control the behaviour of the text output and
+`remotemo::Remotemo` object. They control the behaviour of the text output and
 will have the initial values shown here _(those can all be changed later)_:
 - delay between chars: `60` (milliseconds)
   \
@@ -466,24 +469,25 @@ will have the initial values shown here _(those can all be changed later)_:
 ### Interact with the monitor
 
 ```C++
-int remoTemo::Temo::move_cursor(int x, int y);
-int remoTemo::Temo::move_cursor(const SDL_Point& move);
-int remoTemo::Temo::set_cursor(int column, int line);
-int remoTemo::Temo::set_cursor(const SDL_Point& position);
-int remoTemo::Temo::set_cursor_column(int column);
-int remoTemo::Temo::set_cursor_line(int line);
-int remoTemo::Temo::set_cursor_x(int column);
-int remoTemo::Temo::set_cursor_y(int line);
-SDL_Point remoTemo::Temo::get_cursor_position();
+int remotemo::Remotemo::move_cursor(int x, int y);
+int remotemo::Remotemo::move_cursor(const SDL_Point& move);
+int remotemo::Remotemo::set_cursor(int column, int line);
+int remotemo::Remotemo::set_cursor(const SDL_Point& position);
+int remotemo::Remotemo::set_cursor_column(int column);
+int remotemo::Remotemo::set_cursor_line(int line);
+int remotemo::Remotemo::set_cursor_x(int column);
+int remotemo::Remotemo::set_cursor_y(int line);
+SDL_Point remotemo::Remotemo::get_cursor_position();
 
-int remoTemo::Temo::pause(int pause);
-int remoTemo::Temo::clear();
-remoTemo::Key remoTemo::Temo::get_key();
-std::string remoTemo::Temo::get_input(int max_length);
+int remotemo::Remotemo::pause(int pause);
+int remotemo::Remotemo::clear();
+remotemo::Key remotemo::Remotemo::get_key();
+std::string remotemo::Remotemo::get_input(int max_length);
 
-int remoTemo::Temo::print(conts std::string& text);
-int remoTemo::Temo::print_at(int column, int line, const std::string& text);
-int remoTemo::Temo::print_at(const SDL_Point& position,
+int remotemo::Remotemo::print(conts std::string& text);
+int remotemo::Remotemo::print_at(int column, int line,
+        const std::string& text);
+int remotemo::Remotemo::print_at(const SDL_Point& position,
         const std::string& text);
 ```
 
@@ -491,39 +495,39 @@ int remoTemo::Temo::print_at(const SDL_Point& position,
 ### Change text output behaviour
 
 ```C++
-enum class remoTemo::Wrapping {off, char, word};
+enum class remotemo::Wrapping {off, char, word};
 
-int remoTemo::Temo::set_text_delay(int delay);
-int remoTemo::Temo::set_text_speed(int speed);
-int remoTemo::Temo::set_scrolling(bool scrolling);
-int remoTemo::Temo::set_wrapping(remoTemo::Wrapping wrapping);
-int remoTemo::Temo::set_inverse(bool inverse);
+int remotemo::Remotemo::set_text_delay(int delay);
+int remotemo::Remotemo::set_text_speed(int speed);
+int remotemo::Remotemo::set_scrolling(bool scrolling);
+int remotemo::Remotemo::set_wrapping(remotemo::Wrapping wrapping);
+int remotemo::Remotemo::set_inverse(bool inverse);
 
-int remoTemo::Temo::get_text_delay();
-int remoTemo::Temo::get_text_speed();
-bool remoTemo::Temo::get_scrolling();
-remoTemo::Wrapping remoTemo::Temo::get_wrapping();
-bool remoTemo::Temo::get_inverse();
+int remotemo::Remotemo::get_text_delay();
+int remotemo::Remotemo::get_text_speed();
+bool remotemo::Remotemo::get_scrolling();
+remotemo::Wrapping remotemo::Remotemo::get_wrapping();
+bool remotemo::Remotemo::get_inverse();
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Change text area settings
 
 ```C++
-struct remoTemo::Color {Uint8 red; Uint8 green; Uint8 blue;};
+struct remotemo::Color {Uint8 red; Uint8 green; Uint8 blue;};
 
-int remoTemo::Temo::set_text_area_size(int columns, int lines);
-int remoTemo::Temo::set_text_area_size(const SDL_Point& size);
-int remoTemo::Temo::get_text_area_columns();
-int remoTemo::Temo::get_text_area_lines();
-SDL_Point remoTemo::Temo::get_text_area_size();
+int remotemo::Remotemo::set_text_area_size(int columns, int lines);
+int remotemo::Remotemo::set_text_area_size(const SDL_Point& size);
+int remotemo::Remotemo::get_text_area_columns();
+int remotemo::Remotemo::get_text_area_lines();
+SDL_Point remotemo::Remotemo::get_text_area_size();
 
-int remoTemo::Temo::set_text_blend_mode(SDL_BlendMode mode);
-SDL_BlendMode remoTemo::Temo::get_text_blend_mode();
+int remotemo::Remotemo::set_text_blend_mode(SDL_BlendMode mode);
+SDL_BlendMode remotemo::Remotemo::get_text_blend_mode();
 
-int remoTemo::Temo::set_text_color(Uint8 red, Uint8 green, Uint8 blue);
-int remoTemo::Temo::set_text_color(const remoTemo::Color& color);
-remoTemo::Color remoTemo::Temo::get_text_color();
+int remotemo::Remotemo::set_text_color(Uint8 red, Uint8 green, Uint8 blue);
+int remotemo::Remotemo::set_text_color(const remotemo::Color& color);
+remotemo::Color remotemo::Remotemo::get_text_color();
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
@@ -538,9 +542,9 @@ enum class Mod_keys {
   None, Shift, Ctrl, Alt, Alt_shift, Ctrl_shift, Ctrl_alt, Ctrl_alt_shift
 };
 
-enum class remoTemo::F_key {
+enum class remotemo::F_key {
     F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12};
-enum class remoTemo::Key {
+enum class remotemo::Key {
     K_esc, K_backquote, K_1, K_2, ... , K_0, K_minus, K_equal, K_backspace,
     K_tab, K_q, K_w, ... K_p, K_left_bracket, K_right_bracket, K_backslash,
     ...
@@ -549,44 +553,44 @@ enum class remoTemo::Key {
     /* Basically all the keys on a regular keyboard, except F-keys, the
        keypad and modifier keys */
 
-int remoTemo::Temo::set_window_title(const std::string& title);
-std::string remoTemo::Temo::get_window_title();
-int remoTemo::Temo::set_window_size(int width, int height);
-int remoTemo::Temo::set_window_size(const SDL_Point& size);
-SDL_Point remoTemo::Temo::get_window_size();
-int remoTemo::Temo::set_window_position(int x, int y);
-int remoTemo::Temo::set_window_position(const SDL_Point& position);
-SDL_Point remoTemo::Temo::get_window_position();
-int remoTemo::Temo::set_window_resizable(bool is_resizable);
-bool remoTemo::Temo::get_window_resizable();
-int remoTemo::Temo::set_window_fullscreen(bool is_fullscreen);
-bool remoTemo::Temo::get_window_fullscreen();
+int remotemo::Remotemo::set_window_title(const std::string& title);
+std::string remotemo::Remotemo::get_window_title();
+int remotemo::Remotemo::set_window_size(int width, int height);
+int remotemo::Remotemo::set_window_size(const SDL_Point& size);
+SDL_Point remotemo::Remotemo::get_window_size();
+int remotemo::Remotemo::set_window_position(int x, int y);
+int remotemo::Remotemo::set_window_position(const SDL_Point& position);
+SDL_Point remotemo::Remotemo::get_window_position();
+int remotemo::Remotemo::set_window_resizable(bool is_resizable);
+bool remotemo::Remotemo::get_window_resizable();
+int remotemo::Remotemo::set_window_fullscreen(bool is_fullscreen);
+bool remotemo::Remotemo::get_window_fullscreen();
 
-int remoTemo::Temo::set_key_fullscreen(); // Set to none
-int remoTemo::Temo::set_key_fullscreen(remoTemo::Mod_keys modifier_keys,
-        remoTemo::F_key key);
-int remoTemo::Temo::set_key_fullscreen(remoTemo::Mod_keys_strict modifier_keys,
-        remoTemo::Key key);
-std::optional<remoTemo::Key_combo> remoTemo::Temo::get_key_fullscreen();
+int remotemo::Remotemo::set_key_fullscreen(); // Set to none
+int remotemo::Remotemo::set_key_fullscreen(remotemo::Mod_keys modifier_keys,
+        remotemo::F_key key);
+int remotemo::Remotemo::set_key_fullscreen(
+        remotemo::Mod_keys_strict modifier_keys, remotemo::Key key);
+std::optional<remotemo::Key_combo> remotemo::Remotemo::get_key_fullscreen();
 
-int remoTemo::Temo::set_key_close_window(); // Set to none
-int remoTemo::Temo::set_key_close_window(remoTemo::Mod_keys modifier_keys,
-        remoTemo::F_key key);
-int remoTemo::Temo::set_key_close_window(
-        remoTemo::Mod_keys_strict modifier_keys, remoTemo::Key key);
-std::optional<remoTemo::Key_combo> remoTemo::Temo::get_key_close_window();
+int remotemo::Remotemo::set_key_close_window(); // Set to none
+int remotemo::Remotemo::set_key_close_window(remotemo::Mod_keys modifier_keys,
+        remotemo::F_key key);
+int remotemo::Remotemo::set_key_close_window(
+        remotemo::Mod_keys_strict modifier_keys, remotemo::Key key);
+std::optional<remotemo::Key_combo> remotemo::Remotemo::get_key_close_window();
 
-int remoTemo::Temo::set_key_quit(); // Set to none
-int remoTemo::Temo::set_key_quit(remoTemo::Mod_keys modifier_keys,
-        remoTemo::F_key key);
-int remoTemo::Temo::set_key_quit(remoTemo::Mod_keys_strict modifier_keys,
-        remoTemo::Key key);
-std::optional<remoTemo::Key_combo> remoTemo::Temo::get_key_quit();
+int remotemo::Remotemo::set_key_quit(); // Set to none
+int remotemo::Remotemo::set_key_quit(remotemo::Mod_keys modifier_keys,
+        remotemo::F_key key);
+int remotemo::Remotemo::set_key_quit(remotemo::Mod_keys_strict modifier_keys,
+        remotemo::Key key);
+std::optional<remotemo::Key_combo> remotemo::Remotemo::get_key_quit();
 
-int remoTemo::Temo::set_closing_same_as_quit(bool is_closing_same_as_quit);
-bool remoTemo::Temo::get_closing_same_as_quit();
-int remoTemo::Temo::set_function_pre_close(std::function<bool()> func);
-int remoTemo::Temo::set_function_pre_quit(std::function<bool()> func);
+int remotemo::Remotemo::set_closing_same_as_quit(bool is_closing_same_as_quit);
+bool remotemo::Remotemo::get_closing_same_as_quit();
+int remotemo::Remotemo::set_function_pre_close(std::function<bool()> func);
+int remotemo::Remotemo::set_function_pre_quit(std::function<bool()> func);
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>

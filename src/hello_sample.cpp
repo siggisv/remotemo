@@ -49,7 +49,7 @@ void getClipping(const int win_w, const int win_h, const int texture_w,
 
 int dummy_sample()
 {
-  auto text_monitor = remoTemo::create();
+  auto text_monitor = remotemo::create();
   if (!text_monitor) {
     return 2;
   }

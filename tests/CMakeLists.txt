@@ -17,13 +17,16 @@ if (REMOTEMO_TESTS_COLOR)
     set(TEST_ARG ${TEST_ARG} "--colour-mode=ansi")
 endif()
 
-add_executable(remotemo_init src/remotemo_init.cpp)
-target_link_libraries(remotemo_init PRIVATE
+enable_testing()
+
+add_executable(init
+    src/init_helpers.cpp
+    src/init_validate_conf_res.cpp
+    src/init_setup.cpp
+)
+target_link_libraries(init PRIVATE
     remotemo
     Catch2::Catch2WithMain
     trompeloeil::trompeloeil
 )
-
-enable_testing()
-add_test(test_remotemo_init remotemo_init ${TEST_ARG})
-
+add_test(test_init init ${TEST_ARG})

@@ -1,6 +1,7 @@
 #ifndef REMOTEMO_CONFIG_HPP
 #define REMOTEMO_CONFIG_HPP
 
+#include <optional>
 #include <functional>
 #include <string>
 
@@ -8,245 +9,116 @@
 
 #include <SDL.h>
 
-namespace remoTemo {
+namespace remotemo {
 using std::string_literals::operator""s;
 
-class Temo;
+class Engine;
+
+struct Texture_config {
+  SDL_Texture* raw_sdl;
+  std::string file_path;
+};
+
+struct Backgr_config : Texture_config {
+  SDL_Rect min_area;
+  SDL_FRect text_area;
+};
+
+struct Font_config : Texture_config {
+  int width;
+  int height;
+};
+
+struct Text_area_config {
+  int columns;
+  int lines;
+  SDL_BlendMode blend_mode;
+  Color color;
+};
+
+struct Window_config {
+  SDL_Window* raw_sdl;
+  std::string title;
+  int width;
+  int height;
+  int pos_x;
+  int pos_y;
+  bool is_resizable;
+  bool is_fullscreen;
+};
 
 class Config {
-  friend Temo;
+  friend Engine;
 
 public:
   constexpr Config() = default;
 
-  Config& cleanup_all(bool cleanup_all)
+  Config& cleanup_all(bool cleanup_all);
+  [[nodiscard]] const bool& cleanup_all() const { return m_cleanup_all; }
+
+  Config& window(SDL_Window* window);
+  Config& window_title(const std::string& title);
+  Config& window_size(int width, int height);
+  Config& window_size(const SDL_Point& size);
+  Config& window_position(int x, int y);
+  Config& window_position(const SDL_Point& pos);
+  Config& window_resizable(bool is_resizable);
+  Config& window_fullscreen(bool is_fullscreen);
+  [[nodiscard]] const Window_config& window() const { return m_window; }
+
+  Config& key_fullscreen();
+  Config& key_fullscreen(Mod_keys modifier_keys, F_key key);
+  Config& key_fullscreen(Mod_keys_strict modifier_keys, Key key);
+
+  Config& key_close_window();
+  Config& key_close_window(Mod_keys modifier_keys, F_key key);
+  Config& key_close_window(Mod_keys_strict modifier_keys, Key key);
+
+  Config& key_quit();
+  Config& key_quit(Mod_keys modifier_keys, F_key key);
+  Config& key_quit(Mod_keys_strict modifier_keys, Key key);
+
+  Config& closing_same_as_quit(bool is_closing_same_as_quit);
+  Config& function_pre_close(const std::function<bool()>& func);
+  Config& function_pre_quit(const std::function<bool()>& func);
+
+  Config& background(SDL_Texture* background);
+  Config& background_file_path(const std::string& file_path);
+  Config& background_min_area(int x, int y, int w, int h);
+  Config& background_min_area(const SDL_Rect& area);
+  Config& background_text_area(float x, float y, float w, float h);
+  Config& background_text_area(const SDL_FRect& area);
+  [[nodiscard]] const Backgr_config& background() const
   {
-    m_cleanup_all = cleanup_all;
-    return *this;
+    return m_background;
   }
 
-  Config& the_window(SDL_Window* window)
-  {
-    m_the_window = window;
-    return *this;
-  }
-  Config& window_title(const std::string& title)
-  {
-    m_window_title = title;
-    return *this;
-  }
-  Config& window_size(int width, int height)
-  {
-    m_window_width = width;
-    m_window_height = height;
-    return *this;
-  }
-  Config& window_size(const SDL_Point& size)
-  {
-    return window_size(size.x, size.y);
-  }
-  Config& window_position(int x, int y)
-  {
-    m_window_pos_x = x;
-    m_window_pos_y = y;
-    return *this;
-  }
-  Config& window_position(const SDL_Point& pos)
-  {
-    return window_position(pos.x, pos.y);
-  }
-  Config& window_resizable(bool is_resizable)
-  {
-    m_window_is_resizable = is_resizable;
-    return *this;
-  }
-  Config& window_fullscreen(bool is_fullscreen)
-  {
-    m_window_is_fullscreen = is_fullscreen;
-    return *this;
-  }
+  Config& font_bitmap(SDL_Texture* font_bitmap);
+  Config& font_bitmap_file_path(const std::string& file_path);
+  Config& font_size(int width, int height);
+  Config& font_size(const SDL_Point& size);
+  [[nodiscard]] const Font_config& font() const { return m_font; }
 
-  Config& key_fullscreen()
+  Config& text_area_size(int columns, int lines);
+  Config& text_area_size(const SDL_Point& size);
+  Config& text_blend_mode(SDL_BlendMode mode);
+  Config& text_color(Uint8 red, Uint8 green, Uint8 blue);
+  Config& text_color(const Color& color);
+  [[nodiscard]] const Text_area_config& text_area() const
   {
-    m_key_fullscreen = std::nullopt;
-    return *this;
-  }
-  Config& key_fullscreen(Mod_keys modifier_keys, F_key key)
-  {
-    if (m_key_fullscreen) {
-      m_key_fullscreen->set(modifier_keys, key);
-    } else {
-      m_key_fullscreen.emplace(modifier_keys, key);
-    }
-    return *this;
-  }
-  Config& key_fullscreen(Mod_keys_strict modifier_keys, Key key)
-  {
-    if (m_key_fullscreen) {
-      m_key_fullscreen->set(modifier_keys, key);
-    } else {
-      m_key_fullscreen.emplace(modifier_keys, key);
-    }
-    return *this;
-  }
-
-  Config& key_close_window()
-  {
-    m_key_close_window = std::nullopt;
-    return *this;
-  }
-  Config& key_close_window(Mod_keys modifier_keys, F_key key)
-  {
-    if (m_key_close_window) {
-      m_key_close_window->set(modifier_keys, key);
-    } else {
-      m_key_close_window.emplace(modifier_keys, key);
-    }
-    return *this;
-  }
-  Config& key_close_window(Mod_keys_strict modifier_keys, Key key)
-  {
-    if (m_key_close_window) {
-      m_key_close_window->set(modifier_keys, key);
-    } else {
-      m_key_close_window.emplace(modifier_keys, key);
-    }
-    return *this;
-  }
-
-  Config& key_quit()
-  {
-    m_key_quit = std::nullopt;
-    return *this;
-  }
-  Config& key_quit(Mod_keys modifier_keys, F_key key)
-  {
-    if (m_key_quit) {
-      m_key_quit->set(modifier_keys, key);
-    } else {
-      m_key_quit.emplace(modifier_keys, key);
-    }
-    return *this;
-  }
-  Config& key_quit(Mod_keys_strict modifier_keys, Key key)
-  {
-    if (m_key_quit) {
-      m_key_quit->set(modifier_keys, key);
-    } else {
-      m_key_quit.emplace(modifier_keys, key);
-    }
-    return *this;
-  }
-
-  Config& closing_same_as_quit(bool is_closing_same_as_quit)
-  {
-    m_is_closing_same_as_quit = is_closing_same_as_quit;
-    return *this;
-  }
-  Config& function_pre_close(const std::function<bool()>& func)
-  {
-    if (func == nullptr) {
-      m_pre_close_function = []() -> bool { return true; };
-    } else {
-      m_pre_close_function = func;
-    }
-    return *this;
-  }
-  Config& function_pre_quit(const std::function<bool()>& func)
-  {
-    if (func == nullptr) {
-      m_pre_quit_function = []() -> bool { return true; };
-    } else {
-      m_pre_quit_function = func;
-    }
-    return *this;
-  }
-
-  Config& background(SDL_Texture* background)
-  {
-    m_background = background;
-    return *this;
-  }
-  Config& background_file_path(const std::string& file_path)
-  {
-    m_background_file_path = file_path;
-    return *this;
-  }
-  Config& background_min_area(int x, int y, int w, int h)
-  {
-    m_background_min_area.x = x;
-    m_background_min_area.y = y;
-    m_background_min_area.w = w;
-    m_background_min_area.h = h;
-    return *this;
-  }
-  Config& background_text_area(float x, float y, float w, float h)
-  {
-    m_background_text_area.x = x;
-    m_background_text_area.y = y;
-    m_background_text_area.w = w;
-    m_background_text_area.h = h;
-    return *this;
-  }
-
-  Config& font_bitmap(SDL_Texture* font_bitmap)
-  {
-    m_font_bitmap = font_bitmap;
-    return *this;
-  }
-  Config& font_bitmap_file_path(const std::string& file_path)
-  {
-    m_font_bitmap_file_path = file_path;
-    return *this;
-  }
-  Config& font_size(int width, int height)
-  {
-    m_font_width = width;
-    m_font_height = height;
-    return *this;
-  }
-  Config& font_size(const SDL_Point& size)
-  {
-    return font_size(size.x, size.y);
-  }
-
-  Config& text_area_size(int columns, int lines)
-  {
-    m_text_area_columns = columns;
-    m_text_area_lines = lines;
-    return *this;
-  }
-  Config& text_area_size(const SDL_Point& size)
-  {
-    return text_area_size(size.x, size.y);
-  }
-  Config& text_blend_mode(SDL_BlendMode mode)
-  {
-    m_text_blend_mode = mode;
-    return *this;
-  }
-  Config& text_color(Uint8 red, Uint8 green, Uint8 blue)
-  {
-    m_text_color.red = red;
-    m_text_color.green = green;
-    m_text_color.blue = blue;
-    return *this;
-  }
-  Config& text_color(const Color& color)
-  {
-    return text_color(color.red, color.green, color.blue);
+    return m_text_area;
   }
 
 private:
+  static bool validate_texture(SDL_Texture* texture, SDL_Renderer* renderer,
+      const std::string& texture_name);
+  bool validate(SDL_Renderer* renderer) const;
+
   bool m_cleanup_all {true};
-  SDL_Window* m_the_window {nullptr};
-  std::string m_window_title {"Retro Monochrome Text Monitor"s};
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  int m_window_width {1280}, m_window_height {720};
-  int m_window_pos_x {SDL_WINDOWPOS_UNDEFINED};
-  int m_window_pos_y {SDL_WINDOWPOS_UNDEFINED};
-  bool m_window_is_resizable {true};
-  bool m_window_is_fullscreen {false};
+  Window_config m_window {nullptr, "Retro Monochrome Text Monitor"s,
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+      1280, 720, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, true,
+      false};
   std::optional<Key_combo> m_key_fullscreen {
       std::in_place, Mod_keys::None, F_key::F11};
   std::optional<Key_combo> m_key_close_window {
@@ -256,21 +128,16 @@ private:
   bool m_is_closing_same_as_quit {true};
   std::function<bool()> m_pre_close_function {[]() -> bool { return true; }};
   std::function<bool()> m_pre_quit_function {[]() -> bool { return true; }};
-  SDL_Texture* m_background {nullptr};
-  std::string m_background_file_path {"res/img/terminal_screen.png"s};
+  Backgr_config m_background {{nullptr, "res/img/terminal_screen.png"s},
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+      SDL_Rect {118, 95, 700, 540},
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+      SDL_FRect {188.25f, 149.25f, 560.0f, 432.0f}};
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  SDL_Rect m_background_min_area {118, 95, 700, 540};
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  SDL_FRect m_background_text_area {188.25f, 149.25f, 560.0f, 432.0f};
-  SDL_Texture* m_font_bitmap {nullptr};
-  std::string m_font_bitmap_file_path {"res/img/font_bitmap.png"s};
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  int m_font_width {7}, m_font_height {18};
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  int m_text_area_columns {40}, m_text_area_lines {24};
-  SDL_BlendMode m_text_blend_mode {SDL_BLENDMODE_ADD};
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  Color m_text_color {89, 221, 0};
+  Font_config m_font {{nullptr, "res/img/font_bitmap.png"s}, 7, 18};
+  Text_area_config m_text_area {
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+      40, 24, SDL_BLENDMODE_ADD, Color {89, 221, 0}};
 };
-} // namespace remoTemo
+} // namespace remotemo
 #endif // REMOTEMO_CONFIG_HPP
