@@ -2,9 +2,9 @@
 #include "font.hpp"
 
 namespace remotemo {
-Cleanup_handler::~Cleanup_handler()
+Main_SDL_handler::~Main_SDL_handler()
 {
-  ::SDL_Log("Cleanup_handler Destructor: m_do_sdl_quit: %s",
+  ::SDL_Log("Main_SDL_handler Destructor: m_do_sdl_quit: %s",
       m_do_sdl_quit ? "True" : "False");
   if (m_do_sdl_quit) {
     ::SDL_Log("Quit\n");
@@ -17,7 +17,7 @@ Cleanup_handler::~Cleanup_handler()
   }
 }
 
-Cleanup_handler::Cleanup_handler(Cleanup_handler&& other) noexcept
+Main_SDL_handler::Main_SDL_handler(Main_SDL_handler&& other) noexcept
     : m_do_sdl_quit(other.m_do_sdl_quit),
       m_sdl_subsystems(other.m_sdl_subsystems)
 {
@@ -25,11 +25,29 @@ Cleanup_handler::Cleanup_handler(Cleanup_handler&& other) noexcept
   other.m_sdl_subsystems = 0;
 }
 
-Cleanup_handler& Cleanup_handler::operator=(Cleanup_handler&& other) noexcept
+Main_SDL_handler& Main_SDL_handler::operator=(Main_SDL_handler&& other) noexcept
 {
   std::swap(m_do_sdl_quit, other.m_do_sdl_quit);
   std::swap(m_sdl_subsystems, other.m_sdl_subsystems);
   return *this;
+}
+
+bool Main_SDL_handler::setup(::Uint32 init_flags)
+{
+  ::SDL_Log("SDL_Init(%d)", init_flags);
+  if (::SDL_Init(init_flags) < 0) {
+    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n",
+        ::SDL_GetError());
+    return false;
+  }
+  m_sdl_subsystems = init_flags;
+
+  if (::SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear") == SDL_FALSE) {
+    ::SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+        "SDL_SetHint() (scale quality to linear) failed: %s\n",
+        ::SDL_GetError());
+  }
+  return true;
 }
 
 std::unique_ptr<Engine> Engine::create(const Config& config)
@@ -37,11 +55,14 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   ::SDL_Log("Remotemo::initialize() with config.m_cleanup_all: %s",
       config.cleanup_all() ? "True" : "False");
 
-  // Setup handling of cleanup.
+  // Setup handling of resources and their cleanup.
   // This is done right here at the start so that if something fails, then
   // everything that was handed over will be taken care of no matter where
   // in the setup process something failed.
-  Cleanup_handler cleanup_handler {config.cleanup_all()};
+  // Note that the order in which the following objects are created is
+  // important so that if the setup process fails, then everything that should
+  // get cleaned up, does in the right order.
+  Main_SDL_handler main_sdl_handler {config.cleanup_all()};
   std::optional<Window> window {};
   Res_handler<SDL_Window> conf_window {
       config.window().raw_sdl, config.cleanup_all()};
@@ -59,19 +80,8 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   if (!config.validate(conf_renderer.res())) {
     return nullptr;
   }
-
-  ::SDL_Log("SDL_Init(%d)", sdl_init_flags);
-  if (::SDL_Init(sdl_init_flags) < 0) {
-    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n",
-        ::SDL_GetError());
+  if(!main_sdl_handler.setup(sdl_init_flags)) {
     return nullptr;
-  }
-  cleanup_handler.m_sdl_subsystems = sdl_init_flags;
-
-  if (::SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear") == SDL_FALSE) {
-    ::SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-        "SDL_SetHint() (scale quality to linear) failed: %s\n",
-        ::SDL_GetError());
   }
   window = Window::create(config.window(), std::move(conf_window));
   if (!window) {
@@ -96,7 +106,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   if (!text_display) {
     return nullptr;
   }
-  return std::make_unique<Engine>(std::move(cleanup_handler),
+  return std::make_unique<Engine>(std::move(main_sdl_handler),
       std::move(*window), std::move(*renderer), std::move(*background),
       std::move(*text_display));
 }

@@ -16,19 +16,21 @@
 
 namespace remotemo {
 class Engine;
-class Cleanup_handler {
+class Main_SDL_handler {
   friend Engine;
 
 public:
-  constexpr explicit Cleanup_handler(bool do_sdl_quit) noexcept
+  constexpr explicit Main_SDL_handler(bool do_sdl_quit) noexcept
       : m_do_sdl_quit(do_sdl_quit)
   {}
-  ~Cleanup_handler();
-  Cleanup_handler(Cleanup_handler&& other) noexcept;
-  Cleanup_handler& operator=(Cleanup_handler&&) noexcept;
+  ~Main_SDL_handler();
+  Main_SDL_handler(Main_SDL_handler&& other) noexcept;
+  Main_SDL_handler& operator=(Main_SDL_handler&&) noexcept;
 
-  Cleanup_handler(const Cleanup_handler&) = delete;
-  Cleanup_handler& operator=(const Cleanup_handler&) = delete;
+  Main_SDL_handler(const Main_SDL_handler&) = delete;
+  Main_SDL_handler& operator=(const Main_SDL_handler&) = delete;
+
+  bool setup(::Uint32 init_flags);
 
 private:
   bool m_do_sdl_quit {false};
@@ -37,10 +39,10 @@ private:
 
 class Engine {
 public:
-  explicit Engine(Cleanup_handler cleanup_handler, Window window,
+  explicit Engine(Main_SDL_handler main_sdl_handler, Window window,
       Renderer renderer, Background background,
       Text_display text_display) noexcept
-      : m_cleanup_handler(std::move(cleanup_handler)),
+      : m_main_sdl_handler(std::move(main_sdl_handler)),
         m_window(std::move(window)), m_renderer(std::move(renderer)),
         m_background(std::move(background)),
         m_text_display(std::move(text_display))
@@ -56,7 +58,7 @@ public:
   static std::unique_ptr<Engine> create(const Config& config);
 
 private:
-  Cleanup_handler m_cleanup_handler;
+  Main_SDL_handler m_main_sdl_handler;
 
   Window m_window;
   Renderer m_renderer;
