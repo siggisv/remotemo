@@ -25,7 +25,8 @@ Main_SDL_handler::Main_SDL_handler(Main_SDL_handler&& other) noexcept
   other.m_sdl_subsystems = 0;
 }
 
-Main_SDL_handler& Main_SDL_handler::operator=(Main_SDL_handler&& other) noexcept
+Main_SDL_handler& Main_SDL_handler::operator=(
+    Main_SDL_handler&& other) noexcept
 {
   std::swap(m_do_sdl_quit, other.m_do_sdl_quit);
   std::swap(m_sdl_subsystems, other.m_sdl_subsystems);
@@ -80,7 +81,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   if (!config.validate(conf_renderer.res())) {
     return nullptr;
   }
-  if(!main_sdl_handler.setup(sdl_init_flags)) {
+  if (!main_sdl_handler.setup(sdl_init_flags)) {
     return nullptr;
   }
   window = Window::create(config.window(), std::move(conf_window));
