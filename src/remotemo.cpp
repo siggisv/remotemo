@@ -34,7 +34,8 @@ int Remotemo::move_cursor([[maybe_unused]] int x, [[maybe_unused]] int y)
 {
   return 0;
 }
-int Remotemo::set_cursor([[maybe_unused]] int column, [[maybe_unused]] int line)
+int Remotemo::set_cursor(
+    [[maybe_unused]] int column, [[maybe_unused]] int line)
 {
   return 0;
 }
@@ -72,7 +73,8 @@ int Remotemo::print([[maybe_unused]] const std::string& text)
 {
   return 0;
 }
-int Remotemo::print_at([[maybe_unused]] int column, [[maybe_unused]] int line, [[maybe_unused]] const std::string& text)
+int Remotemo::print_at([[maybe_unused]] int column, [[maybe_unused]] int line,
+    [[maybe_unused]] const std::string& text)
 {
   return 0;
 }

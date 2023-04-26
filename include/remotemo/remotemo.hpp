@@ -49,6 +49,7 @@ public:
     return print_at(position.x, position.y, text);
   }
   int set_inverse(bool inverse);
+
 private:
   constexpr Remotemo() noexcept = default;
   bool initialize(const Config& config);
