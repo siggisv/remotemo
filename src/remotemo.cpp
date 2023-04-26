@@ -29,4 +29,55 @@ std::optional<Remotemo> create(const Config& config)
   }
   return {};
 }
+
+int Remotemo::move_cursor([[maybe_unused]] int x, [[maybe_unused]] int y)
+{
+  return 0;
+}
+int Remotemo::set_cursor([[maybe_unused]] int column, [[maybe_unused]] int line)
+{
+  return 0;
+}
+int Remotemo::set_cursor_column([[maybe_unused]] int column)
+{
+  return 0;
+}
+int Remotemo::set_cursor_line([[maybe_unused]] int line)
+{
+  return 0;
+}
+SDL_Point Remotemo::get_cursor_position()
+{
+  return SDL_Point {0, 0};
+}
+
+int Remotemo::pause([[maybe_unused]] int pause)
+{
+  return 0;
+}
+int Remotemo::clear()
+{
+  return 0;
+}
+Key Remotemo::get_key()
+{
+  return Key::K_0;
+}
+std::string Remotemo::get_input([[maybe_unused]] int max_length)
+{
+  return "null";
+}
+
+int Remotemo::print([[maybe_unused]] const std::string& text)
+{
+  return 0;
+}
+int Remotemo::print_at([[maybe_unused]] int column, [[maybe_unused]] int line, [[maybe_unused]] const std::string& text)
+{
+  return 0;
+}
+int Remotemo::set_inverse([[maybe_unused]] bool inverse)
+{
+  return 0;
+}
 } // namespace remotemo

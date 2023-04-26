@@ -94,7 +94,7 @@ add_custom_target(copy_resources ALL
 )
 
 IF (REMOTEMO_BUILD_SAMPLES)
-    add_executable(hello_sample src/hello_sample.cpp)
+    add_executable(hello_sample samples/hello_sample.cpp)
     target_link_libraries(hello_sample PRIVATE
         remotemo
     )

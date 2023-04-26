@@ -475,8 +475,6 @@ int remotemo::Remotemo::set_cursor(int column, int line);
 int remotemo::Remotemo::set_cursor(const SDL_Point& position);
 int remotemo::Remotemo::set_cursor_column(int column);
 int remotemo::Remotemo::set_cursor_line(int line);
-int remotemo::Remotemo::set_cursor_x(int column);
-int remotemo::Remotemo::set_cursor_y(int line);
 SDL_Point remotemo::Remotemo::get_cursor_position();
 
 int remotemo::Remotemo::pause(int pause);
@@ -484,7 +482,7 @@ int remotemo::Remotemo::clear();
 remotemo::Key remotemo::Remotemo::get_key();
 std::string remotemo::Remotemo::get_input(int max_length);
 
-int remotemo::Remotemo::print(conts std::string& text);
+int remotemo::Remotemo::print(const std::string& text);
 int remotemo::Remotemo::print_at(int column, int line,
         const std::string& text);
 int remotemo::Remotemo::print_at(const SDL_Point& position,
