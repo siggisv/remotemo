@@ -4,7 +4,7 @@
 #include "remotemo/remotemo.hpp"
 #include "../../src/texture.hpp"
 
-#include "init.hpp"
+#include "test_init.hpp"
 
 using std::string_literals::operator""s;
 

@@ -1,5 +1,5 @@
-#ifndef REMOTEMO_TESTS_SRC_INIT_HPP
-#define REMOTEMO_TESTS_SRC_INIT_HPP
+#ifndef REMOTEMO_TESTS_SRC_TEST_INIT_HPP
+#define REMOTEMO_TESTS_SRC_TEST_INIT_HPP
 
 #include <string>
 #include <list>
@@ -146,4 +146,4 @@ bool try_running_create(bool do_cleanup_all,
     const Texture_conf& texture_conf = {});
 void require_init_has_ended(std::list<tr_exp>* exps, Test_seqs* seqs);
 
-#endif // REMOTEMO_TESTS_SRC_INIT_HPP
+#endif // REMOTEMO_TESTS_SRC_TEST_INIT_HPP

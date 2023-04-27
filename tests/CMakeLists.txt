@@ -19,14 +19,14 @@ endif()
 
 enable_testing()
 
-add_executable(init
-    src/init_helpers.cpp
-    src/init_validate_conf_res.cpp
-    src/init_setup.cpp
+add_executable(test_init
+    src/test_init_helpers.cpp
+    src/test_init_validate_conf_res.cpp
+    src/test_init_setup.cpp
 )
-target_link_libraries(init PRIVATE
+target_link_libraries(test_init PRIVATE
     remotemo
     Catch2::Catch2WithMain
     trompeloeil::trompeloeil
 )
-add_test(test_init init ${TEST_ARG})
+add_test(test_init test_init ${TEST_ARG})
