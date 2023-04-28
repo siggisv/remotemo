@@ -17,10 +17,11 @@ _3rd draft_
   - [Cleanup](#cleanup)
   - [Configuration and default settings](#configuration-and-default-settings)
 - [Using remoTemo](#using-remotemo)
-  - [Interact with the monitor](#interact-with-the-monitor)
-  - [Change text output behaviour](#change-text-output-behaviour)
-  - [Change text area settings](#change-text-area-settings)
-  - [Change window settings](#change-window-settings)
+  - [Structs and enums](#structs-and-enums)
+  - [Text input/output](#text-inputoutput)
+  - [Text output behaviour](#text-output-behaviour)
+  - [Text area settings](#text-area-settings)
+  - [Window settings](#window-settings)
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ## Initialization, cleanup and config
@@ -33,13 +34,14 @@ std::optional<remotemo::Remotemo> remotemo::create(
 ```
 
 This non-member function will create and initialize an object representing
-a text monitor, the window showing it, an ASCII-only keyboard and their
-properties (along with the needed properties for the underlying SDL2-library).
+an ASCII-only text monitor with an US-ANSI keyboard and their properties. That
+object will also contain the window showing it (along with the needed textures
+and properties for the underlying SDL2-library).
 
 - If successful, that function will return a
   `std::optional<remotemo::Remotemo>` containing the object. It will also
-  create an internal list of the resources that its destructor should take
-  care of cleaning up.
+  create an internal list of resources that its destructor should take care of
+  cleaning up.
   > **Note** `remotemo::Remotemo` is movable but not copyable. It is therefore
   > recommended to pass it along by reference or to use a smart pointer.
 
@@ -62,6 +64,10 @@ SDL2-library and create a window for you with the default settings (including
 loading a background texture and the font-bitmap from their default
 locations). Most of those settings can not be changed after creation.
 
+  > **Warning**
+  > If SDL2 has already been initialized before calling this function, then it
+  > must be done from the same thread.
+
 -----
 
 To allow you to initialize using other settings than the default ones, the
@@ -72,7 +78,6 @@ default initialization settings:
 
 ```C++
 remotemo::Config::Config();
-
 ```
 
 _The constructor that creates a `remotemo::Config` object._
@@ -466,35 +471,211 @@ will have the initial values shown here _(those can all be changed later)_:
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ## Using remoTemo
-### Interact with the monitor
+
+In single thread mode (which currently is not only the default mode, it is the
+only one being implemented until maybe later) there is no main loop constantly
+updating the window.
+
+Instead, after the `Remotemo`-object has been created, control is given back
+to your program. Then each time one of the I/O-functions is called
+(`get_cursor_position()` not included), that function calls (at least) once a
+function that handles events and updating the window, before returning to your
+program. How often they call that updating-function depend on how long they
+need to run. E.g. `set_cursor(position)` just does it often enough for the
+window to show the new position of the cursor, while `pause()` does it
+repeatly until the requested time has passed and `get_input()` does it until
+a key has been pressed.
+
+This puts (at least) two restrictions on your code:
+- Those functions should only be called from the thread where SDL was
+  initialized. Unless you initialized SDL yourself, that would be the thread
+  where `remotemo::create()` was called (if you **did** initialize SDL
+  yourself, then as stated in the [initialization chapter](#initialization),
+  that should have happened in the same thread).
+- Your code should call some of those functions often enough to keep the
+  window responsive.
+
+The following functions all throw an exception if the window is closed
+before or while being called.
+
+### Structs and enums
+
+```C++
+enum class remotemo::Wrapping {off, char, word};
+
+struct remotemo::Color {Uint8 red; Uint8 green; Uint8 blue;};
+
+enum class Mod_keys_strict {
+  Ctrl, Alt, Alt_shift, Ctrl_shift, Ctrl_alt, Ctrl_alt_shift
+};
+
+enum class Mod_keys {
+  None, Shift, Ctrl, Alt, Alt_shift, Ctrl_shift, Ctrl_alt, Ctrl_alt_shift
+};
+
+enum class remotemo::F_key {
+    F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12
+};
+
+enum class remotemo::Key {
+    K_esc, K_backquote, K_1, K_2, ... , K_0, K_minus, K_equal, K_backspace,
+    K_tab, K_q, K_w, ... K_p, K_left_bracket, K_right_bracket, K_backslash,
+    ...
+    ...
+    K_space, K_up, K_down, K_left, K_right};
+    /* Basically all the keys on a regular keyboard, except F-keys, the
+       keypad and modifier keys */
+
+enum class remotemo::Do_reset {none, cursor, inverse, all};
+```
+
+<sup>[Back to top](#remotemo-api-design)</sup>
+### Text input/output
+
+As mentioned before, the I/O functions (except `get_cursor_position()`) also
+update the window while running.
 
 ```C++
 int remotemo::Remotemo::move_cursor(int x, int y);
 int remotemo::Remotemo::move_cursor(const SDL_Point& move);
+```
+
+Moves the cursor `x` columns to the right (negative `x` moves it to the left)
+and `y` lines down (negative `y` moves it up).
+
+- If successful, returns `0`.
+- If trying to move the cursor past the edges of the text area, it will stop
+  just inside the area and return:
+  - `-1` if trying to go past right edge.
+  - `-2` if trying to go past bottom edge.
+  - `-4` if trying to go past left edge.
+  - `-8` if trying to go past top edge.
+  - `-3` (-1 + -2) if trying to go past right and bottom edges.
+  - `-9` (-1 + -8) if trying to go past right and top edges.
+  - `-6` (-4 + -2) if trying to go past left and bottom edges.
+  - `-12` (-4 + -8) if trying to go past left and top edges.
+
+```C++
 int remotemo::Remotemo::set_cursor(int column, int line);
 int remotemo::Remotemo::set_cursor(const SDL_Point& position);
 int remotemo::Remotemo::set_cursor_column(int column);
 int remotemo::Remotemo::set_cursor_line(int line);
+```
+
+Moves the cursor to the given position.
+
+- If successful, returns `0`.
+- If trying to move the cursor past the edges of the text area, it stay where
+  it was and the function will return `-1`.
+
+```C++
 SDL_Point remotemo::Remotemo::get_cursor_position();
+```
 
-int remotemo::Remotemo::pause(int pause);
-int remotemo::Remotemo::clear();
+(Obviously) returns the current position of the cursor. As stated elsewhere,
+does not update the window.
+
+```C++
+int remotemo::Remotemo::pause(int pause_in_ms);
+```
+
+Wait for the given time (in milliseconds) then returns:
+
+- `0` on success.
+- `-1` on error (e.g. the given time is negative).
+
+```C++
+void remotemo::Remotemo::clear(
+  remotemo::Do_reset do_reset = remotemo::Do_reset::all);
+```
+
+Clears all the text area at once.
+
+- If `do_reset` is `cursor` or `all`, it also resets the position of the
+  cursor to `(0, 0)`, otherwise leaving it at its current position.
+- If `do_reset` is `inverse` or `all`, it also resets 'inverse' to `false`,
+  **before** clearing the text area.
+- If 'inverse' was set to `true` and is not reset, then clearing the text
+  area fills it all with the foreground color.
+
+```C++
 remotemo::Key remotemo::Remotemo::get_key();
-std::string remotemo::Remotemo::get_input(int max_length);
+```
 
+Waits for a key being pressed and returns it (without displaying it on the
+screen). As noted about the enum class `remotemo::Key`, F-keys (e.g. `F1`),
+the keypad and modifier keys are not included.
+
+```C++
+std::string remotemo::Remotemo::get_input(int max_length);
+```
+
+Allows the user to enter some text. It gets displayed onto the screen as the
+user enters it, starting where the cursor was. The text can be edited, using
+the backspace, left- and right-arrow keys, until `Return` is pressed, at which
+time the text is returned.
+
+`max_length` not only restrict the length of the string being returned. It
+also restrict the lenght of the text being entered on the screen. If wrapping
+is set to `off` then the length is also restricted by the distance to the
+right border of the screen. Even if wrapping is set to `char` (or `word`,
+which will still give same behaviour as `char`), then having scrolling set to
+false will restrict the length by what can fit from the current cursor
+position, down to the bottom-right corner of the screen.
+
+> **Note** No matter what keyboard layout the user has, this function will
+> behave as if it was an `US-ANSI` layout.
+
+```C++
 int remotemo::Remotemo::print(const std::string& text);
+```
+
+Display the given string, starting at the current position of the cursor, one
+character at the time with a slight delay inbetween (as set by the 'delay
+between chars' property). With the exception of special characters like the
+`backspace` character and the `newline` character, each character displayed
+will move the cursor one space to the right (wrapping might change this).
+
+- The `backspace` character will move the cursor one space to the left and
+  overwrite the content there with a single `space` character (unless the
+  cursor was already at the left border).
+- The `newline` character just moves the cursor to the beginning of the next
+  line.
+- If the inverse property is set to `true`, will display the string with the
+  foreground and background colors switched.
+
+> **Warning** Any non-ASCII character will be displayed as `�`.
+
+Wrapping:
+- If set to `off` then text printed beyond the right border gets lost.
+- If set to `char` then text wraps to the beginning of the next line when
+  reaching the right border, possibly splitting a word in the process.
+- If set to `word` then text wraps to the beginning of the next line, at the
+  last whitespace before getting to the right border. Except if there is no
+  whitespace in the current line, in which case this line wraps at the right
+  border.
+
+Scrolling:
+- If set to `true` then trying to move the cursor down (because of wrapping or
+  the newline character) while it's already at the bottom line will move the
+  whole content of the screen up one line.
+- If set to `false` then trying to move the cursor down while it's already at
+  the bottom line will not do anything else than make the rest of the string
+  lost.
+
+```C++
 int remotemo::Remotemo::print_at(int column, int line,
         const std::string& text);
 int remotemo::Remotemo::print_at(const SDL_Point& position,
         const std::string& text);
 ```
 
+Does the same thing as calling first `set_cursor()` and then `print()`.
+
 <sup>[Back to top](#remotemo-api-design)</sup>
-### Change text output behaviour
+### Text output behaviour
 
 ```C++
-enum class remotemo::Wrapping {off, char, word};
-
 int remotemo::Remotemo::set_text_delay(int delay);
 int remotemo::Remotemo::set_text_speed(int speed);
 int remotemo::Remotemo::set_scrolling(bool scrolling);
@@ -509,11 +690,9 @@ bool remotemo::Remotemo::get_inverse();
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
-### Change text area settings
+### Text area settings
 
 ```C++
-struct remotemo::Color {Uint8 red; Uint8 green; Uint8 blue;};
-
 int remotemo::Remotemo::set_text_area_size(int columns, int lines);
 int remotemo::Remotemo::set_text_area_size(const SDL_Point& size);
 int remotemo::Remotemo::get_text_area_columns();
@@ -529,28 +708,9 @@ remotemo::Color remotemo::Remotemo::get_text_color();
 ```
 
 <sup>[Back to top](#remotemo-api-design)</sup>
-### Change window settings
+### Window settings
 
 ```C++
-enum class Mod_keys_strict {
-  Ctrl, Alt, Alt_shift, Ctrl_shift, Ctrl_alt, Ctrl_alt_shift
-};
-
-enum class Mod_keys {
-  None, Shift, Ctrl, Alt, Alt_shift, Ctrl_shift, Ctrl_alt, Ctrl_alt_shift
-};
-
-enum class remotemo::F_key {
-    F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12};
-enum class remotemo::Key {
-    K_esc, K_backquote, K_1, K_2, ... , K_0, K_minus, K_equal, K_backspace,
-    K_tab, K_q, K_w, ... K_p, K_left_bracket, K_right_bracket, K_backslash,
-    ...
-    ...
-    K_space};
-    /* Basically all the keys on a regular keyboard, except F-keys, the
-       keypad and modifier keys */
-
 int remotemo::Remotemo::set_window_title(const std::string& title);
 std::string remotemo::Remotemo::get_window_title();
 int remotemo::Remotemo::set_window_size(int width, int height);
