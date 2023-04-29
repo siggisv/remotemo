@@ -1,7 +1,4 @@
 #include <remotemo/remotemo.hpp>
-#include <SDL_image.h>
-
-#include <filesystem>
 
 #include "engine.hpp"
 
@@ -9,6 +6,11 @@ namespace remotemo {
 Remotemo::~Remotemo() noexcept = default;
 Remotemo::Remotemo(Remotemo&& other) noexcept = default;
 Remotemo& Remotemo::operator=(Remotemo&& other) noexcept = default;
+
+void Remotemo::engine(std::unique_ptr<Engine> engine)
+{
+  m_engine = std::move(engine);
+}
 
 bool Remotemo::initialize(const Config& config)
 {
@@ -32,6 +34,8 @@ std::optional<Remotemo> create(const Config& config)
 
 int Remotemo::move_cursor([[maybe_unused]] int x, [[maybe_unused]] int y)
 {
+  m_engine->main_loop_once();
+  m_engine->main_loop_once();
   return 0;
 }
 int Remotemo::set_cursor(

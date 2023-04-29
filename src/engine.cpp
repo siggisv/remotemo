@@ -111,4 +111,9 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
       std::move(*window), std::move(*renderer), std::move(*background),
       std::move(*text_display));
 }
+
+void Engine::main_loop_once()
+{
+  SDL_Log("Main loop once!");
+}
 } // namespace remotemo

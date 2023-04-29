@@ -30,3 +30,13 @@ target_link_libraries(test_init PRIVATE
     trompeloeil::trompeloeil
 )
 add_test(test_init test_init ${TEST_ARG})
+
+add_executable(test_io
+    src/test_io.cpp
+)
+target_link_libraries(test_io PRIVATE
+    remotemo
+    Catch2::Catch2WithMain
+    trompeloeil::trompeloeil
+)
+add_test(test_io test_io ${TEST_ARG})

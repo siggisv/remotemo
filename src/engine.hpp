@@ -57,6 +57,8 @@ public:
 
   static std::unique_ptr<Engine> create(const Config& config);
 
+  virtual void main_loop_once();
+
 private:
   Main_SDL_handler m_main_sdl_handler;
 

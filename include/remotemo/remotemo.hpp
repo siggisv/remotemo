@@ -50,10 +50,12 @@ public:
   }
   int set_inverse(bool inverse);
 
-private:
+protected:
   constexpr Remotemo() noexcept = default;
   bool initialize(const Config& config);
+  void engine(std::unique_ptr<Engine> engine);
 
+private:
   std::unique_ptr<Engine> m_engine {};
 };
 
