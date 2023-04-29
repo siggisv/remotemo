@@ -647,7 +647,8 @@ will move the cursor one space to the right (wrapping might change this).
 > **Warning** Any non-ASCII character will be displayed as `�`.
 
 Wrapping:
-- If set to `off` then text printed beyond the right border gets lost.
+- If set to `off` then text printed beyond the right border gets lost and the
+  cursor stops just inside the border.
 - If set to `char` then text wraps to the beginning of the next line when
   reaching the right border, possibly splitting a word in the process.
 - If set to `word` then text wraps to the beginning of the next line, at the
@@ -663,6 +664,10 @@ Scrolling:
   the bottom line will not do anything else than make the rest of the string
   lost.
 
+> **Note** Scrolling actually doesn't happen right when the cursor moves down.
+> To allow printing to the whole bottom line without having to turn scrolling
+> off, it is delayed until any character gets printed after the cursor moved
+> down.
 ```C++
 int remotemo::Remotemo::print_at(int column, int line,
         const std::string& text);
