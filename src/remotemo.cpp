@@ -7,16 +7,10 @@ Remotemo::~Remotemo() noexcept = default;
 Remotemo::Remotemo(Remotemo&& other) noexcept = default;
 Remotemo& Remotemo::operator=(Remotemo&& other) noexcept = default;
 
-void Remotemo::engine(std::unique_ptr<Engine> engine)
-{
-  m_engine = std::move(engine);
-}
-
-bool Remotemo::initialize(const Config& config)
-{
-  m_engine = Engine::create(config);
-  return (m_engine != nullptr);
-}
+Remotemo::Remotemo(std::unique_ptr<Engine> engine,
+    [[maybe_unused]] const Config& config) noexcept
+    : m_engine(std::move(engine))
+{}
 
 std::optional<Remotemo> create()
 {
@@ -25,11 +19,11 @@ std::optional<Remotemo> create()
 
 std::optional<Remotemo> create(const Config& config)
 {
-  Remotemo temo {};
-  if (temo.initialize(config)) {
-    return temo;
+  auto engine = Engine::create(config);
+  if (engine == nullptr) {
+    return {};
   }
-  return {};
+  return Remotemo {std::move(engine), config};
 }
 
 int Remotemo::move_cursor([[maybe_unused]] int x, [[maybe_unused]] int y)

@@ -13,9 +13,8 @@
 namespace remotemo {
 class Engine;
 class Remotemo {
-  friend std::optional<Remotemo> create(const Config& config);
-
 public:
+  Remotemo(std::unique_ptr<Engine> engine, const Config& config) noexcept;
   ~Remotemo() noexcept;
   Remotemo(Remotemo&& other) noexcept;
   Remotemo& operator=(Remotemo&& other) noexcept;
@@ -49,11 +48,6 @@ public:
     return print_at(position.x, position.y, text);
   }
   int set_inverse(bool inverse);
-
-protected:
-  constexpr Remotemo() noexcept = default;
-  bool initialize(const Config& config);
-  void engine(std::unique_ptr<Engine> engine);
 
 private:
   std::unique_ptr<Engine> m_engine {};

@@ -21,24 +21,14 @@ public:
                         remotemo::Res_handler<SDL_Texture> {}}},
                 nullptr, config.text_area()}}
   {}
-  MAKE_MOCK0(main_loop_once, void());
-};
-
-class Mock_remotemo : public remotemo::Remotemo {
-public:
-  Mock_remotemo()
-  {
-    m_mock_engine = new Mock_engine(remotemo::Config {});
-    engine(std::unique_ptr<Mock_engine>(m_mock_engine));
-  }
-
-  Mock_engine* m_mock_engine {nullptr};
+  MAKE_MOCK0(main_loop_once, void(), override);
 };
 
 TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 {
-  Mock_remotemo t {};
-  Mock_engine& mock_engine = *(t.m_mock_engine);
+  remotemo::Config config {};
+  Mock_engine* mock_engine = new Mock_engine(config);
+  remotemo::Remotemo t {std::unique_ptr<Mock_engine>(mock_engine), config};
 
   SECTION("Starting position should be (0, 0)")
   {
@@ -64,7 +54,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {-2, -3, 0, 3, 6}  //
     }};
     for (auto m : moves) {
-      REQUIRE_CALL(mock_engine, main_loop_once()).TIMES(1, 2);
+      REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
       REQUIRE(t.move_cursor(m.move_x, m.move_y) == m.result);
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == m.pos_x);
@@ -85,7 +75,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {-3, -2, -12, 0, 0}    // top left
     }};
     auto m = GENERATE_REF(from_range(moves));
-    REQUIRE_CALL(mock_engine, main_loop_once()).TIMES(1, 2);
+    REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
     REQUIRE(t.move_cursor(m.move_x, m.move_y) == m.result);
     auto pos = t.get_cursor_position();
     REQUIRE(pos.x == m.pos_x);
