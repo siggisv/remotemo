@@ -25,11 +25,11 @@ bool Window::setup(const Window_config& window_config)
     return false;
   }
   is_owned(true);
-  update_local_size();
+  refresh_local_size();
   return true;
 }
 
-void Window::update_local_size()
+void Window::refresh_local_size()
 {
   ::SDL_GetWindowSize(res(), &m_size.x, &m_size.y);
 }

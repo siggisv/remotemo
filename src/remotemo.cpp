@@ -35,14 +35,20 @@ int Remotemo::move_cursor([[maybe_unused]] int x, [[maybe_unused]] int y)
 int Remotemo::set_cursor(
     [[maybe_unused]] int column, [[maybe_unused]] int line)
 {
+  m_engine->main_loop_once();
+  m_engine->main_loop_once();
   return 0;
 }
 int Remotemo::set_cursor_column([[maybe_unused]] int column)
 {
+  m_engine->main_loop_once();
+  m_engine->main_loop_once();
   return 0;
 }
 int Remotemo::set_cursor_line([[maybe_unused]] int line)
 {
+  m_engine->main_loop_once();
+  m_engine->main_loop_once();
   return 0;
 }
 SDL_Point Remotemo::get_cursor_position()
@@ -52,28 +58,40 @@ SDL_Point Remotemo::get_cursor_position()
 
 int Remotemo::pause([[maybe_unused]] int pause)
 {
+  m_engine->main_loop_once();
+  m_engine->main_loop_once();
   return 0;
 }
 int Remotemo::clear()
 {
+  m_engine->main_loop_once();
+  m_engine->main_loop_once();
   return 0;
 }
 Key Remotemo::get_key()
 {
+  m_engine->main_loop_once();
+  m_engine->main_loop_once();
   return Key::K_0;
 }
 std::string Remotemo::get_input([[maybe_unused]] int max_length)
 {
+  m_engine->main_loop_once();
+  m_engine->main_loop_once();
   return "null";
 }
 
 int Remotemo::print([[maybe_unused]] const std::string& text)
 {
+  m_engine->main_loop_once();
+  m_engine->main_loop_once();
   return 0;
 }
 int Remotemo::print_at([[maybe_unused]] int column, [[maybe_unused]] int line,
     [[maybe_unused]] const std::string& text)
 {
+  m_engine->main_loop_once();
+  m_engine->main_loop_once();
   return 0;
 }
 int Remotemo::set_inverse([[maybe_unused]] bool inverse)

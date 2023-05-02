@@ -46,7 +46,9 @@ public:
         m_window(std::move(window)), m_renderer(std::move(renderer)),
         m_background(std::move(background)),
         m_text_display(std::move(text_display))
-  {}
+  {
+    set_screen_display_settings();
+  }
   ~Engine() noexcept = default;
   Engine(Engine&& other) noexcept = default;
   Engine& operator=(Engine&& other) noexcept = default;
@@ -59,13 +61,21 @@ public:
 
   virtual void main_loop_once();
 
+protected:
+  virtual void handle_events();
+  virtual void render_window();
+  void set_screen_display_settings();
+  void refresh_screen_display_settings();
+
 private:
   Main_SDL_handler m_main_sdl_handler;
-
   Window m_window;
   Renderer m_renderer;
   Background m_background;
   Text_display m_text_display;
+  float m_screen_scale;
+  SDL_Rect m_background_target;
+  SDL_FRect m_text_target;
   static constexpr Uint32 sdl_init_flags {SDL_INIT_VIDEO};
 };
 } // namespace remotemo

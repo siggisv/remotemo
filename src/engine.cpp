@@ -1,4 +1,7 @@
 #include "engine.hpp"
+
+#include <algorithm>
+
 #include "font.hpp"
 
 namespace remotemo {
@@ -51,6 +54,33 @@ bool Main_SDL_handler::setup(::Uint32 init_flags)
   return true;
 }
 
+void Engine::set_screen_display_settings()
+{
+  auto backgr_texture_size = m_background.texture_size();
+  m_background_target.w = backgr_texture_size.x;
+  m_background_target.h = backgr_texture_size.y;
+  auto backgr_text_area = m_background.text_area();
+  m_text_target.w = backgr_text_area.w;
+  m_text_target.h = backgr_text_area.h;
+  refresh_screen_display_settings();
+}
+
+void Engine::refresh_screen_display_settings()
+{
+  auto window_size = m_window.size();
+  auto backgr_min_area = m_background.min_area();
+  float scale_w = static_cast<float>(window_size.x) / backgr_min_area.w;
+  float scale_h = static_cast<float>(window_size.y) / backgr_min_area.h;
+  m_screen_scale = std::min(scale_w, scale_h);
+  m_background_target.x = (((window_size.x / m_screen_scale)
+        - backgr_min_area.w + 1) / 2) - backgr_min_area.x;
+  m_background_target.y = (((window_size.y / m_screen_scale)
+        - backgr_min_area.h + 1) / 2) - backgr_min_area.y;
+  auto backgr_text_area = m_background.text_area();
+  m_text_target.x = backgr_text_area.x + m_background_target.x;
+  m_text_target.y = backgr_text_area.y + m_background_target.y;
+}
+
 std::unique_ptr<Engine> Engine::create(const Config& config)
 {
   ::SDL_Log("Remotemo::initialize() with config.m_cleanup_all: %s",
@@ -60,7 +90,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   // This is done right here at the start so that if something fails, then
   // everything that was handed over will be taken care of no matter where
   // in the setup process something failed.
-  // Note that the order in which the following objects are created is
+  // Note that the order in which the following variables are created is
   // important so that if the setup process fails, then everything that should
   // get cleaned up, does in the right order.
   Main_SDL_handler main_sdl_handler {config.cleanup_all()};
@@ -115,5 +145,25 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
 void Engine::main_loop_once()
 {
   SDL_Log("Main loop once!");
+  handle_events();
+  render_window();
 }
+
+void Engine::handle_events()
+{
+  SDL_Delay(100);
+}
+
+void Engine::render_window()
+{
+  auto renderer = m_renderer.res();
+  ::SDL_SetRenderTarget(renderer, nullptr);
+  ::SDL_RenderClear(renderer);
+  ::SDL_RenderSetScale(renderer, m_screen_scale, m_screen_scale);
+  ::SDL_RenderCopy(renderer, m_background.res(), nullptr, &m_background_target);
+  ::SDL_RenderCopyF(renderer, m_text_display.res(), nullptr, &m_text_target);
+
+  ::SDL_RenderPresent(renderer);
+}
+
 } // namespace remotemo

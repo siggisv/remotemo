@@ -18,7 +18,7 @@ public:
 
   static std::optional<Window> create(const Window_config& window_config,
       Res_handler<SDL_Window>&& res_handler);
-  void update_local_size();
+  void refresh_local_size();
   [[nodiscard]] const SDL_Point& size() { return m_size; }
 
 private:

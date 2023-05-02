@@ -54,7 +54,7 @@ public:
   constexpr Config() = default;
 
   Config& cleanup_all(bool cleanup_all);
-  [[nodiscard]] const bool& cleanup_all() const { return m_cleanup_all; }
+  [[nodiscard]] bool cleanup_all() const { return m_cleanup_all; }
 
   Config& window(SDL_Window* window);
   Config& window_title(const std::string& title);
