@@ -69,16 +69,26 @@ void Engine::refresh_screen_display_settings()
 {
   auto window_size = m_window.size();
   auto backgr_min_area = m_background.min_area();
-  float scale_w = static_cast<float>(window_size.x) / backgr_min_area.w;
-  float scale_h = static_cast<float>(window_size.y) / backgr_min_area.h;
+  float scale_w = static_cast<float>(window_size.x) /
+                  static_cast<float>(backgr_min_area.w);
+  float scale_h = static_cast<float>(window_size.y) /
+                  static_cast<float>(backgr_min_area.h);
   m_screen_scale = std::min(scale_w, scale_h);
-  m_background_target.x = (((window_size.x / m_screen_scale)
-        - backgr_min_area.w + 1) / 2) - backgr_min_area.x;
-  m_background_target.y = (((window_size.y / m_screen_scale)
-        - backgr_min_area.h + 1) / 2) - backgr_min_area.y;
+  m_background_target.x =
+      ((static_cast<int>(static_cast<float>(window_size.x) / m_screen_scale) -
+           backgr_min_area.w + 1) /
+          2) -
+      backgr_min_area.x;
+  m_background_target.y =
+      ((static_cast<int>(static_cast<float>(window_size.y) / m_screen_scale) -
+           backgr_min_area.h + 1) /
+          2) -
+      backgr_min_area.y;
   auto backgr_text_area = m_background.text_area();
-  m_text_target.x = backgr_text_area.x + m_background_target.x;
-  m_text_target.y = backgr_text_area.y + m_background_target.y;
+  m_text_target.x =
+      backgr_text_area.x + static_cast<float>(m_background_target.x);
+  m_text_target.y =
+      backgr_text_area.y + static_cast<float>(m_background_target.y);
 }
 
 std::unique_ptr<Engine> Engine::create(const Config& config)
@@ -156,11 +166,12 @@ void Engine::handle_events()
 
 void Engine::render_window()
 {
-  auto renderer = m_renderer.res();
+  auto* renderer = m_renderer.res();
   ::SDL_SetRenderTarget(renderer, nullptr);
   ::SDL_RenderClear(renderer);
   ::SDL_RenderSetScale(renderer, m_screen_scale, m_screen_scale);
-  ::SDL_RenderCopy(renderer, m_background.res(), nullptr, &m_background_target);
+  ::SDL_RenderCopy(
+      renderer, m_background.res(), nullptr, &m_background_target);
   ::SDL_RenderCopyF(renderer, m_text_display.res(), nullptr, &m_text_target);
 
   ::SDL_RenderPresent(renderer);

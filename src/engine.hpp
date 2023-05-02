@@ -49,7 +49,7 @@ public:
   {
     set_screen_display_settings();
   }
-  ~Engine() noexcept = default;
+  virtual ~Engine() noexcept = default;
   Engine(Engine&& other) noexcept = default;
   Engine& operator=(Engine&& other) noexcept = default;
 
