@@ -19,7 +19,7 @@ public:
   Res_handler& operator=(const Res_handler&) = delete;
 
   [[nodiscard]] T* const& res() const { return m_resource; }
-  [[nodiscard]] bool const& is_owned() const { return m_is_owned; }
+  [[nodiscard]] bool is_owned() const { return m_is_owned; }
 
 protected:
   void res(T* resource) { m_resource = resource; }

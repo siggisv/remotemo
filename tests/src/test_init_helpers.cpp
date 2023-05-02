@@ -78,6 +78,13 @@ SDL_Texture* IMG_LoadTexture(SDL_Renderer* renderer, const char* file_path)
 {
   return mock_SDL.mock_LoadTexture(renderer, file_path);
 }
+int SDL_QueryTexture( // Stub, not mock
+    SDL_Texture* texture, Uint32* format, int* access, int* w, int* h)
+{
+  *w = 1000;
+  *h = 1000;
+  return 0;
+}
 void SDL_DestroyTexture(SDL_Texture* texture)
 {
   return mock_SDL.mock_DestroyTexture(texture);

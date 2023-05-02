@@ -18,9 +18,13 @@ public:
 
   static std::optional<Window> create(const Window_config& window_config,
       Res_handler<SDL_Window>&& res_handler);
+  void update_local_size();
+  [[nodiscard]] const SDL_Point& size() { return m_size; }
 
 private:
   bool setup(const Window_config& window_config);
+
+  SDL_Point m_size {0, 0};
 };
 } // namespace remotemo
 #endif // REMOTEMO_SRC_WINDOW_HPP
