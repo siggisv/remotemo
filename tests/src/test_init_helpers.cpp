@@ -40,6 +40,11 @@ SDL_Window* SDL_CreateWindow(
 {
   return mock_SDL.mock_CreateWindow(title, x, y, w, h, flags);
 }
+void SDL_GetWindowSize(SDL_Window* window, int* w, int* h)
+{ // Stub, not mock
+  *w = 1000;
+  *h = 1000;
+}
 void SDL_DestroyWindow(SDL_Window* window)
 {
   mock_SDL.mock_DestroyWindow(window);

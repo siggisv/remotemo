@@ -7,13 +7,9 @@
 namespace remotemo {
 Main_SDL_handler::~Main_SDL_handler()
 {
-  ::SDL_Log("Main_SDL_handler Destructor: m_do_sdl_quit: %s",
-      m_do_sdl_quit ? "True" : "False");
   if (m_do_sdl_quit) {
-    ::SDL_Log("Quit\n");
     ::SDL_Quit();
   } else {
-    ::SDL_Log("QuitSubSystem(%d)\n", m_sdl_subsystems);
     if (m_sdl_subsystems != 0) {
       ::SDL_QuitSubSystem(m_sdl_subsystems);
     }
@@ -38,7 +34,6 @@ Main_SDL_handler& Main_SDL_handler::operator=(
 
 bool Main_SDL_handler::setup(::Uint32 init_flags)
 {
-  ::SDL_Log("SDL_Init(%d)", init_flags);
   if (::SDL_Init(init_flags) < 0) {
     ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n",
         ::SDL_GetError());
@@ -93,9 +88,6 @@ void Engine::refresh_screen_display_settings()
 
 std::unique_ptr<Engine> Engine::create(const Config& config)
 {
-  ::SDL_Log("Remotemo::initialize() with config.m_cleanup_all: %s",
-      config.cleanup_all() ? "True" : "False");
-
   // Setup handling of resources and their cleanup.
   // This is done right here at the start so that if something fails, then
   // everything that was handed over will be taken care of no matter where
