@@ -1,15 +1,9 @@
 # remoTemo API design
-_3rd draft_
+_4th draft_
 
 > **Warning**
 >
 > **Both** the design and the implementation are work-in-progress.
-
-[](ignored)
-
-> **TODO?** Make thread safe? Or just explain that just like most of the
-> underlying SDL2 framework, this object should only be used from within the
-> thread where SDL was initialized?
 
 ## Table of contents
 - [Initialization, cleanup and config](#initialization-cleanup-and-config)
@@ -535,6 +529,14 @@ enum class remotemo::Do_reset {none, cursor, inverse, all};
 As mentioned before, the I/O functions (except `get_cursor_position()`) also
 update the window while running.
 
+> **Note**
+> One thing to note is that when it comes to the cursor position, the text
+> area is considered to have one extra, empty, hidden line below the bottom
+> one shown on screen. The cursor can be moved there (either directly or
+> through text wrapping) but as soon as you try to display anything there then
+> (depending on the scrolling settings) either all lines scroll up or the
+> output gets lost.
+
 ```C++
 int remotemo::Remotemo::move_cursor(int x, int y);
 int remotemo::Remotemo::move_cursor(const SDL_Point& move);
@@ -579,7 +581,8 @@ does not update the window.
 int remotemo::Remotemo::pause(int pause_in_ms);
 ```
 
-Wait for the given time (in milliseconds) then returns:
+Wait for the given time (in milliseconds), checking for events and updating
+the window as needed, before returning:
 
 - `0` on success.
 - `-1` on error (e.g. the given time is negative).
@@ -603,8 +606,8 @@ remotemo::Key remotemo::Remotemo::get_key();
 ```
 
 Waits for a key being pressed and returns it (without displaying it on the
-screen). As noted about the enum class `remotemo::Key`, F-keys (e.g. `F1`),
-the keypad and modifier keys are not included.
+screen). As noted regarding the enum class `remotemo::Key`, F-keys (e.g.
+`F1`), the keypad and modifier keys are not included.
 
 ```C++
 std::string remotemo::Remotemo::get_input(int max_length);
@@ -612,16 +615,22 @@ std::string remotemo::Remotemo::get_input(int max_length);
 
 Allows the user to enter some text. It gets displayed onto the screen as the
 user enters it, starting where the cursor was. The text can be edited, using
-the backspace, left- and right-arrow keys, until `Return` is pressed, at which
-time the text is returned.
+`Backspace` or the left- and right-arrow keys, until `Return` is pressed, at
+which time a string containing the text is returned.
 
 `max_length` not only restrict the length of the string being returned. It
-also restrict the lenght of the text being entered on the screen. If wrapping
-is set to `off` then the length is also restricted by the distance to the
-right border of the screen. Even if wrapping is set to `char` (or `word`,
-which will still give same behaviour as `char`), then having scrolling set to
-false will restrict the length by what can fit from the current cursor
-position, down to the bottom-right corner of the screen.
+also restrict the lenght of the text being entered on the screen.
+
+- If wrapping is set to `off` then the length is also restricted by the
+  distance to the right border of the screen.
+- If wrapping is set to `char` (or `word`, which will still give same
+  behaviour as `char`), then:
+  - having scrolling set to `false` will restrict the length by what can fit
+    from the current cursor position, down to the bottom-right corner of the
+    screen.
+  - having scrolling set to `true` will only restrict the length by what can
+    fit on the screen (i.e. the text being entered can not scroll up further
+    than the top border).
 
 > **Note** No matter what keyboard layout the user has, this function will
 > behave as if it was an `US-ANSI` layout.
@@ -634,19 +643,26 @@ Display the given string, starting at the current position of the cursor, one
 character at the time with a slight delay inbetween (as set by the 'delay
 between chars' property). With the exception of special characters like the
 `backspace` character and the `newline` character, each character displayed
-will move the cursor one space to the right (wrapping might change this).
+will move the cursor one space to the right (if already at the right border of
+the text area, it will stay put or wrap to next line depending on the wrapping
+settings. If wrapping set to `word` it might wrap even sooner).
 
+- Returns `0` on success.
+- Returns `-2` if some of the text could not get displayed (e.g. reached end
+  of line while wrapping was set to `off`).
 - The `backspace` character will move the cursor one space to the left and
   overwrite the content there with a single `space` character (unless the
-  cursor was already at the left border).
+  cursor was already at the left border. Even with wrapping set on, it does
+  not move back to previous line).
 - The `newline` character just moves the cursor to the beginning of the next
   line.
 - If the inverse property is set to `true`, will display the string with the
   foreground and background colors switched.
 
-> **Warning** Any non-ASCII character will be displayed as `�`.
+> **Warning** Any non-ASCII character will be displayed as `�`. This will not
+> count as "text could not get displayed".
 
-Wrapping:
+#### Wrapping:
 - If set to `off` then text printed beyond the right border gets lost and the
   cursor stops just inside the border.
 - If set to `char` then text wraps to the beginning of the next line when
@@ -656,18 +672,19 @@ Wrapping:
   whitespace in the current line, in which case this line wraps at the right
   border.
 
-Scrolling:
-- If set to `true` then trying to move the cursor down (because of wrapping or
-  the newline character) while it's already at the bottom line will move the
-  whole content of the screen up one line.
-- If set to `false` then trying to move the cursor down while it's already at
-  the bottom line will not do anything else than make the rest of the string
-  lost.
+#### Scrolling:
+If the cursor is moved down (because of wrapping or the newline character)
+while it's already at the bottom visible line, it will move down to the extra,
+hidden line below the visible area.
 
-> **Note** Scrolling actually doesn't happen right when the cursor moves down.
-> To allow printing to the whole bottom line without having to turn scrolling
-> off, it is delayed until any character gets printed after the cursor moved
-> down.
+Then when trying to print any text to the hidden line, depending on the
+'scrolling' settings:
+
+- If set to `true` then the whole content of the screen moves up one line
+  (moving the cursor up to the bottom visible line at the same time) before
+  continuing printing the rest of the text.
+- If set to `false` then the rest of the string is lost.
+
 ```C++
 int remotemo::Remotemo::print_at(int column, int line,
         const std::string& text);
@@ -676,6 +693,12 @@ int remotemo::Remotemo::print_at(const SDL_Point& position,
 ```
 
 Does the same thing as calling first `set_cursor()` and then `print()`.
+
+- Returns `0` on success.
+- Returns `-1` without moving the cursor nor printing anything if the given
+  position is outside the text area.
+- Returns `-2` if some of the text could not get displayed (e.g. reached end
+  of line while wrapping was set to `off`).
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Text output behaviour
