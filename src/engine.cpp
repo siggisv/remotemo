@@ -144,6 +144,25 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
       std::move(*text_display));
 }
 
+SDL_Point Engine::cursor_pos() const
+{
+  return m_text_display.cursor_pos();
+}
+
+SDL_Point Engine::text_area_size() const
+{
+  return SDL_Point {m_text_display.columns(), m_text_display.lines()};
+}
+
+void Engine::cursor_pos(const SDL_Point& pos)
+{
+  m_text_display.hide_cursor();
+  main_loop_once();
+  m_text_display.cursor_pos(pos);
+  m_text_display.show_cursor();
+  main_loop_once();
+}
+
 void Engine::main_loop_once()
 {
   SDL_Log("Main loop once!");

@@ -26,34 +26,58 @@ std::optional<Remotemo> create(const Config& config)
   return Remotemo {std::move(engine), config};
 }
 
-int Remotemo::move_cursor([[maybe_unused]] int x, [[maybe_unused]] int y)
+int Remotemo::move_cursor(const SDL_Point& move)
 {
-  m_engine->main_loop_once();
-  m_engine->main_loop_once();
+  auto new_pos = m_engine->cursor_pos();
+  auto area_size = m_engine->text_area_size();
+  int return_code = 0;
+  new_pos.x += move.x;
+  if (new_pos.x >= area_size.x) {
+    new_pos.x = area_size.x - 1;
+    return_code -= 1;
+  } else if (new_pos.x < 0) {
+    new_pos.x = 0;
+    return_code -= 4;
+  }
+  new_pos.y += move.y;
+  // NOTE Cursor is allowed to be one line below visible area:
+  if (new_pos.y > area_size.y) {
+    new_pos.y = area_size.y;
+    return_code -= 2;
+  } else if (new_pos.y < 0) {
+    new_pos.y = 0;
+    return_code -= 8;
+  }
+  m_engine->cursor_pos(new_pos);
+  return return_code;
+}
+int Remotemo::set_cursor(const SDL_Point& pos)
+{
+  auto area_size = m_engine->text_area_size();
+  if (pos.x < 0 || pos.x >= area_size.x ||
+      // NOTE Cursor is allowed to be one line below visible area:
+      pos.y < 0 || pos.y > area_size.y) {
+    m_engine->main_loop_once();
+    return -1;
+  }
+  m_engine->cursor_pos(pos);
   return 0;
 }
-int Remotemo::set_cursor(
-    [[maybe_unused]] int column, [[maybe_unused]] int line)
+int Remotemo::set_cursor_column(int column)
 {
-  m_engine->main_loop_once();
-  m_engine->main_loop_once();
-  return 0;
+  auto pos = m_engine->cursor_pos();
+  pos.x = column;
+  return set_cursor(pos);
 }
-int Remotemo::set_cursor_column([[maybe_unused]] int column)
+int Remotemo::set_cursor_line(int line)
 {
-  m_engine->main_loop_once();
-  m_engine->main_loop_once();
-  return 0;
-}
-int Remotemo::set_cursor_line([[maybe_unused]] int line)
-{
-  m_engine->main_loop_once();
-  m_engine->main_loop_once();
-  return 0;
+  auto pos = m_engine->cursor_pos();
+  pos.y = line;
+  return set_cursor(pos);
 }
 SDL_Point Remotemo::get_cursor_position()
 {
-  return SDL_Point {0, 0};
+  return m_engine->cursor_pos();
 }
 
 int Remotemo::pause([[maybe_unused]] int pause)
@@ -87,12 +111,13 @@ int Remotemo::print([[maybe_unused]] const std::string& text)
   m_engine->main_loop_once();
   return 0;
 }
-int Remotemo::print_at([[maybe_unused]] int column, [[maybe_unused]] int line,
-    [[maybe_unused]] const std::string& text)
+int Remotemo::print_at(int column, int line, const std::string& text)
 {
-  m_engine->main_loop_once();
-  m_engine->main_loop_once();
-  return 0;
+  auto result = set_cursor(column, line);
+  if (result != 0) {
+    return result;
+  }
+  return print(text);
 }
 int Remotemo::set_inverse([[maybe_unused]] bool inverse)
 {

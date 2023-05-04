@@ -22,16 +22,13 @@ public:
   Remotemo(const Remotemo&) = delete;
   Remotemo& operator=(const Remotemo&) = delete;
 
-  int move_cursor(int x, int y);
-  int move_cursor(const SDL_Point& move)
+  int move_cursor(int x, int y) { return move_cursor(SDL_Point {x, y}); }
+  int move_cursor(const SDL_Point& move);
+  int set_cursor(int column, int line)
   {
-    return move_cursor(move.x, move.y);
+    return set_cursor(SDL_Point {column, line});
   }
-  int set_cursor(int column, int line);
-  int set_cursor(const SDL_Point& position)
-  {
-    return set_cursor(position.x, position.y);
-  }
+  int set_cursor(const SDL_Point& position);
   int set_cursor_column(int column);
   int set_cursor_line(int line);
   SDL_Point get_cursor_position();

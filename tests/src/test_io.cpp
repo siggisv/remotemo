@@ -237,10 +237,10 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
   SECTION("set_cursor_line(int), with a valid parameter, should work")
   {
     const std::vector<Test_param> positions {{
-        {{4, 8}, 0, {0, 8}},   //
-        {{2, 6}, 0, {0, 6}},   //
+        {{4, 8}, 0, {0, 8}},  //
+        {{2, 6}, 0, {0, 6}},  //
         {{33, 5}, 0, {0, 5}}, //
-        {{2, 24}, 0, {0, 24}}   //
+        {{2, 24}, 0, {0, 24}} //
     }};
     for (auto p : positions) {
       REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);

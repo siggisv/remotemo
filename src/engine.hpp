@@ -59,6 +59,10 @@ public:
 
   static std::unique_ptr<Engine> create(const Config& config);
 
+  [[nodiscard]] virtual SDL_Point cursor_pos() const;
+  [[nodiscard]] virtual SDL_Point text_area_size() const;
+
+  virtual void cursor_pos(const SDL_Point& pos);
   virtual void main_loop_once();
 
 protected:
