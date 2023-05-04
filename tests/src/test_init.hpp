@@ -132,6 +132,7 @@ struct Init_status {
   void attempt_create_renderer(bool should_success);
   void attempt_setup_textures(Texture_results expected_results,
       const Texture_conf& texture_conf = {});
+  void allow_render_window();
   void expected_cleanup();
   bool check_a_texture_failed() const;
   void check_texture_cleanup() const;

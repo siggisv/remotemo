@@ -41,14 +41,7 @@ class Engine {
 public:
   explicit Engine(Main_SDL_handler main_sdl_handler, Window window,
       Renderer renderer, Background background,
-      Text_display text_display) noexcept
-      : m_main_sdl_handler(std::move(main_sdl_handler)),
-        m_window(std::move(window)), m_renderer(std::move(renderer)),
-        m_background(std::move(background)),
-        m_text_display(std::move(text_display))
-  {
-    set_screen_display_settings();
-  }
+      Text_display text_display) noexcept;
   virtual ~Engine() noexcept = default;
   Engine(Engine&& other) noexcept = default;
   Engine& operator=(Engine&& other) noexcept = default;
