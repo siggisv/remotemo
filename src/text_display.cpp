@@ -20,4 +20,15 @@ std::optional<Text_display> Text_display::create(Font&& font,
   text_display.texture_size(area_size);
   return text_display;
 }
+void Text_display::hide_cursor()
+{
+  // TODO update display to show character at cursor position
+  m_is_cursor_visible = false;
+}
+
+void Text_display::show_cursor()
+{
+  // TODO update display to show cursor at its position
+  m_is_cursor_visible = true;
+}
 } // namespace remotemo

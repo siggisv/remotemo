@@ -33,7 +33,7 @@ public:
   int set_cursor_line(int line);
   SDL_Point get_cursor_position();
 
-  int pause(int pause);
+  int pause(int pause_in_ms);
   int clear();
   Key get_key();
   std::string get_input(int max_length);

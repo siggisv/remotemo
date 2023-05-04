@@ -26,8 +26,8 @@ public:
   [[nodiscard]] int lines() const { return m_lines; }
   [[nodiscard]] SDL_Point cursor_pos() const { return m_cursor_pos; }
   void cursor_pos(const SDL_Point& pos) { m_cursor_pos = pos; }
-  void hide_cursor() { m_is_cursor_visible = false; }
-  void show_cursor() { m_is_cursor_visible = true; }
+  void hide_cursor();
+  void show_cursor();
 
 private:
   Font m_font;

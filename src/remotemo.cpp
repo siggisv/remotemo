@@ -80,10 +80,12 @@ SDL_Point Remotemo::get_cursor_position()
   return m_engine->cursor_pos();
 }
 
-int Remotemo::pause([[maybe_unused]] int pause)
+int Remotemo::pause(int pause_in_ms)
 {
-  m_engine->main_loop_once();
-  m_engine->main_loop_once();
+  if (pause_in_ms < 0) {
+    return -1;
+  }
+  m_engine->delay(pause_in_ms);
   return 0;
 }
 int Remotemo::clear()

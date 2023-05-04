@@ -56,6 +56,8 @@ public:
   [[nodiscard]] virtual SDL_Point text_area_size() const;
 
   virtual void cursor_pos(const SDL_Point& pos);
+
+  virtual void delay(int delay_in_ms);
   virtual void main_loop_once();
 
 protected:

@@ -175,6 +175,18 @@ void Engine::cursor_pos(const SDL_Point& pos)
   main_loop_once();
 }
 
+void Engine::delay(int delay_in_ms)
+{
+  const auto timeout = SDL_GetTicks() + delay_in_ms;
+  auto time_now = SDL_GetTicks();
+  while (!SDL_TICKS_PASSED(time_now, timeout)) {
+    if (SDL_WaitEventTimeout(nullptr, timeout - time_now) == 1) {
+      main_loop_once();
+    }
+    time_now = SDL_GetTicks();
+  }
+}
+
 void Engine::main_loop_once()
 {
   // TODO cast exception if window has been closed
