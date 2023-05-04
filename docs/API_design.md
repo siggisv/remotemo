@@ -662,7 +662,7 @@ settings. If wrapping set to `word` it might wrap even sooner).
 > **Warning** Any non-ASCII character will be displayed as `�`. This will not
 > count as "text could not get displayed".
 
-#### Wrapping:
+#### Wrapping
 - If set to `off` then text printed beyond the right border gets lost and the
   cursor stops just inside the border.
 - If set to `char` then text wraps to the beginning of the next line when
@@ -672,7 +672,7 @@ settings. If wrapping set to `word` it might wrap even sooner).
   whitespace in the current line, in which case this line wraps at the right
   border.
 
-#### Scrolling:
+#### Scrolling
 If the cursor is moved down (because of wrapping or the newline character)
 while it's already at the bottom visible line, it will move down to the extra,
 hidden line below the visible area.
