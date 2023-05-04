@@ -60,6 +60,7 @@ public:
 
 protected:
   virtual void handle_events();
+  virtual bool handle_window_event(const SDL_Event& event);
   virtual void render_window();
   void set_screen_display_settings();
   void refresh_screen_display_settings();

@@ -177,6 +177,7 @@ void Engine::cursor_pos(const SDL_Point& pos)
 
 void Engine::main_loop_once()
 {
+  // TODO cast exception if window has been closed
   SDL_Log("Main loop once!");
   handle_events();
   render_window();
@@ -184,7 +185,31 @@ void Engine::main_loop_once()
 
 void Engine::handle_events()
 {
-  SDL_Delay(100);
+  SDL_Event event;
+  while (SDL_PollEvent(&event)) {
+    if (handle_window_event(event)) {
+      continue;
+    }
+    // TODO Add other event handlers
+  }
+}
+
+bool Engine::handle_window_event(const SDL_Event& event)
+{
+  switch (event.type) {
+    case SDL_WINDOWEVENT:
+      switch (event.window.event) {
+        case SDL_WINDOWEVENT_SIZE_CHANGED:
+          m_window.refresh_local_size();
+          refresh_screen_display_settings();
+          return true;
+        default:
+          break;
+      }
+    default:
+      break;
+  }
+  return false;
 }
 
 void Engine::render_window()
