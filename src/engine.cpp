@@ -58,7 +58,6 @@ Engine::Engine(Main_SDL_handler main_sdl_handler, Window window,
       m_text_display(std::move(text_display))
 {
   set_screen_display_settings();
-  render_window();
 }
 
 void Engine::set_screen_display_settings()
@@ -177,10 +176,11 @@ void Engine::cursor_pos(const SDL_Point& pos)
 
 void Engine::delay(int delay_in_ms)
 {
-  const auto timeout = SDL_GetTicks() + delay_in_ms;
   auto time_now = SDL_GetTicks();
+  const auto timeout = time_now + delay_in_ms;
   while (!SDL_TICKS_PASSED(time_now, timeout)) {
-    if (SDL_WaitEventTimeout(nullptr, timeout - time_now) == 1) {
+    if (SDL_WaitEventTimeout(nullptr, static_cast<int>(timeout - time_now)) !=
+        0) {
       main_loop_once();
     }
     time_now = SDL_GetTicks();
@@ -198,7 +198,7 @@ void Engine::main_loop_once()
 void Engine::handle_events()
 {
   SDL_Event event;
-  while (SDL_PollEvent(&event)) {
+  while (SDL_PollEvent(&event) != 0) {
     if (handle_window_event(event)) {
       continue;
     }

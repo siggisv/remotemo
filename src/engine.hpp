@@ -59,11 +59,11 @@ public:
 
   virtual void delay(int delay_in_ms);
   virtual void main_loop_once();
+  virtual void render_window();
 
 protected:
   virtual void handle_events();
   virtual bool handle_window_event(const SDL_Event& event);
-  virtual void render_window();
   void set_screen_display_settings();
   void refresh_screen_display_settings();
 
@@ -73,9 +73,9 @@ private:
   Renderer m_renderer;
   Background m_background;
   Text_display m_text_display;
-  float m_screen_scale;
-  SDL_Rect m_background_target;
-  SDL_FRect m_text_target;
+  float m_screen_scale {1.0f};
+  SDL_Rect m_background_target {};
+  SDL_FRect m_text_target {};
   static constexpr Uint32 sdl_init_flags {SDL_INIT_VIDEO};
 };
 } // namespace remotemo

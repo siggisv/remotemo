@@ -10,7 +10,9 @@ Remotemo& Remotemo::operator=(Remotemo&& other) noexcept = default;
 Remotemo::Remotemo(std::unique_ptr<Engine> engine,
     [[maybe_unused]] const Config& config) noexcept
     : m_engine(std::move(engine))
-{}
+{
+  m_engine->render_window();
+}
 
 std::optional<Remotemo> create()
 {
