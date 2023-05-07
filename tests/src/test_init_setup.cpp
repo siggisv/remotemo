@@ -250,7 +250,6 @@ TEST_CASE("create() - all succeeds:", "[init]")
     }
 
     init.attempt_setup_textures(textures);
-    init.allow_render_window();
 
     require_init_has_ended(&exps, &seqs);
     init.expected_cleanup();
@@ -313,7 +312,6 @@ TEST_CASE("create() succeeds - test if config is used to create the window:",
     init.attempt_create_window(true, win_conf);
     init.attempt_create_renderer(true);
     init.attempt_setup_textures(textures);
-    init.allow_render_window();
 
     require_init_has_ended(&exps, &seqs);
     init.expected_cleanup();
@@ -375,7 +373,6 @@ TEST_CASE("create() succeeds - test if config is used to setup the textures:",
     init.attempt_create_window(true);
     init.attempt_create_renderer(true);
     init.attempt_setup_textures(textures, texture_conf);
-    init.allow_render_window();
 
     require_init_has_ended(&exps, &seqs);
     init.expected_cleanup();
@@ -413,7 +410,6 @@ TEST_CASE("create() succeeds - test if move ctor and move assignment works:",
   init.attempt_create_window(true);
   init.attempt_create_renderer(true);
   init.attempt_setup_textures(textures);
-  init.allow_render_window();
   require_init_has_ended(&exps, &seqs);
   init.expected_cleanup();
 

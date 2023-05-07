@@ -59,11 +59,11 @@ public:
 
   virtual void delay(int delay_in_ms);
   virtual void main_loop_once();
-  virtual void render_window();
 
 protected:
   virtual void handle_events();
   virtual bool handle_window_event(const SDL_Event& event);
+  virtual void render_window();
   void set_screen_display_settings();
   void refresh_screen_display_settings();
 

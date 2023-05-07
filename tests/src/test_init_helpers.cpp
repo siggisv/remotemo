@@ -535,15 +535,6 @@ void Init_status::attempt_setup_textures(
   }
 }
 
-void Init_status::allow_render_window()
-{
-  exps.push_back(NAMED_REQUIRE_CALL(
-      mock_SDL, mock_RenderCopy(ready_res.render, ready_res.backgr, _, _))
-                     .IN_SEQUENCE(seqs.main)
-                     .TIMES(0, 1)
-                     .RETURN(0));
-}
-
 void Init_status::expected_cleanup()
 {
   if (might_be_cleaned_up.t_area != nullptr) {
