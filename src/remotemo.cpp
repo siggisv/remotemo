@@ -98,6 +98,7 @@ Key Remotemo::get_key()
 {
   m_engine->main_loop_once();
   m_engine->main_loop_once();
+  pause(1000);
   return Key::K_0;
 }
 std::string Remotemo::get_input([[maybe_unused]] int max_length)
@@ -107,10 +108,12 @@ std::string Remotemo::get_input([[maybe_unused]] int max_length)
   return "null";
 }
 
-int Remotemo::print([[maybe_unused]] const std::string& text)
+int Remotemo::print(const std::string& text)
 {
-  m_engine->main_loop_once();
-  m_engine->main_loop_once();
+  // TODO Implement wrapping and scrolling
+  if (!m_engine->display_string_at_cursor(text)) {
+    return -2;
+  }
   return 0;
 }
 int Remotemo::print_at(int column, int line, const std::string& text)
@@ -121,8 +124,9 @@ int Remotemo::print_at(int column, int line, const std::string& text)
   }
   return print(text);
 }
-int Remotemo::set_inverse([[maybe_unused]] bool inverse)
+void Remotemo::set_inverse(bool inverse)
 {
-  return 0;
+  m_engine->is_output_inversed(inverse);
 }
+
 } // namespace remotemo

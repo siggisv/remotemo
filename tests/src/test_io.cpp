@@ -19,7 +19,7 @@ public:
                 remotemo::Font {config.font(),
                     remotemo::Texture {
                         remotemo::Res_handler<SDL_Texture> {}}},
-                nullptr, config.text_area()}}
+                nullptr, nullptr, config.text_area()}}
   {}
   MAKE_MOCK0(main_loop_once, void(), override);
 };

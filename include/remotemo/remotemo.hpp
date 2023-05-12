@@ -44,7 +44,7 @@ public:
   {
     return print_at(position.x, position.y, text);
   }
-  int set_inverse(bool inverse);
+  void set_inverse(bool inverse);
 
 private:
   std::unique_ptr<Engine> m_engine {};

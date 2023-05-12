@@ -165,13 +165,50 @@ SDL_Point Engine::text_area_size() const
   return SDL_Point {m_text_display.columns(), m_text_display.lines()};
 }
 
+bool Engine::display_string_at_cursor(const std::string& text)
+{
+  auto cursor_pos = m_text_display.cursor_pos();
+  for (const auto character : text) {
+    // TODO Handle scrolling
+    delay(m_delay_between_chars_ms);
+    switch (character) {
+      case '\n': // New line
+        m_text_display.hide_cursor();
+        cursor_pos.x = 0;
+        cursor_pos.y++;
+        m_text_display.cursor_pos(cursor_pos);
+        break;
+      case '\b': // Backspace
+        if (m_text_display.cursor_pos().x > 0) {
+          m_text_display.hide_cursor();
+          cursor_pos.x--;
+          m_text_display.cursor_pos(cursor_pos);
+          m_text_display.char_at_cursor(' ');
+        }
+        break;
+      default:
+        m_text_display.char_at_cursor(character);
+        cursor_pos.x++;
+        m_text_display.cursor_pos(cursor_pos);
+        break;
+    }
+    m_text_display.show_cursor();
+    main_loop_once();
+  }
+  return true;
+}
+
 void Engine::cursor_pos(const SDL_Point& pos)
 {
   m_text_display.hide_cursor();
-  main_loop_once();
   m_text_display.cursor_pos(pos);
   m_text_display.show_cursor();
   main_loop_once();
+}
+
+void Engine::is_output_inversed(bool inverse)
+{
+  m_text_display.is_output_inversed(inverse);
 }
 
 void Engine::delay(int delay_in_ms)

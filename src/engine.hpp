@@ -1,6 +1,7 @@
 #ifndef REMOTEMO_SRC_ENGINE_HPP
 #define REMOTEMO_SRC_ENGINE_HPP
 
+#include <string>
 #include <utility>
 #include <memory>
 #include <optional>
@@ -54,11 +55,17 @@ public:
 
   [[nodiscard]] virtual SDL_Point cursor_pos() const;
   [[nodiscard]] virtual SDL_Point text_area_size() const;
+  /* TODO (to make unit tests easier to write):
+  [[nodiscard]] virtual char char_at(const SDL_Point& pos) const;
+  [[nodiscard]] virtual bool is_inverse_at(const SDL_Point& pos) const;
+  */
 
   virtual void cursor_pos(const SDL_Point& pos);
+  virtual bool display_string_at_cursor(const std::string& text);
 
   virtual void delay(int delay_in_ms);
   virtual void main_loop_once();
+  virtual void is_output_inversed(bool inverse);
 
 protected:
   virtual void handle_events();
@@ -73,6 +80,7 @@ private:
   Renderer m_renderer;
   Background m_background;
   Text_display m_text_display;
+  int m_delay_between_chars_ms {60};
   float m_screen_scale {1.0f};
   SDL_Rect m_background_target {};
   SDL_FRect m_text_target {};
