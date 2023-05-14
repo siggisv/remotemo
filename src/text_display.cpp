@@ -43,12 +43,15 @@ void Text_display::update_cursor()
   if (m_is_cursor_updated) {
     return;
   }
+  m_is_cursor_updated = true;
+  if (m_cursor_pos.x >= m_columns || m_cursor_pos.y >= m_lines) {
+    return;
+  }
   if (m_is_cursor_visible) {
     display_char_at(cursor_symbol, m_is_output_inversed, m_cursor_pos);
   } else {
     show_char_hidden_by_cursor();
   }
-  m_is_cursor_updated = true;
 }
 
 void Text_display::show_char_hidden_by_cursor()
@@ -72,9 +75,10 @@ void Text_display::set_char_at_cursor(int character)
 
 void Text_display::scroll_up_one_line()
 {
+  constexpr Color white {255, 255, 255};
   SDL_SetRenderTarget(m_renderer, res());
   SDL_SetTextureBlendMode(res(), SDL_BLENDMODE_NONE);
-  SDL_SetTextureColorMod(res(), 255, 255, 255);
+  SDL_SetTextureColorMod(res(), white.red, white.green, white.blue);
 
   int line_length = texture_size().x - 2;
   int line_height = m_font.char_height();
