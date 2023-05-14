@@ -61,7 +61,8 @@ public:
   */
 
   virtual void cursor_pos(const SDL_Point& pos);
-  virtual bool display_string_at_cursor(const std::string& text);
+  virtual bool display_string_at_cursor(
+      const std::string& text, Wrapping text_wrapping);
 
   virtual void delay(int delay_in_ms);
   virtual void main_loop_once();
@@ -71,6 +72,7 @@ protected:
   virtual void handle_events();
   virtual bool handle_window_event(const SDL_Event& event);
   virtual void render_window();
+  bool scroll_if_needed(SDL_Point* cursor_pos);
   void set_screen_display_settings();
   void refresh_screen_display_settings();
 
@@ -80,6 +82,7 @@ private:
   Renderer m_renderer;
   Background m_background;
   Text_display m_text_display;
+  bool m_is_scrolling_allowed {true};
   int m_delay_between_chars_ms {60};
   float m_screen_scale {1.0f};
   SDL_Rect m_background_target {};

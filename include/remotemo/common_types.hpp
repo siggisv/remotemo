@@ -5,6 +5,8 @@
 
 namespace remotemo {
 
+enum class Wrapping { off, character, word };
+
 struct Color {
   Uint8 red {}, green {}, blue {};
 };

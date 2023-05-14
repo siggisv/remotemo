@@ -456,10 +456,10 @@ will have the initial values shown here _(those can all be changed later)_:
   \
   If set to `true`, the content of the screen scrolls up one line when the
   cursor goes below the bottom line.
-- text wrapping: `char`
+- text wrapping: `character`
   \
   This can be set to `off` (text printed beyond the right border gets lost),
-  `char` (text wraps to next line. This might happen in the middle of a
+  `character` (text wraps to next line. This might happen in the middle of a
   word) or `word` (text wraps to the next line, if possible at the last
   whitespace before getting to the right border).
 
@@ -495,9 +495,13 @@ before or while being called.
 ### Structs and enums
 
 ```C++
-enum class remotemo::Wrapping {off, char, word};
+enum class remotemo::Wrapping {
+  off, character, word
+};
 
-struct remotemo::Color {Uint8 red; Uint8 green; Uint8 blue;};
+struct remotemo::Color {
+  Uint8 red, green, blue;
+};
 
 enum class Mod_keys_strict {
   Ctrl, Alt, Alt_shift, Ctrl_shift, Ctrl_alt, Ctrl_alt_shift

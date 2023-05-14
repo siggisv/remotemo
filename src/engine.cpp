@@ -49,6 +49,7 @@ bool Main_SDL_handler::setup(::Uint32 init_flags)
   return true;
 }
 
+
 Engine::Engine(Main_SDL_handler main_sdl_handler, Window window,
     Renderer renderer, Background background,
     Text_display text_display) noexcept
@@ -155,6 +156,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
       std::move(*text_display));
 }
 
+
 SDL_Point Engine::cursor_pos() const
 {
   return m_text_display.cursor_pos();
@@ -165,44 +167,81 @@ SDL_Point Engine::text_area_size() const
   return SDL_Point {m_text_display.columns(), m_text_display.lines()};
 }
 
-bool Engine::display_string_at_cursor(const std::string& text)
+bool Engine::display_string_at_cursor(
+    const std::string& text, Wrapping text_wrapping)
 {
   auto cursor_pos = m_text_display.cursor_pos();
   for (const auto character : text) {
-    // TODO Handle scrolling
+    if (!scroll_if_needed(&cursor_pos)) {
+      return false;
+    }
     delay(m_delay_between_chars_ms);
     switch (character) {
+
       case '\n': // New line
-        m_text_display.hide_cursor();
         cursor_pos.x = 0;
         cursor_pos.y++;
         m_text_display.cursor_pos(cursor_pos);
         break;
+
       case '\b': // Backspace
-        if (m_text_display.cursor_pos().x > 0) {
-          m_text_display.hide_cursor();
-          cursor_pos.x--;
-          m_text_display.cursor_pos(cursor_pos);
-          m_text_display.char_at_cursor(' ');
+        if (cursor_pos.x == 0) {
+          return false;
         }
+        cursor_pos.x--;
+        m_text_display.cursor_pos(cursor_pos);
+        m_text_display.set_char_at_cursor(' ');
         break;
+
       default:
-        m_text_display.char_at_cursor(character);
+        if (cursor_pos.x == m_text_display.columns()) {
+          // This can happen if wrapping was off the last time the cursor
+          // moved. But wrap might have been set to on since then.
+          if (text_wrapping == Wrapping::off) {
+            // If wrapping is off, the cursor is allowed to go off the screen
+            // but nothing can be displayed there.
+            return false;
+          }
+          cursor_pos.x = 0;
+          cursor_pos.y++;
+          m_text_display.cursor_pos(cursor_pos);
+          if (!scroll_if_needed(&cursor_pos)) {
+            return false;
+          }
+        }
+        m_text_display.set_char_at_cursor(character);
         cursor_pos.x++;
+        if (cursor_pos.x == m_text_display.columns() &&
+            text_wrapping != Wrapping::off) {
+          // If wrapping is off, the cursor is allowed to go off the screen
+          cursor_pos.x = 0;
+          cursor_pos.y++;
+        }
         m_text_display.cursor_pos(cursor_pos);
         break;
     }
-    m_text_display.show_cursor();
     main_loop_once();
+  }
+  return true;
+}
+
+bool Engine::scroll_if_needed(SDL_Point* cursor_pos)
+{
+  if (!m_is_scrolling_allowed && cursor_pos->y >= m_text_display.lines()) {
+    return false;
+  }
+  while (cursor_pos->y >= m_text_display.lines()) {
+    delay(m_delay_between_chars_ms);
+    m_text_display.scroll_up_one_line();
+    cursor_pos->y--;
+    m_text_display.cursor_pos(*cursor_pos);
   }
   return true;
 }
 
 void Engine::cursor_pos(const SDL_Point& pos)
 {
-  m_text_display.hide_cursor();
   m_text_display.cursor_pos(pos);
-  m_text_display.show_cursor();
   main_loop_once();
 }
 
@@ -263,6 +302,7 @@ bool Engine::handle_window_event(const SDL_Event& event)
 
 void Engine::render_window()
 {
+  m_text_display.update_cursor();
   auto* renderer = m_renderer.res();
   ::SDL_SetRenderTarget(renderer, nullptr);
   ::SDL_RenderClear(renderer);

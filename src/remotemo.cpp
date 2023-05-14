@@ -99,7 +99,14 @@ Key Remotemo::get_key()
   m_engine->main_loop_once();
   m_engine->main_loop_once();
   pause(1000);
-  return Key::K_0;
+  // TODO Implement this function
+  //
+  // Dummy implementation:
+  static int count = -1;
+  const std::vector<Key> dummy = {
+      Key::K_n, Key::K_n, Key::K_n, Key::K_n, Key::K_n, Key::K_0};
+  count = (count + 1) % dummy.size();
+  return dummy.at(count);
 }
 std::string Remotemo::get_input([[maybe_unused]] int max_length)
 {
@@ -110,8 +117,8 @@ std::string Remotemo::get_input([[maybe_unused]] int max_length)
 
 int Remotemo::print(const std::string& text)
 {
-  // TODO Implement wrapping and scrolling
-  if (!m_engine->display_string_at_cursor(text)) {
+  // TODO Implement wrap being set to 'word'
+  if (!m_engine->display_string_at_cursor(text, m_text_wrapping)) {
     return -2;
   }
   return 0;

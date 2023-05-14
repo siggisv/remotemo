@@ -4,6 +4,7 @@
 #include <string>
 #include <optional>
 #include <memory>
+#include <vector>
 
 #include "remotemo/common_types.hpp"
 #include "remotemo/config.hpp"
@@ -48,6 +49,7 @@ public:
 
 private:
   std::unique_ptr<Engine> m_engine {};
+  Wrapping m_text_wrapping {Wrapping::character};
 };
 
 std::optional<Remotemo> create();
