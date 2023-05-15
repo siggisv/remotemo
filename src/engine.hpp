@@ -55,10 +55,8 @@ public:
 
   [[nodiscard]] virtual SDL_Point cursor_pos() const;
   [[nodiscard]] virtual SDL_Point text_area_size() const;
-  /* TODO (to make unit tests easier to write):
   [[nodiscard]] virtual char char_at(const SDL_Point& pos) const;
   [[nodiscard]] virtual bool is_inverse_at(const SDL_Point& pos) const;
-  */
 
   virtual void cursor_pos(const SDL_Point& pos);
   virtual bool display_string_at_cursor(

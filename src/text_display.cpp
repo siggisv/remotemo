@@ -28,15 +28,21 @@ std::optional<Text_display> Text_display::create(Font&& font,
 }
 
 
+char Text_display::char_at(const SDL_Point& pos) const
+{
+  return m_display_content[pos.y][pos.x].character;
+}
+
+bool Text_display::is_inverse_at(const SDL_Point& pos) const
+{
+  return m_display_content[pos.y][pos.x].is_inversed;
+}
+
 void Text_display::cursor_pos(const SDL_Point& pos)
 {
   if (m_cursor_pos.x != pos.x || m_cursor_pos.y != pos.y) {
     show_char_hidden_by_cursor();
     m_cursor_pos = pos;
-    // TODO Keep track of whole console content, not just under cursor
-    // The following is just dummy content:
-    m_char_at_cursor = ' ';
-    m_inversed_at_cursor = m_is_output_inversed;
   }
   // TODO When implementing blinking cursor, set cursor to being shown and
   // reset timer.
@@ -49,9 +55,6 @@ void Text_display::update_cursor()
     return;
   }
   m_is_cursor_updated = true;
-  if (m_cursor_pos.x >= m_columns || m_cursor_pos.y >= m_lines) {
-    return;
-  }
   if (m_is_cursor_visible) {
     display_char_at(cursor_symbol, m_is_output_inversed, m_cursor_pos);
   } else {
@@ -61,21 +64,28 @@ void Text_display::update_cursor()
 
 void Text_display::show_char_hidden_by_cursor()
 {
-  // TODO Keep track of whole console content, not just under cursor
-  display_char_at(m_char_at_cursor, m_inversed_at_cursor, m_cursor_pos);
+  if (m_cursor_pos.x >= m_columns || m_cursor_pos.y >= m_lines) {
+    return;
+  }
+  auto& content_at_cursor = m_display_content[m_cursor_pos.y][m_cursor_pos.x];
+  display_char_at(content_at_cursor.character, content_at_cursor.is_inversed,
+      m_cursor_pos);
 }
 
 void Text_display::set_char_at_cursor(int character)
 {
+  if (m_cursor_pos.x >= m_columns || m_cursor_pos.y >= m_lines) {
+    return;
+  }
   if (character < 0 || character > max_ascii_value) {
     SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
         "The character \'%c\' (%d) is not an ASCII character.\n", character,
         character);
     character = not_ascii_symbol;
   }
-  // TODO Keep track of whole console content, not just under cursor
-  m_char_at_cursor = character;
-  m_inversed_at_cursor = m_is_output_inversed;
+  auto& content_at_cursor = m_display_content[m_cursor_pos.y][m_cursor_pos.x];
+  content_at_cursor.character = static_cast<char>(character);
+  content_at_cursor.is_inversed = m_is_output_inversed;
 }
 
 void Text_display::scroll_up_one_line()
@@ -93,6 +103,9 @@ void Text_display::scroll_up_one_line()
   SDL_Rect target_area = {1, 1, line_length, scrolling_lines_height};
   SDL_RenderCopy(m_renderer, res(), &area_to_be_moved, &target_area);
 
+  m_display_content.pop_front();
+  m_display_content.push_back(m_empty_line);
+
   SDL_SetRenderTarget(m_renderer, nullptr);
   SDL_SetTextureBlendMode(res(), m_blend_to_screen_mode);
   SDL_SetTextureColorMod(res(), m_text_to_screen_color.red,
@@ -102,6 +115,9 @@ void Text_display::scroll_up_one_line()
 void Text_display::display_char_at(
     int character, bool is_output_inversed, const SDL_Point& pos)
 {
+  if (pos.x >= m_columns || pos.y >= m_lines) {
+    return;
+  }
   SDL_SetRenderTarget(m_renderer, res());
   SDL_Rect display_target_area {1 + pos.x * m_font.char_width(),
       1 + pos.y * m_font.char_height(), m_font.char_width(),

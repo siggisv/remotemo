@@ -167,6 +167,16 @@ SDL_Point Engine::text_area_size() const
   return SDL_Point {m_text_display.columns(), m_text_display.lines()};
 }
 
+char Engine::char_at(const SDL_Point& pos) const
+{
+  return m_text_display.char_at(pos);
+}
+
+bool Engine::is_inverse_at(const SDL_Point& pos) const
+{
+  return m_text_display.is_inverse_at(pos);
+}
+
 bool Engine::display_string_at_cursor(
     const std::string& text, Wrapping text_wrapping)
 {
