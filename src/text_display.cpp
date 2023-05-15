@@ -4,8 +4,13 @@ namespace remotemo {
 std::optional<Text_display> Text_display::create(Font&& font,
     const Text_area_config& text_area_config, SDL_Renderer* renderer)
 {
+  // + 2 pixels to have an empty, 1 pixel wide, border around the content.
+  // That seems to be needed so that when stretching the content to the
+  // screen, then the outer border of the content gets the same look as the
+  // rest of the content:
   SDL_Point area_size {(font.char_width() * text_area_config.columns) + 2,
-      (font.char_height() * text_area_config.lines) + 2};
+      // + 1 line to make scrolling simpler:
+      (font.char_height() * (text_area_config.lines + 1)) + 2};
   auto* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
       SDL_TEXTUREACCESS_TARGET, area_size.x, area_size.y);
   if (texture == nullptr) {
@@ -87,11 +92,6 @@ void Text_display::scroll_up_one_line()
       1, 1 + line_height, line_length, scrolling_lines_height};
   SDL_Rect target_area = {1, 1, line_length, scrolling_lines_height};
   SDL_RenderCopy(m_renderer, res(), &area_to_be_moved, &target_area);
-
-  SDL_Rect bottom_line = {
-      1, 1 + scrolling_lines_height, line_length, line_height};
-  SDL_Rect empty_pixel = {0, 0, 1, 1};
-  SDL_RenderCopy(m_renderer, res(), &empty_pixel, &bottom_line);
 
   SDL_SetRenderTarget(m_renderer, nullptr);
   SDL_SetTextureBlendMode(res(), m_blend_to_screen_mode);
