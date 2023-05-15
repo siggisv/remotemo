@@ -245,12 +245,14 @@ bool Engine::scroll_if_needed(SDL_Point* cursor_pos)
     m_text_display.scroll_up_one_line();
     cursor_pos->y--;
     m_text_display.cursor_pos(*cursor_pos);
+    main_loop_once();
   }
   return true;
 }
 
 void Engine::cursor_pos(const SDL_Point& pos)
 {
+  delay(m_delay_between_chars_ms);
   m_text_display.cursor_pos(pos);
   main_loop_once();
 }

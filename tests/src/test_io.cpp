@@ -22,6 +22,7 @@ public:
                 nullptr, nullptr, config.text_area()}}
   {}
   MAKE_MOCK0(main_loop_once, void(), override);
+  void delay(int daley_in_ms) override {}
 };
 
 TEST_CASE("Cursor position can be controlled directly", "[cursor]")
