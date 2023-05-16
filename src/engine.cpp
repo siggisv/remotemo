@@ -329,7 +329,7 @@ void Engine::close_window()
   m_background = std::nullopt;
   m_renderer = std::nullopt;
   m_window = std::nullopt;
-  m_main_sdl_handler = std::move(Main_SDL_handler {false});
+  m_main_sdl_handler = Main_SDL_handler {false};
   throw_if_window_closed();
 }
 
