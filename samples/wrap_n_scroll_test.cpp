@@ -1,12 +1,7 @@
 #include <remotemo/remotemo.hpp>
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
+void run_test(remotemo::Remotemo* text_monitor)
 {
-  auto text_monitor = remotemo::create();
-  if (!text_monitor) {
-    return -1;
-  }
-
   constexpr int one_second = 1000;
   text_monitor->pause(one_second);
   text_monitor->set_inverse(true);
@@ -42,4 +37,18 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   }
 
   text_monitor->pause(3 * one_second);
+}
+
+int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
+{
+  auto text_monitor = remotemo::create();
+  if (!text_monitor) {
+    return -1;
+  }
+
+  try {
+    run_test(&text_monitor.value());
+  } catch (const remotemo::Window_is_closed_exception& e) {
+    SDL_Log("%s", e.what());
+  }
 }

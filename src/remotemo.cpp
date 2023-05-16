@@ -1,5 +1,7 @@
 #include <remotemo/remotemo.hpp>
 
+#include <vector>
+
 #include "engine.hpp"
 
 namespace remotemo {

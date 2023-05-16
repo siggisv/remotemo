@@ -50,9 +50,10 @@ bool Main_SDL_handler::setup(::Uint32 init_flags)
 }
 
 
-Engine::Engine(Main_SDL_handler main_sdl_handler, Window window,
-    Renderer renderer, Background background,
-    Text_display text_display) noexcept
+Engine::Engine(Main_SDL_handler main_sdl_handler,
+    std::optional<Window> window, std::optional<Renderer> renderer,
+    std::optional<Background> background,
+    std::optional<Text_display> text_display) noexcept
     : m_main_sdl_handler(std::move(main_sdl_handler)),
       m_window(std::move(window)), m_renderer(std::move(renderer)),
       m_background(std::move(background)),
@@ -63,10 +64,10 @@ Engine::Engine(Main_SDL_handler main_sdl_handler, Window window,
 
 void Engine::set_screen_display_settings()
 {
-  auto backgr_texture_size = m_background.texture_size();
+  auto backgr_texture_size = m_background->texture_size();
   m_background_target.w = backgr_texture_size.x;
   m_background_target.h = backgr_texture_size.y;
-  auto backgr_text_area = m_background.text_area();
+  auto backgr_text_area = m_background->text_area();
   m_text_target.w = backgr_text_area.w;
   m_text_target.h = backgr_text_area.h;
   refresh_screen_display_settings();
@@ -74,8 +75,8 @@ void Engine::set_screen_display_settings()
 
 void Engine::refresh_screen_display_settings()
 {
-  auto window_size = m_window.size();
-  auto backgr_min_area = m_background.min_area();
+  auto window_size = m_window->size();
+  auto backgr_min_area = m_background->min_area();
   float scale_w = static_cast<float>(window_size.x) /
                   static_cast<float>(backgr_min_area.w);
   float scale_h = static_cast<float>(window_size.y) /
@@ -91,7 +92,7 @@ void Engine::refresh_screen_display_settings()
            backgr_min_area.h + 1) /
           2) -
       backgr_min_area.y;
-  auto backgr_text_area = m_background.text_area();
+  auto backgr_text_area = m_background->text_area();
   m_text_target.x =
       backgr_text_area.x + static_cast<float>(m_background_target.x);
   m_text_target.y =
@@ -152,35 +153,40 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
     return nullptr;
   }
   return std::make_unique<Engine>(std::move(main_sdl_handler),
-      std::move(*window), std::move(*renderer), std::move(*background),
-      std::move(*text_display));
+      std::move(window), std::move(renderer), std::move(background),
+      std::move(text_display));
 }
 
 
 SDL_Point Engine::cursor_pos() const
 {
-  return m_text_display.cursor_pos();
+  throw_if_window_closed();
+  return m_text_display->cursor_pos();
 }
 
 SDL_Point Engine::text_area_size() const
 {
-  return SDL_Point {m_text_display.columns(), m_text_display.lines()};
+  throw_if_window_closed();
+  return SDL_Point {m_text_display->columns(), m_text_display->lines()};
 }
 
 char Engine::char_at(const SDL_Point& pos) const
 {
-  return m_text_display.char_at(pos);
+  throw_if_window_closed();
+  return m_text_display->char_at(pos);
 }
 
 bool Engine::is_inverse_at(const SDL_Point& pos) const
 {
-  return m_text_display.is_inverse_at(pos);
+  throw_if_window_closed();
+  return m_text_display->is_inverse_at(pos);
 }
 
 bool Engine::display_string_at_cursor(
     const std::string& text, Wrapping text_wrapping)
 {
-  auto cursor_pos = m_text_display.cursor_pos();
+  throw_if_window_closed();
+  auto cursor_pos = m_text_display->cursor_pos();
   for (const auto character : text) {
     if (!scroll_if_needed(&cursor_pos)) {
       return false;
@@ -191,7 +197,7 @@ bool Engine::display_string_at_cursor(
       case '\n': // New line
         cursor_pos.x = 0;
         cursor_pos.y++;
-        m_text_display.cursor_pos(cursor_pos);
+        m_text_display->cursor_pos(cursor_pos);
         break;
 
       case '\b': // Backspace
@@ -199,12 +205,12 @@ bool Engine::display_string_at_cursor(
           return false;
         }
         cursor_pos.x--;
-        m_text_display.cursor_pos(cursor_pos);
-        m_text_display.set_char_at_cursor(' ');
+        m_text_display->cursor_pos(cursor_pos);
+        m_text_display->set_char_at_cursor(' ');
         break;
 
       default:
-        if (cursor_pos.x == m_text_display.columns()) {
+        if (cursor_pos.x == m_text_display->columns()) {
           // This can happen if wrapping was off the last time the cursor
           // moved. But wrap might have been set to on since then.
           if (text_wrapping == Wrapping::off) {
@@ -214,20 +220,20 @@ bool Engine::display_string_at_cursor(
           }
           cursor_pos.x = 0;
           cursor_pos.y++;
-          m_text_display.cursor_pos(cursor_pos);
+          m_text_display->cursor_pos(cursor_pos);
           if (!scroll_if_needed(&cursor_pos)) {
             return false;
           }
         }
-        m_text_display.set_char_at_cursor(character);
+        m_text_display->set_char_at_cursor(character);
         cursor_pos.x++;
-        if (cursor_pos.x == m_text_display.columns() &&
+        if (cursor_pos.x == m_text_display->columns() &&
             text_wrapping != Wrapping::off) {
           // If wrapping is off, the cursor is allowed to go off the screen
           cursor_pos.x = 0;
           cursor_pos.y++;
         }
-        m_text_display.cursor_pos(cursor_pos);
+        m_text_display->cursor_pos(cursor_pos);
         break;
     }
     main_loop_once();
@@ -237,14 +243,14 @@ bool Engine::display_string_at_cursor(
 
 bool Engine::scroll_if_needed(SDL_Point* cursor_pos)
 {
-  if (!m_is_scrolling_allowed && cursor_pos->y >= m_text_display.lines()) {
+  if (!m_is_scrolling_allowed && cursor_pos->y >= m_text_display->lines()) {
     return false;
   }
-  while (cursor_pos->y >= m_text_display.lines()) {
+  while (cursor_pos->y >= m_text_display->lines()) {
     delay(m_delay_between_chars_ms);
-    m_text_display.scroll_up_one_line();
+    m_text_display->scroll_up_one_line();
     cursor_pos->y--;
-    m_text_display.cursor_pos(*cursor_pos);
+    m_text_display->cursor_pos(*cursor_pos);
     main_loop_once();
   }
   return true;
@@ -253,17 +259,19 @@ bool Engine::scroll_if_needed(SDL_Point* cursor_pos)
 void Engine::cursor_pos(const SDL_Point& pos)
 {
   delay(m_delay_between_chars_ms);
-  m_text_display.cursor_pos(pos);
+  m_text_display->cursor_pos(pos);
   main_loop_once();
 }
 
 void Engine::is_output_inversed(bool inverse)
 {
-  m_text_display.is_output_inversed(inverse);
+  throw_if_window_closed();
+  m_text_display->is_output_inversed(inverse);
 }
 
 void Engine::delay(int delay_in_ms)
 {
+  throw_if_window_closed();
   auto time_now = SDL_GetTicks();
   const auto timeout = time_now + delay_in_ms;
   while (!SDL_TICKS_PASSED(time_now, timeout)) {
@@ -277,8 +285,8 @@ void Engine::delay(int delay_in_ms)
 
 void Engine::main_loop_once()
 {
-  // TODO cast exception if window has been closed
-  SDL_Log("Main loop once!");
+  throw_if_window_closed();
+  // SDL_Log("Main loop once!");
   handle_events();
   render_window();
 }
@@ -297,10 +305,13 @@ void Engine::handle_events()
 bool Engine::handle_window_event(const SDL_Event& event)
 {
   switch (event.type) {
+    case SDL_QUIT:
+      close_window();
+      return true;
     case SDL_WINDOWEVENT:
       switch (event.window.event) {
         case SDL_WINDOWEVENT_SIZE_CHANGED:
-          m_window.refresh_local_size();
+          m_window->refresh_local_size();
           refresh_screen_display_settings();
           return true;
         default:
@@ -312,18 +323,35 @@ bool Engine::handle_window_event(const SDL_Event& event)
   return false;
 }
 
+void Engine::close_window()
+{
+  m_text_display = std::nullopt;
+  m_background = std::nullopt;
+  m_renderer = std::nullopt;
+  m_window = std::nullopt;
+  m_main_sdl_handler = std::move(Main_SDL_handler {false});
+  throw_if_window_closed();
+}
+
 void Engine::render_window()
 {
-  m_text_display.update_cursor();
-  auto* renderer = m_renderer.res();
+  m_text_display->update_cursor();
+  auto* renderer = m_renderer->res();
   ::SDL_SetRenderTarget(renderer, nullptr);
   ::SDL_RenderClear(renderer);
   ::SDL_RenderSetScale(renderer, m_screen_scale, m_screen_scale);
   ::SDL_RenderCopy(
-      renderer, m_background.res(), nullptr, &m_background_target);
-  ::SDL_RenderCopyF(renderer, m_text_display.res(), nullptr, &m_text_target);
+      renderer, m_background->res(), nullptr, &m_background_target);
+  ::SDL_RenderCopyF(renderer, m_text_display->res(), nullptr, &m_text_target);
 
   ::SDL_RenderPresent(renderer);
+}
+
+void Engine::throw_if_window_closed() const
+{
+  if (!m_window || !m_renderer || !m_background || !m_text_display) {
+    throw Window_is_closed_exception();
+  }
 }
 
 } // namespace remotemo

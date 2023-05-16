@@ -6,6 +6,7 @@
 #include <memory>
 #include <optional>
 
+#include "remotemo/exceptions.hpp"
 #include "remotemo/config.hpp"
 #include "res_handler.hpp"
 #include "window.hpp"
@@ -40,9 +41,10 @@ private:
 
 class Engine {
 public:
-  explicit Engine(Main_SDL_handler main_sdl_handler, Window window,
-      Renderer renderer, Background background,
-      Text_display text_display) noexcept;
+  explicit Engine(Main_SDL_handler main_sdl_handler,
+      std::optional<Window> window, std::optional<Renderer> renderer,
+      std::optional<Background> background,
+      std::optional<Text_display> text_display) noexcept;
   virtual ~Engine() noexcept = default;
   Engine(Engine&& other) noexcept = default;
   Engine& operator=(Engine&& other) noexcept = default;
@@ -73,13 +75,15 @@ protected:
   bool scroll_if_needed(SDL_Point* cursor_pos);
   void set_screen_display_settings();
   void refresh_screen_display_settings();
+  void throw_if_window_closed() const;
+  void close_window();
 
 private:
   Main_SDL_handler m_main_sdl_handler;
-  Window m_window;
-  Renderer m_renderer;
-  Background m_background;
-  Text_display m_text_display;
+  std::optional<Window> m_window;
+  std::optional<Renderer> m_renderer;
+  std::optional<Background> m_background;
+  std::optional<Text_display> m_text_display;
   bool m_is_scrolling_allowed {true};
   int m_delay_between_chars_ms {60};
   float m_screen_scale {1.0f};

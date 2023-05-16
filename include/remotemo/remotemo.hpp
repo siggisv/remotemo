@@ -4,8 +4,8 @@
 #include <string>
 #include <optional>
 #include <memory>
-#include <vector>
 
+#include "remotemo/exceptions.hpp"
 #include "remotemo/common_types.hpp"
 #include "remotemo/config.hpp"
 
