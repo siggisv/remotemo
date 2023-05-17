@@ -332,7 +332,7 @@ bool Engine::handle_window_event(const SDL_Event& event)
   static bool is_fullscreen_key_being_handled = false;
   switch (event.type) {
     case SDL_QUIT:
-      close_window();
+      user_closes_window();
       return true;
     case SDL_KEYUP:
       if (m_key_fullscreen.is_in_event(event)) {
@@ -342,7 +342,16 @@ bool Engine::handle_window_event(const SDL_Event& event)
       break;
     case SDL_KEYDOWN:
       if (m_key_close_window.is_in_event(event)) {
-        close_window();
+        user_closes_window();
+        return true;
+      }
+      if (m_key_quit.is_in_event(event)) {
+        if (m_pre_quit_function()) {
+          if (m_is_closing_same_as_quit) {
+            close_window();
+          }
+          throw User_quit_exception();
+        }
         return true;
       }
       if (m_key_fullscreen.is_in_event(event)) {
@@ -369,17 +378,25 @@ bool Engine::handle_window_event(const SDL_Event& event)
   return false;
 }
 
-void Engine::close_window()
+void Engine::user_closes_window()
 {
   if (!m_pre_close_function()) {
     return;
   }
+  close_window();
+  if (m_is_closing_same_as_quit) {
+    throw User_quit_exception();
+  }
+  throw Window_is_closed_exception();
+}
+
+void Engine::close_window()
+{
   m_text_display = std::nullopt;
   m_background = std::nullopt;
   m_renderer = std::nullopt;
   m_window = std::nullopt;
   m_main_sdl_handler = Main_SDL_handler {false};
-  throw_if_window_closed();
 }
 
 void Engine::render_window()

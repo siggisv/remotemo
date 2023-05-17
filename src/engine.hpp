@@ -81,6 +81,7 @@ public:
   virtual void delay(int delay_in_ms);
   virtual void main_loop_once();
   virtual void is_output_inversed(bool inverse);
+  void close_window();
 
 protected:
   virtual void handle_events();
@@ -90,7 +91,7 @@ protected:
   void set_screen_display_settings();
   void refresh_screen_display_settings();
   void throw_if_window_closed() const;
-  void close_window();
+  void user_closes_window();
 
 private:
   Main_SDL_handler m_main_sdl_handler;
