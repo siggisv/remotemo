@@ -1,5 +1,5 @@
 # remoTemo API design
-_4th draft_
+_5th draft_
 
 > **Warning**
 >
@@ -135,10 +135,10 @@ If, for some reason, you want to clean up sooner, you could call:
 ```C++
 void remotemo::Remotemo::quit();
 ```
-> **Warning**
-> Doing so will leave the `remotemo::Remotemo` object invalid. If you really
-> have to do that, make sure not to touch any of the object's functions after
-> that.
+This will just close the window and clean up its resources.
+
+Almost all functions will throw an `remotemo::Window_is_closed_exception` if
+you try calling them after the window has been closed.
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Configuration and default settings
@@ -228,6 +228,16 @@ object has been created:
     remotemo::Config& remotemo::Config::key_close_window(
             remotemo::Mod_keys_strict modifier_keys, remotemo::Key key);
     ```
+    By default, pressing the chosen key combination (or using the mouse
+    pointer to press the window's close button provided by the operating
+    system), will close the window, clean up its resources and throw an
+    `remotemo::Window_is_closed_exception`.
+
+    How you want to handle that exception is up to you.
+
+    Almost all functions will throw that same exception if you try calling them
+    after the window has been closed.
+
   - Key combination to quit the application: `Ctrl-q` _(can be changed later)_
     ```C++
     remotemo::Config& remotemo::Config::key_quit(); // Set to none
@@ -236,15 +246,32 @@ object has been created:
     remotemo::Config& remotemo::Config::key_quit(
             remotemo::Mod_keys_strict modifier_keys, remotemo::Key key);
     ```
-  - Closing window is the same as quitting: `true` _(can be changed later)_
+    By default, pressing the chosen key combination will throw an
+    `remotemo::User_quit_exception` without closing the window nor cleaning up
+    anything.
+
+    How you want to handle that exception is up to you, but it would be pretty
+    normal to respect their request and close down the application.
+
+    > **Warning** Not catching that exception will terminate your program
+    > **without** making sure all resources are cleaned up. 
+
+  - Closing window is the same as quitting: `false` _(can be changed later)_
     ```C++
     remotemo::Config& remotemo::Config::closing_same_as_quit(
             bool is_closing_same_as_quit);
     ```
-    > **Note** Not recommended to change that setting to `false` unless you
-    > either really want the application to continue running without a window
-    > or the text monitor was running in an auxiliary window, while the main
-    > window is still controlled by you.
+    Setting this to `true` will change the behaviour of both choosing to close
+    the window and of choosing to quit so that doing any one of them will:
+    - Close the window (and clean up its resources).
+    - Then throw an `remotemo::User_quit_exception`.
+
+    Note that as before (when this is set to `false`):
+    - almost all functions will throw `remotemo::Window_is_closed_exception`
+      if you try calling them after the window has been closed.
+    - choosing to close the window will still call the
+      function-to-call-before-closing-window while choosing to quit will call
+      the function-to-call-before-quitting.
   - Function to call before closing window: `[]() -> bool { return true; }`
     _(can be changed later)_
     ```C++
@@ -264,16 +291,11 @@ object has been created:
     remotemo::Config& remotemo::Config::function_pre_quit(
             const std::function<bool()>& func);
     ```
-    > **Note** No mater if 'Closing window is the same as quitting' is set to
-    > `true` or `false`, the window will have been closed before this function
-    > gets called.
     That function must return a `bool`. If it returns `false`, quitting will
     be canceled.
 
     That function can be used to e.g. automatically save and/or do any needed
-    cleanup before quitting. Or
-    it could be used to set some flag and then return `false`, allowing you to
-    handle quitting yourself in any other way you wish.
+    cleanup before quitting.
     > **Note** Trying to set this to `nullptr` will result in it being set to
     > the default value instead.
 

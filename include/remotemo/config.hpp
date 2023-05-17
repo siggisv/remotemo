@@ -125,7 +125,7 @@ private:
       std::in_place, Mod_keys_strict::Ctrl, Key::K_w};
   std::optional<Key_combo> m_key_quit {
       std::in_place, Mod_keys_strict::Ctrl, Key::K_q};
-  bool m_is_closing_same_as_quit {true};
+  bool m_is_closing_same_as_quit {false};
   std::function<bool()> m_pre_close_function {[]() -> bool { return true; }};
   std::function<bool()> m_pre_quit_function {[]() -> bool { return true; }};
   Backgr_config m_background {{nullptr, "res/img/terminal_screen.png"s},
