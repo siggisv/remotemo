@@ -39,12 +39,26 @@ private:
   ::Uint32 m_sdl_subsystems {0};
 };
 
+class Key_combo_handler {
+public:
+  constexpr Key_combo_handler() noexcept = default;
+  constexpr explicit Key_combo_handler(
+      const std::optional<Key_combo>& combo) noexcept
+      : m_key_combo(combo)
+  {}
+  bool is_in_event(const SDL_Event& event) const;
+
+private:
+  std::optional<Key_combo> m_key_combo {};
+};
+
 class Engine {
 public:
   explicit Engine(Main_SDL_handler main_sdl_handler,
       std::optional<Window> window, std::optional<Renderer> renderer,
       std::optional<Background> background,
-      std::optional<Text_display> text_display) noexcept;
+      std::optional<Text_display> text_display,
+      const Config& config) noexcept;
   virtual ~Engine() noexcept = default;
   Engine(Engine&& other) noexcept = default;
   Engine& operator=(Engine&& other) noexcept = default;
@@ -84,6 +98,12 @@ private:
   std::optional<Renderer> m_renderer;
   std::optional<Background> m_background;
   std::optional<Text_display> m_text_display;
+  Key_combo_handler m_key_fullscreen;
+  Key_combo_handler m_key_close_window;
+  Key_combo_handler m_key_quit;
+  bool m_is_closing_same_as_quit;
+  std::function<bool()> m_pre_close_function;
+  std::function<bool()> m_pre_quit_function;
   bool m_is_scrolling_allowed {true};
   int m_delay_between_chars_ms {60};
   float m_screen_scale {1.0f};

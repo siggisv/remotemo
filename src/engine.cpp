@@ -50,14 +50,39 @@ bool Main_SDL_handler::setup(::Uint32 init_flags)
 }
 
 
+bool Key_combo_handler::is_in_event(const SDL_Event& event) const
+{
+  if (!m_key_combo) {
+    return false;
+  }
+  if (event.key.keysym.scancode != m_key_combo->key()) {
+    return false;
+  }
+  auto required_mod_keys = m_key_combo->modifier_keys();
+  for (auto mod_key : {KMOD_SHIFT, KMOD_CTRL, KMOD_ALT}) {
+    if (((required_mod_keys & mod_key) == 0) !=
+        ((event.key.keysym.mod & mod_key) == 0)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
 Engine::Engine(Main_SDL_handler main_sdl_handler,
     std::optional<Window> window, std::optional<Renderer> renderer,
     std::optional<Background> background,
-    std::optional<Text_display> text_display) noexcept
+    std::optional<Text_display> text_display, const Config& config) noexcept
     : m_main_sdl_handler(std::move(main_sdl_handler)),
       m_window(std::move(window)), m_renderer(std::move(renderer)),
       m_background(std::move(background)),
-      m_text_display(std::move(text_display))
+      m_text_display(std::move(text_display)),
+      m_key_fullscreen(config.m_key_fullscreen),
+      m_key_close_window(config.m_key_close_window),
+      m_key_quit(config.m_key_quit),
+      m_is_closing_same_as_quit(config.m_is_closing_same_as_quit),
+      m_pre_close_function(config.m_pre_close_function),
+      m_pre_quit_function(config.m_pre_quit_function)
 {
   set_screen_display_settings();
 }
@@ -110,10 +135,10 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   // get cleaned up, does in the right order.
   Main_SDL_handler main_sdl_handler {config.cleanup_all()};
   std::optional<Window> window {};
-  Res_handler<SDL_Window> conf_window {
+  Res_handler<SDL_Window> window_from_conf {
       config.window().raw_sdl, config.cleanup_all()};
   std::optional<Renderer> renderer {};
-  Res_handler<SDL_Renderer> conf_renderer {
+  Res_handler<SDL_Renderer> renderer_from_conf {
       config.window().raw_sdl == nullptr
           ? nullptr
           : ::SDL_GetRenderer(config.window().raw_sdl),
@@ -123,17 +148,17 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   Res_handler<SDL_Texture> font_texture {
       config.font().raw_sdl, config.cleanup_all()};
 
-  if (!config.validate(conf_renderer.res())) {
+  if (!config.validate(renderer_from_conf.res())) {
     return nullptr;
   }
   if (!main_sdl_handler.setup(sdl_init_flags)) {
     return nullptr;
   }
-  window = Window::create(config.window(), std::move(conf_window));
+  window = Window::create(config.window(), std::move(window_from_conf));
   if (!window) {
     return nullptr;
   }
-  renderer = Renderer::create(window->res(), std::move(conf_renderer));
+  renderer = Renderer::create(window->res(), std::move(renderer_from_conf));
   if (!renderer) {
     return nullptr;
   }
@@ -154,7 +179,7 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
   }
   return std::make_unique<Engine>(std::move(main_sdl_handler),
       std::move(window), std::move(renderer), std::move(background),
-      std::move(text_display));
+      std::move(text_display), config);
 }
 
 
@@ -304,10 +329,27 @@ void Engine::handle_events()
 
 bool Engine::handle_window_event(const SDL_Event& event)
 {
+  static bool is_fullscreen_key_being_handled = false;
   switch (event.type) {
     case SDL_QUIT:
       close_window();
       return true;
+    case SDL_KEYUP:
+      if (m_key_fullscreen.is_in_event(event)) {
+        is_fullscreen_key_being_handled = false;
+        return true;
+      }
+      break;
+    case SDL_KEYDOWN:
+      if (m_key_fullscreen.is_in_event(event)) {
+        if (is_fullscreen_key_being_handled) {
+          return true; // Handle only once per keypress
+        }
+        m_window->set_fullscreen(!m_window->is_fullscreen());
+        is_fullscreen_key_being_handled = true;
+        return true;
+      }
+      break;
     case SDL_WINDOWEVENT:
       switch (event.window.event) {
         case SDL_WINDOWEVENT_SIZE_CHANGED:

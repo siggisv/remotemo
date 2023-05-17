@@ -19,7 +19,8 @@ public:
                 remotemo::Font {config.font(),
                     remotemo::Texture {
                         remotemo::Res_handler<SDL_Texture> {}}},
-                nullptr, nullptr, config.text_area()}}
+                nullptr, nullptr, config.text_area()},
+            config}
   {}
   MAKE_MOCK0(main_loop_once, void(), override);
   void delay(int daley_in_ms) override {}
