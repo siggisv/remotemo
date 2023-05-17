@@ -341,6 +341,10 @@ bool Engine::handle_window_event(const SDL_Event& event)
       }
       break;
     case SDL_KEYDOWN:
+      if (m_key_close_window.is_in_event(event)) {
+        close_window();
+        return true;
+      }
       if (m_key_fullscreen.is_in_event(event)) {
         if (is_fullscreen_key_being_handled) {
           return true; // Handle only once per keypress
@@ -367,6 +371,9 @@ bool Engine::handle_window_event(const SDL_Event& event)
 
 void Engine::close_window()
 {
+  if (!m_pre_close_function()) {
+    return;
+  }
   m_text_display = std::nullopt;
   m_background = std::nullopt;
   m_renderer = std::nullopt;

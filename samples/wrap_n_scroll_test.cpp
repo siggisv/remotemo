@@ -1,3 +1,6 @@
+#include <iostream>
+#include <string>
+
 #include <remotemo/remotemo.hpp>
 
 void run_test(remotemo::Remotemo* text_monitor)
@@ -41,7 +44,16 @@ void run_test(remotemo::Remotemo* text_monitor)
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
-  auto text_monitor = remotemo::create();
+  auto conf = remotemo::Config().function_pre_close([]() -> bool {
+    std::string ans;
+    std::cout << "Really close window (Y/N)? ";
+    std::getline(std::cin, ans);
+    if (ans[0] == 'Y' || ans[0] == 'y') {
+      return true;
+    }
+    return false;
+  });
+  auto text_monitor = remotemo::create(conf);
   if (!text_monitor) {
     return -1;
   }
