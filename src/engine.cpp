@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "font.hpp"
+#include "keyboard.hpp"
 
 namespace remotemo {
 Main_SDL_handler::~Main_SDL_handler()
@@ -318,23 +319,51 @@ void Engine::delay(int delay_in_ms)
   }
 }
 
+Key Engine::get_key()
+{
+  while (true) {
+    throw_if_window_closed();
+    SDL_Event event;
+    if (SDL_WaitEvent(&event) == 0) {
+      continue;
+    }
+    if (handle_standard_event(event)) {
+      continue;
+    }
+    if (event.type == SDL_KEYDOWN) {
+      // TODO remove this debugging logging:
+      SDL_Log("Physical %s key (%d) acting as %s key (%d)",
+          SDL_GetScancodeName(event.key.keysym.scancode),
+          event.key.keysym.scancode, SDL_GetKeyName(event.key.keysym.sym),
+          event.key.keysym.sym);
+      auto key = Keyboard::scancode_to_key(event.key.keysym.scancode);
+      if (!key) {
+        continue;
+      }
+      return *key;
+    }
+  }
+}
+
 void Engine::main_loop_once()
 {
   throw_if_window_closed();
   // SDL_Log("Main loop once!");
-  handle_events();
+  SDL_Event event;
+  while (SDL_PollEvent(&event) != 0) {
+    handle_standard_event(event);
+  }
   render_window();
 }
 
-void Engine::handle_events()
+bool Engine::handle_standard_event(const SDL_Event& event)
 {
-  SDL_Event event;
-  while (SDL_PollEvent(&event) != 0) {
-    if (handle_window_event(event)) {
-      continue;
-    }
-    // TODO Add other event handlers
+  if (handle_window_event(event)) {
+    return true;
   }
+  // TODO Add other event handlers?
+
+  return false;
 }
 
 bool Engine::handle_window_event(const SDL_Event& event)

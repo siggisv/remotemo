@@ -111,17 +111,7 @@ void Remotemo::clear(Do_reset do_reset)
 
 Key Remotemo::get_key()
 {
-  m_engine->main_loop_once();
-  m_engine->main_loop_once();
-  pause(1000);
-  // TODO Implement this function
-  //
-  // Dummy implementation:
-  static int count = -1;
-  const std::vector<Key> dummy = {
-      Key::K_n, Key::K_n, Key::K_n, Key::K_n, Key::K_n, Key::K_0};
-  count = (count + 1) % dummy.size();
-  return dummy.at(count);
+  return m_engine->get_key();
 }
 
 std::string Remotemo::get_input([[maybe_unused]] int max_length)

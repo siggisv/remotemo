@@ -79,13 +79,14 @@ public:
       const std::string& text, Wrapping text_wrapping);
 
   virtual void delay(int delay_in_ms);
+  Key get_key();
   virtual void main_loop_once();
   virtual void is_output_inversed(bool inverse);
   void clear_screen();
   void close_window();
 
 protected:
-  virtual void handle_events();
+  virtual bool handle_standard_event(const SDL_Event& event);
   virtual bool handle_window_event(const SDL_Event& event);
   virtual void render_window();
   bool scroll_if_needed(SDL_Point* cursor_pos);
