@@ -12,10 +12,10 @@ text-only monitor with keyboard-only user input (and restricted to ASCII only, n
 Optionally the text gets displayed at a slow rate to recreate the feeling of being connected over a slow connection.
 
 ## WARNING
-This is work-in-progress that has not even reached beta status.
+This is still work-in-progress.
 
-Almost nothing works yet and anything might
-get changed at any time.
+Although those parts that are needed to run the following sample have been
+implemented and are working, anything might get changed at any time.
 
 ## Quick start
 

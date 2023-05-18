@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16..3.25)
 
 project(remotemo
-    VERSION 0.0.1
+    VERSION 0.1.0
     LANGUAGES CXX
 )
 set(CMAKE_CXX_STANDARD 17)
