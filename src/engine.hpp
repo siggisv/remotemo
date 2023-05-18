@@ -81,6 +81,7 @@ public:
   virtual void delay(int delay_in_ms);
   virtual void main_loop_once();
   virtual void is_output_inversed(bool inverse);
+  void clear_screen();
   void close_window();
 
 protected:

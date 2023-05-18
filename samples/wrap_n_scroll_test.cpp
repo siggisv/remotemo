@@ -22,11 +22,11 @@ void run_test(remotemo::Remotemo* text_monitor)
 
   text_monitor->pause(one_second);
   text_monitor->set_inverse(true);
-  for (int tab = 3; tab < 15; tab++) {
+  for (int tab = 3; tab < 10; tab++) {
     text_monitor->set_cursor_column(tab);
     text_monitor->print("At some point this should scroll...");
 
-    for (int column = 5; column < 20; column++) {
+    for (int column = 5; column < 10; column++) {
       text_monitor->set_cursor_column(column);
     }
     text_monitor->print("\n");
@@ -38,6 +38,13 @@ void run_test(remotemo::Remotemo* text_monitor)
   for (int column = 5; column < 25; column++) {
     text_monitor->set_cursor(column, 20);
   }
+
+  text_monitor->set_inverse(true);
+  text_monitor->pause(one_second);
+  text_monitor->clear(remotemo::Do_reset::none);
+
+  text_monitor->pause(one_second);
+  text_monitor->print("Bye bye!");
 
   text_monitor->pause(3 * one_second);
 }

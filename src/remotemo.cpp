@@ -53,6 +53,7 @@ int Remotemo::move_cursor(const SDL_Point& move)
   m_engine->cursor_pos(new_pos);
   return return_code;
 }
+
 int Remotemo::set_cursor(const SDL_Point& pos)
 {
   auto area_size = m_engine->text_area_size();
@@ -65,18 +66,21 @@ int Remotemo::set_cursor(const SDL_Point& pos)
   m_engine->cursor_pos(pos);
   return 0;
 }
+
 int Remotemo::set_cursor_column(int column)
 {
   auto pos = m_engine->cursor_pos();
   pos.x = column;
   return set_cursor(pos);
 }
+
 int Remotemo::set_cursor_line(int line)
 {
   auto pos = m_engine->cursor_pos();
   pos.y = line;
   return set_cursor(pos);
 }
+
 SDL_Point Remotemo::get_cursor_position()
 {
   return m_engine->cursor_pos();
@@ -90,12 +94,21 @@ int Remotemo::pause(int pause_in_ms)
   m_engine->delay(pause_in_ms);
   return 0;
 }
-int Remotemo::clear()
+
+void Remotemo::clear(Do_reset do_reset)
 {
-  m_engine->main_loop_once();
-  m_engine->main_loop_once();
-  return 0;
+  auto old_cursor_pos = m_engine->cursor_pos();
+  m_engine->clear_screen();
+  if (do_reset == Do_reset::inverse || do_reset == Do_reset::all) {
+    set_inverse(false);
+  }
+  if (do_reset == Do_reset::cursor || do_reset == Do_reset::all) {
+    set_cursor(0, 0);
+  } else {
+    set_cursor(old_cursor_pos);
+  }
 }
+
 Key Remotemo::get_key()
 {
   m_engine->main_loop_once();
@@ -110,8 +123,10 @@ Key Remotemo::get_key()
   count = (count + 1) % dummy.size();
   return dummy.at(count);
 }
+
 std::string Remotemo::get_input([[maybe_unused]] int max_length)
 {
+  // TODO Implement this function
   m_engine->main_loop_once();
   m_engine->main_loop_once();
   return "null";
@@ -125,6 +140,7 @@ int Remotemo::print(const std::string& text)
   }
   return 0;
 }
+
 int Remotemo::print_at(int column, int line, const std::string& text)
 {
   auto result = set_cursor(column, line);
@@ -133,6 +149,7 @@ int Remotemo::print_at(int column, int line, const std::string& text)
   }
   return print(text);
 }
+
 void Remotemo::set_inverse(bool inverse)
 {
   m_engine->is_output_inversed(inverse);

@@ -266,6 +266,16 @@ bool Engine::display_string_at_cursor(
   return true;
 }
 
+void Engine::clear_screen()
+{
+  auto lines = m_text_display->lines();
+  for (int line = 0; line < lines; line++) {
+    delay(m_delay_between_chars_ms);
+    m_text_display->clear_line(line);
+    main_loop_once();
+  }
+}
+
 bool Engine::scroll_if_needed(SDL_Point* cursor_pos)
 {
   if (!m_is_scrolling_allowed && cursor_pos->y >= m_text_display->lines()) {

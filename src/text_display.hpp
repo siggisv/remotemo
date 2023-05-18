@@ -47,6 +47,7 @@ public:
   }
   void set_char_at_cursor(int character);
   void scroll_up_one_line();
+  void clear_line(int line);
 
 private:
   void display_char_at(

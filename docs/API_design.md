@@ -254,7 +254,7 @@ object has been created:
     normal to respect their request and close down the application.
 
     > **Warning** Not catching that exception will terminate your program
-    > **without** making sure all resources are cleaned up. 
+    > **without** making sure all resources are cleaned up.
 
   - Closing window is the same as quitting: `false` _(can be changed later)_
     ```C++
@@ -622,10 +622,10 @@ Clears all the text area at once.
 
 - If `do_reset` is `cursor` or `all`, it also resets the position of the
   cursor to `(0, 0)`, otherwise leaving it at its current position.
-- If `do_reset` is `inverse` or `all`, it also resets 'inverse' to `false`,
-  **before** clearing the text area.
-- If 'inverse' was set to `true` and is not reset, then clearing the text
-  area fills it all with the foreground color.
+- If `do_reset` is `inverse` or `all`, it also resets 'inverse' to `false`.
+
+No matter how 'inverse' is set, clearing the text area fills it all with the
+background color.
 
 ```C++
 remotemo::Key remotemo::Remotemo::get_key();
