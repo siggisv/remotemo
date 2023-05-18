@@ -11,6 +11,8 @@ text-only monitor with keyboard-only user input (and restricted to ASCII only, n
 
 Optionally the text gets displayed at a slow rate to recreate the feeling of being connected over a slow connection.
 
+[remotemo_simple_sample.webm](https://github.com/siggisv/remotemo/assets/5704941/bf79a37e-5e7b-4056-abe0-69efb158f183)
+
 ## WARNING
 This is still work-in-progress.
 
@@ -31,6 +33,7 @@ int main(int argc, char* argv[])
     auto text_monitor = remotemo::create();
     if (!text_monitor) {
         return -1;
+
     }
 
     text_monitor->pause(1500);
