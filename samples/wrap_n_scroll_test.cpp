@@ -61,6 +61,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
                     }
                     return false;
                   })
+                  .function_pre_quit([]() -> bool {
+                    std::cout << "Oh! Quitting already?\nFine, bye!\n";
+                    return true;
+                  })
                   .closing_same_as_quit(true);
   auto text_monitor = remotemo::create(conf);
   if (!text_monitor) {
@@ -70,6 +74,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
   try {
     run_test(&text_monitor.value());
   } catch (const remotemo::Window_is_closed_exception& e) {
-    SDL_Log("%s", e.what());
+    std::cerr << "Window_is_closed_exception: " << e.what() << '\n';
+  } catch (const remotemo::User_quit_exception& e) {
+    std::cerr << "User_quit_exception: " << e.what() << '\n';
   }
 }
