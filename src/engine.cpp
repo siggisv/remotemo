@@ -368,17 +368,10 @@ bool Engine::handle_standard_event(const SDL_Event& event)
 
 bool Engine::handle_window_event(const SDL_Event& event)
 {
-  static bool is_fullscreen_key_being_handled = false;
   switch (event.type) {
     case SDL_QUIT:
       user_closes_window();
       return true;
-    case SDL_KEYUP:
-      if (m_key_fullscreen.is_in_event(event)) {
-        is_fullscreen_key_being_handled = false;
-        return true;
-      }
-      break;
     case SDL_KEYDOWN:
       if (m_key_close_window.is_in_event(event)) {
         user_closes_window();
@@ -394,11 +387,9 @@ bool Engine::handle_window_event(const SDL_Event& event)
         return true;
       }
       if (m_key_fullscreen.is_in_event(event)) {
-        if (is_fullscreen_key_being_handled) {
-          return true; // Handle only once per keypress
+        if (event.key.repeat == 0) {
+          m_window->set_fullscreen(!m_window->is_fullscreen());
         }
-        m_window->set_fullscreen(!m_window->is_fullscreen());
-        is_fullscreen_key_being_handled = true;
         return true;
       }
       break;
