@@ -305,6 +305,12 @@ void Engine::is_output_inversed(bool inverse)
   m_text_display->is_output_inversed(inverse);
 }
 
+bool Engine::is_output_inversed() const
+{
+  throw_if_window_closed();
+  return m_text_display->is_output_inversed();
+}
+
 void Engine::delay(int delay_in_ms)
 {
   throw_if_window_closed();

@@ -1,5 +1,5 @@
 # remoTemo API design
-_5th draft_
+_6th draft_
 
 > **Warning**
 >
@@ -649,8 +649,8 @@ also restrict the lenght of the text being entered on the screen.
 
 - If wrapping is set to `off` then the length is also restricted by the
   distance to the right border of the screen.
-- If wrapping is set to `char` (or `word`, which will still give same
-  behaviour as `char`), then:
+- If wrapping is set to `character` (or `word`, which give same behaviour as
+  `character` when getting input), then:
   - having scrolling set to `false` will restrict the length by what can fit
     from the current cursor position, down to the bottom-right corner of the
     screen.
@@ -691,7 +691,7 @@ settings. If wrapping set to `word` it might wrap even sooner).
 #### Wrapping
 - If set to `off` then text printed beyond the right border gets lost and the
   cursor stops just inside the border.
-- If set to `char` then text wraps to the beginning of the next line when
+- If set to `character` then text wraps to the beginning of the next line when
   reaching the right border, possibly splitting a word in the process.
 - If set to `word` then text wraps to the beginning of the next line, at the
   last whitespace before getting to the right border. Except if there is no
@@ -730,18 +730,52 @@ Does the same thing as calling first `set_cursor()` and then `print()`.
 ### Text output behaviour
 
 ```C++
-int remotemo::Remotemo::set_text_delay(int delay);
-int remotemo::Remotemo::set_text_speed(int speed);
-int remotemo::Remotemo::set_scrolling(bool scrolling);
-int remotemo::Remotemo::set_wrapping(remotemo::Wrapping wrapping);
-int remotemo::Remotemo::set_inverse(bool inverse);
-
+bool remotemo::Remotemo::set_text_delay(int delay_in_ms);
+bool remotemo::Remotemo::set_text_speed(double char_per_second);
 int remotemo::Remotemo::get_text_delay();
-int remotemo::Remotemo::get_text_speed();
+double remotemo::Remotemo::get_text_speed();
+```
+Sets and gets the speed at which text gets displayed.
+
+The setters return `true` on success and `false` on failure (e.g. negative
+numbers or trying to set the speed to zero).
+
+Don't expect this to be anything precise as it sets the delay between
+characters being displayed, in **whole** milliseconds, without taking into
+account the time it takes to actually display each character (nor the time
+that might go into handling any possible events that might happens at the same
+time).
+
+Also note that when converting from `char per seconds` to `delay`, then some
+rounding might happen (e.g. any speed above 1000 char per second will probably
+be rounded down to a delay of 0 ms).
+
+```C++
+void remotemo::Remotemo::set_scrolling(bool scrolling);
 bool remotemo::Remotemo::get_scrolling();
+```
+
+Sets and gets the 'scrolling' property. See [Scrolling](#scrolling) above for
+more.
+
+```C++
+void remotemo::Remotemo::set_wrapping(remotemo::Wrapping wrapping);
 remotemo::Wrapping remotemo::Remotemo::get_wrapping();
+```
+
+Sets and gets the 'wrapping' property. See [Wrapping](#wrapping) above for
+more.
+
+```C++
+void remotemo::Remotemo::set_inverse(bool inverse);
 bool remotemo::Remotemo::get_inverse();
 ```
+
+Sets and gets the 'inverse' property.
+
+While set to `true`, printing to the screen is done with the foreground and
+background color switched. Changing this property does not affect text that
+had already been printed to the screen.
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Text area settings

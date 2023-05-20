@@ -32,7 +32,7 @@ public:
   int set_cursor(const SDL_Point& position);
   int set_cursor_column(int column);
   int set_cursor_line(int line);
-  SDL_Point get_cursor_position();
+  [[nodiscard]] SDL_Point get_cursor_position() const;
 
   int pause(int pause_in_ms);
   void clear(Do_reset do_reset = Do_reset::all);
@@ -45,7 +45,16 @@ public:
   {
     return print_at(position.x, position.y, text);
   }
+  bool set_text_delay(int delay_in_ms);
+  bool set_text_speed(double char_per_second);
+  void set_scrolling(bool is_scrolling);
+  void set_wrapping(Wrapping wrapping);
   void set_inverse(bool inverse);
+  [[nodiscard]] int get_text_delay() const;
+  [[nodiscard]] double get_text_speed() const;
+  [[nodiscard]] bool get_scrolling() const;
+  [[nodiscard]] Wrapping get_wrapping() const { return m_text_wrapping; }
+  [[nodiscard]] bool get_inverse() const;
 
 private:
   std::unique_ptr<Engine> m_engine {};

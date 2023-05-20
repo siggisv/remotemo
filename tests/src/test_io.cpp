@@ -13,6 +13,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
       .font_bitmap_file_path("../res/img/font_bitmap.png");
   auto temo = remotemo::create(config);
   auto& t = *temo;
+  t.set_text_delay(0);
 
   SECTION("Starting position should be (0, 0)")
   {

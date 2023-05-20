@@ -81,7 +81,24 @@ public:
   void delay(int delay_in_ms);
   Key get_key();
   void main_loop_once();
+  void delay_between_chars_ms(int delay_in_ms)
+  {
+    m_delay_between_chars_ms = delay_in_ms;
+  }
+  void is_scrolling_allowed(bool is_scrolling_allowed)
+  {
+    m_is_scrolling_allowed = is_scrolling_allowed;
+  }
   void is_output_inversed(bool inverse);
+  [[nodiscard]] int delay_between_chars_ms() const
+  {
+    return m_delay_between_chars_ms;
+  }
+  [[nodiscard]] bool is_scrolling_allowed() const
+  {
+    return m_is_scrolling_allowed;
+  }
+  [[nodiscard]] bool is_output_inversed() const;
   void clear_screen();
   void close_window();
 

@@ -81,7 +81,7 @@ int Remotemo::set_cursor_line(int line)
   return set_cursor(pos);
 }
 
-SDL_Point Remotemo::get_cursor_position()
+SDL_Point Remotemo::get_cursor_position() const
 {
   return m_engine->cursor_pos();
 }
@@ -140,9 +140,63 @@ int Remotemo::print_at(int column, int line, const std::string& text)
   return print(text);
 }
 
+bool Remotemo::set_text_delay(int delay_in_ms)
+{
+  if (delay_in_ms < 0) {
+    return false;
+  }
+  m_engine->delay_between_chars_ms(delay_in_ms);
+  return true;
+}
+
+constexpr double ms_in_second = 1000.0;
+
+bool Remotemo::set_text_speed(double char_per_second)
+{
+  if (char_per_second <= 0) {
+    return false;
+  }
+  return set_text_delay(static_cast<int>(ms_in_second / char_per_second));
+}
+
+int Remotemo::get_text_delay() const
+{
+  return m_engine->delay_between_chars_ms();
+}
+
+double Remotemo::get_text_speed() const
+{
+  return ms_in_second / get_text_delay();
+}
+
 void Remotemo::set_inverse(bool inverse)
 {
   m_engine->is_output_inversed(inverse);
+}
+
+bool Remotemo::get_inverse() const
+{
+  return m_engine->is_output_inversed();
+}
+
+void Remotemo::set_scrolling(bool is_scrolling)
+{
+  m_engine->is_scrolling_allowed(is_scrolling);
+}
+
+bool Remotemo::get_scrolling() const
+{
+  return m_engine->is_scrolling_allowed();
+}
+
+void Remotemo::set_wrapping(Wrapping wrapping)
+{
+  m_text_wrapping = wrapping;
+  if (wrapping == Wrapping::word) {
+    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+        "Wrapping whole words not implemented yet. "
+        "Behaves as if set to 'character'.");
+  }
 }
 
 } // namespace remotemo
