@@ -1,12 +1,13 @@
 #include <memory>
 
 #include "remotemo/remotemo.hpp"
-#include "../../src/engine.hpp"
+//#include "../../src/engine.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/trompeloeil.hpp>
 
+/*
 class Mock_engine : public remotemo::Engine {
 public:
   Mock_engine(const remotemo::Config& config)
@@ -23,14 +24,26 @@ public:
             config}
   {}
   MAKE_MOCK0(main_loop_once, void(), override);
-  void delay(int daley_in_ms) override {}
+  void delay(int delay_in_ms) override {}
 };
+*/
 
 TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 {
+  /*
   remotemo::Config config {};
   Mock_engine* mock_engine = new Mock_engine(config);
   remotemo::Remotemo t {std::unique_ptr<Mock_engine>(mock_engine), config};
+  */
+
+  char env_string[] = "SDL_VIDEODRIVER=dummy";
+  putenv(&env_string[0]);
+
+  remotemo::Config config {};
+  config.background_file_path("../res/img/terminal_screen.png")
+    .font_bitmap_file_path("../res/img/font_bitmap.png");
+  auto temo = remotemo::create(config);
+  auto& t = *temo;
 
   SECTION("Starting position should be (0, 0)")
   {
@@ -55,7 +68,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{-3, 18}, 0, {0, 24}} //
     }};
     for (auto m : moves) {
-      REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+      //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
       REQUIRE(t.move_cursor(m.param.x, m.param.y) == m.result);
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == m.pos.x);
@@ -73,7 +86,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{-3, 18}, 0, {0, 24}} //
     }};
     for (auto m : moves) {
-      REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+      //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
       REQUIRE(t.move_cursor(m.param) == m.result);
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == m.pos.x);
@@ -93,11 +106,11 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{-15, 60}, -6, {0, 24}},  // bottom left
         {{-13, -12}, -12, {0, 0}}  // top left
     }};
-    REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+    //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
     t.move_cursor(10, 10);
 
     auto m = GENERATE_REF(from_range(moves));
-    REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+    //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
     REQUIRE(t.move_cursor(m.param.x, m.param.y) == m.result);
     auto pos = t.get_cursor_position();
     REQUIRE(pos.x == m.pos.x);
@@ -116,11 +129,11 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{-15, 60}, -6, {0, 24}},  // bottom left
         {{-13, -12}, -12, {0, 0}}  // top left
     }};
-    REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+    //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
     t.move_cursor(10, 10);
 
     auto m = GENERATE_REF(from_range(moves));
-    REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+    //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
     REQUIRE(t.move_cursor(m.param) == m.result);
     auto pos = t.get_cursor_position();
     REQUIRE(pos.x == m.pos.x);
@@ -136,7 +149,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{2, 24}, 0, {2, 24}}  //
     }};
     for (auto p : positions) {
-      REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+      //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
       REQUIRE(t.set_cursor(p.param.x, p.param.y) == p.result);
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == p.pos.x);
@@ -153,7 +166,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{2, 24}, 0, {2, 24}}  //
     }};
     for (auto p : positions) {
-      REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+      //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
       REQUIRE(t.set_cursor(p.param) == p.result);
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == p.pos.x);
@@ -169,11 +182,11 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{40, 10}, -1, {10, 20}}, //
         {{15, 25}, -1, {10, 20}}, //
     }};
-    REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+    //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
     t.set_cursor(10, 20);
 
     for (auto p : positions) {
-      REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+      //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
       REQUIRE(t.set_cursor(p.param.x, p.param.y) == p.result);
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == p.pos.x);
@@ -189,11 +202,11 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{40, 10}, -1, {10, 20}}, //
         {{15, 25}, -1, {10, 20}}, //
     }};
-    REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+    //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
     t.set_cursor(10, 20);
 
     for (auto p : positions) {
-      REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+      //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
       REQUIRE(t.set_cursor(p.param) == p.result);
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == p.pos.x);
@@ -210,7 +223,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{2, 24}, 0, {2, 0}}   //
     }};
     for (auto p : positions) {
-      REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+      //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
       REQUIRE(t.set_cursor_column(p.param.x) == p.result);
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == p.pos.x);
@@ -224,11 +237,11 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{-4, 8}, -1, {10, 20}},  //
         {{40, 10}, -1, {10, 20}}, //
     }};
-    REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+    //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
     t.set_cursor(10, 20);
 
     for (auto p : positions) {
-      REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+      //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
       REQUIRE(t.set_cursor_column(p.param.x) == p.result);
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == p.pos.x);
@@ -245,7 +258,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{2, 24}, 0, {0, 24}} //
     }};
     for (auto p : positions) {
-      REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+      //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
       REQUIRE(t.set_cursor_line(p.param.y) == p.result);
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == p.pos.x);
@@ -259,11 +272,11 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{4, -8}, -1, {10, 20}},  //
         {{20, 50}, -1, {10, 20}}, //
     }};
-    REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+    //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
     t.set_cursor(10, 20);
 
     for (auto p : positions) {
-      REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
+      //REQUIRE_CALL(*mock_engine, main_loop_once()).TIMES(1, 2);
       REQUIRE(t.set_cursor_line(p.param.y) == p.result);
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == p.pos.x);

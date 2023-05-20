@@ -69,26 +69,26 @@ public:
 
   static std::unique_ptr<Engine> create(const Config& config);
 
-  [[nodiscard]] virtual SDL_Point cursor_pos() const;
-  [[nodiscard]] virtual SDL_Point text_area_size() const;
-  [[nodiscard]] virtual char char_at(const SDL_Point& pos) const;
-  [[nodiscard]] virtual bool is_inverse_at(const SDL_Point& pos) const;
+  [[nodiscard]] SDL_Point cursor_pos() const;
+  [[nodiscard]] SDL_Point text_area_size() const;
+  [[nodiscard]] char char_at(const SDL_Point& pos) const;
+  [[nodiscard]] bool is_inverse_at(const SDL_Point& pos) const;
 
-  virtual void cursor_pos(const SDL_Point& pos);
-  virtual bool display_string_at_cursor(
+  void cursor_pos(const SDL_Point& pos);
+  bool display_string_at_cursor(
       const std::string& text, Wrapping text_wrapping);
 
-  virtual void delay(int delay_in_ms);
+  void delay(int delay_in_ms);
   Key get_key();
-  virtual void main_loop_once();
-  virtual void is_output_inversed(bool inverse);
+  void main_loop_once();
+  void is_output_inversed(bool inverse);
   void clear_screen();
   void close_window();
 
 protected:
-  virtual bool handle_standard_event(const SDL_Event& event);
-  virtual bool handle_window_event(const SDL_Event& event);
-  virtual void render_window();
+  bool handle_standard_event(const SDL_Event& event);
+  bool handle_window_event(const SDL_Event& event);
+  void render_window();
   bool scroll_if_needed(SDL_Point* cursor_pos);
   void set_screen_display_settings();
   void refresh_screen_display_settings();
