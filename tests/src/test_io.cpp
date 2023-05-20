@@ -1,3 +1,6 @@
+#include <cmath>
+#include <chrono>
+
 #include "remotemo/remotemo.hpp"
 
 #include <catch2/catch_test_macros.hpp>
@@ -10,7 +13,8 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 
   remotemo::Config config {};
   config.background_file_path("../res/img/terminal_screen.png")
-      .font_bitmap_file_path("../res/img/font_bitmap.png");
+      .font_bitmap_file_path("../res/img/font_bitmap.png")
+      .text_area_size(40, 24); // Should be the default
   auto temo = remotemo::create(config);
   auto& t = *temo;
   t.set_text_delay(0);
@@ -233,6 +237,40 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
       auto pos = t.get_cursor_position();
       REQUIRE(pos.x == p.pos.x);
       REQUIRE(pos.y == p.pos.y);
+    }
+  }
+}
+
+TEST_CASE("pause(int)", "[pause]")
+{
+  char env_string[] = "SDL_VIDEODRIVER=dummy";
+  putenv(&env_string[0]);
+
+  remotemo::Config config {};
+  config.background_file_path("../res/img/terminal_screen.png")
+      .font_bitmap_file_path("../res/img/font_bitmap.png");
+  auto t = remotemo::create(config);
+  t->set_text_delay(0);
+
+  SECTION("pause(int), with negative numbers should fail")
+  {
+    for (int bad_duration : {-1, -35, -10'000}) {
+      REQUIRE(t->pause(bad_duration) != 0);
+    }
+  }
+
+  SECTION("pause(int), with positive parameters, should wait for aproximate "
+          "the given time (in milliseconds)")
+  {
+    for (int ok_duration : {0, 1, 35, 490, 2000, 10'000}) {
+      auto start = std::chrono::high_resolution_clock::now();
+      REQUIRE(t->pause(ok_duration) == 0);
+      auto end = std::chrono::high_resolution_clock::now();
+      auto elapsed_ms =
+          std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+      UNSCOPED_INFO("pause(" << ok_duration << ") took " << elapsed_ms.count()
+                             << " to run.\n");
+      REQUIRE(abs(elapsed_ms.count() - ok_duration) < 15);
     }
   }
 }
