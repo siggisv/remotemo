@@ -303,6 +303,9 @@ bool try_running_create(bool do_cleanup_all, const Conf_resources& conf_res,
   if (texture_conf.text_color.has_value()) {
     config.text_color(*texture_conf.text_color);
   }
+  // Silence all logging:
+  SDL_LogSetAllPriority(SDL_NUM_LOG_PRIORITIES);
+
   auto t = remotemo::create(config);
   // This dummy function is here so we can check if cleanup happens before
   // `t` goes out of scope or after:
