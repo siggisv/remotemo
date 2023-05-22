@@ -6,7 +6,7 @@ _7th draft_
 > **Both** the design and the implementation are work-in-progress.
 
 ## Table of contents
-- [Getting the version number](#getting-the-verion-number)
+- [Getting the version number](#getting-the-version-number)
 - [Initialization, cleanup and config](#initialization-cleanup-and-config)
   - [Initialization](#initialization)
   - [Cleanup](#cleanup)
