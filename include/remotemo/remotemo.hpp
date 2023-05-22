@@ -63,5 +63,11 @@ private:
 
 std::optional<Remotemo> create();
 std::optional<Remotemo> create(const Config& config);
+
+std::string full_name();
+std::string full_version();
+int version_major();
+int version_minor();
+int version_patch();
 } // namespace remotemo
 #endif // REMOTEMO_REMOTEMO_HPP

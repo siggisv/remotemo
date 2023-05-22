@@ -51,6 +51,11 @@ void run_test(remotemo::Remotemo* text_monitor)
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
+  std::cout << "Name: " << remotemo::full_name() << '\n';
+  std::cout << "Version: " << remotemo::full_version() << '\n';
+  std::cout << "Major: " << remotemo::version_major() << '\n';
+  std::cout << "Minor: " << remotemo::version_minor() << '\n';
+  std::cout << "Patch: " << remotemo::version_patch() << '\n';
   auto conf = remotemo::Config()
                   .function_pre_close([]() -> bool {
                     std::string ans;

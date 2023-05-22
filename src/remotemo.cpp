@@ -1,7 +1,9 @@
 #include <remotemo/remotemo.hpp>
 
+#include <sstream>
 #include <vector>
 
+#include "version.hpp"
 #include "engine.hpp"
 
 namespace remotemo {
@@ -27,6 +29,37 @@ std::optional<Remotemo> create(const Config& config)
   }
   return Remotemo {std::move(engine), config};
 }
+
+std::string full_name()
+{
+  std::stringstream full_n;
+  full_n << "remoTemo " << full_version();
+  return full_n.str();
+}
+
+std::string full_version()
+{
+  std::stringstream full_v;
+  full_v << 'v' << version::major << '.' << version::minor << '.'
+         << version::patch;
+  return full_v.str();
+}
+
+int version_major()
+{
+  return version::major;
+}
+
+int version_minor()
+{
+  return version::minor;
+}
+
+int version_patch()
+{
+  return version::patch;
+}
+
 
 int Remotemo::move_cursor(const SDL_Point& move)
 {
@@ -149,14 +182,14 @@ bool Remotemo::set_text_delay(int delay_in_ms)
   return true;
 }
 
-constexpr double ms_in_second = 1000.0;
+constexpr double ms_per_second = 1000.0;
 
 bool Remotemo::set_text_speed(double char_per_second)
 {
   if (char_per_second <= 0) {
     return false;
   }
-  return set_text_delay(static_cast<int>(ms_in_second / char_per_second));
+  return set_text_delay(static_cast<int>(ms_per_second / char_per_second));
 }
 
 int Remotemo::get_text_delay() const
@@ -166,7 +199,7 @@ int Remotemo::get_text_delay() const
 
 double Remotemo::get_text_speed() const
 {
-  return ms_in_second / get_text_delay();
+  return ms_per_second / get_text_delay();
 }
 
 void Remotemo::set_inverse(bool inverse)

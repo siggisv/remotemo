@@ -1,11 +1,12 @@
 # remoTemo API design
-_6th draft_
+_7th draft_
 
 > **Warning**
 >
 > **Both** the design and the implementation are work-in-progress.
 
 ## Table of contents
+- [Getting the version number](#getting-the-verion-number)
 - [Initialization, cleanup and config](#initialization-cleanup-and-config)
   - [Initialization](#initialization)
   - [Cleanup](#cleanup)
@@ -16,6 +17,28 @@ _6th draft_
   - [Text output behaviour](#text-output-behaviour)
   - [Text area settings](#text-area-settings)
   - [Window settings](#window-settings)
+
+<sup>[Back to top](#remotemo-api-design)</sup>
+## Getting the version number
+
+The library provides a few functions that can be called to get its name and
+its version:
+
+```C++
+std::string remotemo::full_name();
+std::string remotemo::full_version();
+int remotemo::version_major();
+int remotemo::version_minor();
+int remotemo::version_patch();
+```
+
+Assuming the version to be `v1.0.3`, they would return the following:
+
+- `remotemo::full_name()` will return the string `"remoTemo v1.0.3"`.
+- `remotemo::full_version()` will return the string `"v1.0.3"`.
+- `remotemo::version_major()` will return the int `1`.
+- `remotemo::version_minor()` will return the int `0`.
+- `remotemo::version_patch()` will return the int `3`.
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ## Initialization, cleanup and config

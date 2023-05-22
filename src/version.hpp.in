@@ -1,0 +1,11 @@
+#ifndef REMOTEMO_SRC_VERSION_HPP
+#define REMOTEMO_SRC_VERSION_HPP
+
+namespace remotemo {
+namespace version {
+constexpr int major = @remotemo_VERSION_MAJOR@;
+constexpr int minor = @remotemo_VERSION_MINOR@;
+constexpr int patch = @remotemo_VERSION_PATCH@;
+} // namespace version
+} // namespace remotemo
+#endif // REMOTEMO_SRC_VERSION_HPP

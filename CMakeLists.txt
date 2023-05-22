@@ -8,6 +8,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+configure_file(
+    "${PROJECT_SOURCE_DIR}/src/version.hpp.in"
+    "${PROJECT_BINARY_DIR}/src/version.hpp"
+)
+
 option(REMOTEMO_BUILD_TESTS "Enable building the tests" OFF)
 option(REMOTEMO_BUILD_SAMPLES "Enable building the samples" OFF)
 
@@ -67,6 +72,7 @@ add_library(remotemo
 # https://www.foonathan.net/2018/10/cmake-warnings
 target_include_directories(remotemo PRIVATE
     include/
+    "${PROJECT_BINARY_DIR}/src"
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
 )
