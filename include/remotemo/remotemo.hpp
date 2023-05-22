@@ -40,10 +40,20 @@ public:
   std::string get_input(int max_length);
 
   int print(const std::string& text);
-  int print_at(int column, int line, const std::string& text);
-  int print_at(const SDL_Point& position, const std::string& text)
+  int print_at(int column, int line, const std::string& text)
   {
-    return print_at(position.x, position.y, text);
+    return print_at(SDL_Point {column, line}, text);
+  }
+  int print_at(const SDL_Point& position, const std::string& text);
+  [[nodiscard]] char get_char_at(const SDL_Point& pos) const;
+  [[nodiscard]] char get_char_at(int column, int line) const
+  {
+    return get_char_at(SDL_Point {column, line});
+  }
+  [[nodiscard]] bool is_inverse_at(const SDL_Point& pos) const;
+  [[nodiscard]] bool is_inverse_at(int column, int line) const
+  {
+    return is_inverse_at(SDL_Point {column, line});
   }
   bool set_text_delay(int delay_in_ms);
   bool set_text_speed(double char_per_second);

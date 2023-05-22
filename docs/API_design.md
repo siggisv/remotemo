@@ -749,6 +749,26 @@ Does the same thing as calling first `set_cursor()` and then `print()`.
 - Returns `-2` if some of the text could not get displayed (e.g. reached end
   of line while wrapping was set to `off`).
 
+```C++
+char remotemo::Remotemo::get_char_at(int column, int line);
+char remotemo::Remotemo::get_char_at(const SDL_Point& pos);
+```
+
+- Returns the character that is at the given position (no matter if it was
+  printed directly at that position or if it was printed at some line below
+  and then was moved up by scrolling).
+- If the given position is outside the text area, it returns `'\0'`.
+
+```C++
+bool remotemo::Remotemo::is_inverse_at(int column, int line);
+bool remotemo::Remotemo::is_inverse_at(const SDL_Point& pos);
+```
+- If the character at the given position was printed with the foreground and
+  background colors inversed, it returns `true`.
+- If the character at the given position was printed with the foreground and
+  background colors unchanged, it return `false`.
+- If the given position is outside the text area, it returns `false`.
+
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Text output behaviour
 

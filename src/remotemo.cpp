@@ -164,13 +164,37 @@ int Remotemo::print(const std::string& text)
   return 0;
 }
 
-int Remotemo::print_at(int column, int line, const std::string& text)
+int Remotemo::print_at(const SDL_Point& pos, const std::string& text)
 {
-  auto result = set_cursor(column, line);
+  auto result = set_cursor(pos);
   if (result != 0) {
     return result;
   }
   return print(text);
+}
+
+char Remotemo::get_char_at(const SDL_Point& pos) const
+{
+  auto area_size = m_engine->text_area_size();
+  if (pos.x < 0 || pos.x >= area_size.x ||
+      // NOTE Although ithe cursor is allowed to be one line below the screen,
+      // there is no content there.
+      pos.y < 0 || pos.y > area_size.y) {
+    return 0;
+  }
+  return m_engine->char_at(pos);
+}
+
+bool Remotemo::is_inverse_at(const SDL_Point& pos) const
+{
+  auto area_size = m_engine->text_area_size();
+  if (pos.x < 0 || pos.x >= area_size.x ||
+      // NOTE Although ithe cursor is allowed to be one line below the screen,
+      // there is no content there.
+      pos.y < 0 || pos.y > area_size.y) {
+    return false;
+  }
+  return m_engine->is_inverse_at(pos);
 }
 
 bool Remotemo::set_text_delay(int delay_in_ms)
