@@ -28,14 +28,14 @@ std::string get_line_str(int line_num, const remotemo::Remotemo* t_monitor)
   return line.str();
 }
 
-void compare_to_content(const std::vector<std::string>& required_content,
+void compare_to_content(const std::vector<std::string>& expected_content,
     const remotemo::Remotemo* t)
 {
-  int max_line = required_content.size();
+  int max_line = expected_content.size();
   for (int i = 0; i < max_line; i++) {
     INFO("Checking line " << i);
     std::string line_content = get_line_str(i, t);
-    REQUIRE(line_content == required_content[i]);
+    REQUIRE(line_content == expected_content[i]);
   }
 }
 
@@ -51,15 +51,32 @@ std::deque<bool> get_line_is_inverse(
   return line;
 }
 
-void compare_to_content(const std::vector<std::deque<bool>>& required_inverse,
+void compare_to_content(
+    const std::vector<std::deque<bool>>& expected_is_content_inv,
     const remotemo::Remotemo* t)
 {
-  int max_line = required_inverse.size();
+  int max_line = expected_is_content_inv.size();
   for (int i = 0; i < max_line; i++) {
     INFO("Checking line " << i);
     std::deque<bool> line_inverse = get_line_is_inverse(i, t);
-    REQUIRE(line_inverse == required_inverse[i]);
+    REQUIRE(line_inverse == expected_is_content_inv[i]);
   }
+}
+
+void check_status(const std::vector<std::string>& expected_content,
+    const std::vector<std::deque<bool>>& expected_is_content_inv,
+    const SDL_Point& expected_cursor_pos, const remotemo::Remotemo* t,
+    bool expected_inverse = false, bool expected_scrolling = true,
+    remotemo::Wrapping expected_wrapping = remotemo::Wrapping::character)
+{
+  REQUIRE(t->get_scrolling() == expected_scrolling);
+  REQUIRE(t->get_wrapping() == expected_wrapping);
+  REQUIRE(t->get_inverse() == expected_inverse);
+  compare_to_content(expected_is_content_inv, t);
+  compare_to_content(expected_content, t);
+  auto cursor_pos = t->get_cursor_position();
+  REQUIRE(cursor_pos.x == expected_cursor_pos.x);
+  REQUIRE(cursor_pos.y == expected_cursor_pos.y);
 }
 
 remotemo::Config setup(int columns = 0, int lines = 0)
@@ -385,32 +402,91 @@ TEST_CASE("print() and print_at() functions", "[print]")
   SECTION("Checking starting status")
   {
     std::vector<std::string> empty_console(lines, empty_line);
-    compare_to_content(empty_console, &*t);
     std::vector<std::deque<bool>> normal_console(lines, normal_line);
-    compare_to_content(normal_console, &*t);
-    auto cursor_pos = t->get_cursor_position();
-    REQUIRE(cursor_pos.x == 0);
-    REQUIRE(cursor_pos.y == 0);
-    REQUIRE(t->get_scrolling() == true);
-    REQUIRE(t->get_wrapping() == remotemo::Wrapping::character);
-    REQUIRE(t->get_inverse() == false);
+    check_status(empty_console, normal_console, SDL_Point {0, 0}, &(*t));
   }
 
-  SECTION("Printing some text to starting position")
+  SECTION("Printing text from starting position")
   {
     std::vector<std::string> expected_content(lines, empty_line);
     std::vector<std::deque<bool>> expected_is_inverse(lines, normal_line);
-    int cursor_expected_column = 0;
-    SDL_Point cursor_pos {};
+    SDL_Point expected_cursor_pos {0, 0};
     for (const auto& text : {"Foo!"s, "_bar_"s, "<spam>"s}) {
+      REQUIRE(t->print(text) == 0);
+      expected_content[expected_cursor_pos.y].replace(
+          expected_cursor_pos.x, text.size(), text);
+      expected_cursor_pos.x += text.size();
+      check_status(
+          expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
+    }
+    SECTION("Printing \"\\n\" should move cursor to beginning of next line")
+    {
+      REQUIRE(t->print("\n\n") == 0);
+      expected_cursor_pos.x = 0;
+      expected_cursor_pos.y += 2;
+      check_status(
+          expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
+      for (const auto& text : {"Foo!"s, "_bar_"s, "<spam>"s}) {
+        REQUIRE(t->print(text + "\n") == 0);
+        expected_content[expected_cursor_pos.y].replace(
+            expected_cursor_pos.x, text.size(), text);
+        expected_cursor_pos.x = 0;
+        expected_cursor_pos.y++;
+        check_status(expected_content, expected_is_inverse,
+            expected_cursor_pos, &(*t));
+      }
+    }
+  }
+
+  SECTION("Printing text at given position")
+  {
+    std::vector<std::string> expected_content(lines, empty_line);
+    std::vector<std::deque<bool>> expected_is_inverse(lines, normal_line);
+    SDL_Point expected_cursor_pos {0, 0};
+    for (const auto& text : {"Foo!!!"s, "_bar_"s, "spam"s}) {
+      REQUIRE(t->print_at(5, 2, text) == 0);
+      expected_content[2].replace(5, text.size(), text);
+      expected_cursor_pos.x = 5 + text.size();
+      expected_cursor_pos.y = 2;
+      check_status(
+          expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
+    }
+    SECTION("Printing \"\\b\' (backspace) should delete previous content")
+    {
+      REQUIRE(t->print("\b\b\b") == 0);
+      expected_cursor_pos.x -= 3;
+      expected_content[expected_cursor_pos.y].replace(
+          expected_cursor_pos.x, 3, "   ");
+      check_status(
+          expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
+    }
+  }
+}
+
+TEST_CASE("print() with delay", "[print][pause]")
+{
+  constexpr int columns = 20;
+  constexpr int lines = 5;
+  constexpr SDL_Point a_size {columns, lines};
+  const std::string empty_line(columns, ' ');
+  const std::deque<bool> normal_line(columns, false);
+  auto config = setup(columns, lines);
+  auto t = remotemo::create(config);
+
+  for (int delay_ms : {0, 50, 150, 300}) {
+    t->set_text_delay(delay_ms);
+    for (const auto& text : {"Foo!"s, "_bar_"s, "<spam>"s}) {
+      int expected_duration = delay_ms * text.size();
+      auto start = std::chrono::high_resolution_clock::now();
       t->print(text);
-      expected_content[0].replace(cursor_expected_column, text.size(), text);
-      compare_to_content(expected_content, &*t);
-      compare_to_content(expected_is_inverse, &*t);
-      cursor_pos = t->get_cursor_position();
-      cursor_expected_column += text.size();
-      REQUIRE(cursor_pos.x == cursor_expected_column);
-      REQUIRE(cursor_pos.y == 0);
+      auto end = std::chrono::high_resolution_clock::now();
+      auto elapsed_ms =
+          std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+      UNSCOPED_INFO("print(\"" << text << "\") with delay per char "
+                               << delay_ms << "ms and expected time "
+                               << expected_duration << "ms took "
+                               << elapsed_ms.count() << "ms to run.\n");
+      REQUIRE(abs(elapsed_ms.count() - expected_duration) < 50 * text.size());
     }
   }
 }
