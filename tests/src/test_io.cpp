@@ -1,3 +1,7 @@
+#include <deque>
+#include <vector>
+#include <sstream>
+#include <string>
 #include <cmath>
 #include <chrono>
 
@@ -6,8 +10,58 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 
+using std::string_literals::operator""s;
+
 constexpr int default_columns = 40;
 constexpr int default_lines = 24;
+
+// ----- Helper functions ------
+
+std::string get_line_str(int line_num, const remotemo::Remotemo* t_monitor)
+{
+  std::stringstream line {};
+  int col = 0;
+  char c {};
+  while ((c = t_monitor->get_char_at(col++, line_num)) != 0) {
+    line << c;
+  }
+  return line.str();
+}
+
+void compare_to_content(const std::vector<std::string>& required_content,
+    const remotemo::Remotemo* t)
+{
+  int max_line = required_content.size();
+  for (int i = 0; i < max_line; i++) {
+    INFO("Checking line " << i);
+    std::string line_content = get_line_str(i, t);
+    REQUIRE(line_content == required_content[i]);
+  }
+}
+
+std::deque<bool> get_line_is_inverse(
+    int line_num, const remotemo::Remotemo* t_monitor)
+{
+  std::deque<bool> line {};
+  int col = 0;
+  while (t_monitor->get_char_at(col, line_num) != 0) {
+    line.push_back(t_monitor->is_inverse_at(col, line_num));
+    col++;
+  }
+  return line;
+}
+
+void compare_to_content(const std::vector<std::deque<bool>>& required_inverse,
+    const remotemo::Remotemo* t)
+{
+  int max_line = required_inverse.size();
+  for (int i = 0; i < max_line; i++) {
+    INFO("Checking line " << i);
+    std::deque<bool> line_inverse = get_line_is_inverse(i, t);
+    REQUIRE(line_inverse == required_inverse[i]);
+  }
+}
+
 remotemo::Config setup(int columns = 0, int lines = 0)
 {
   static char env_string[] = "SDL_VIDEODRIVER=dummy";
@@ -29,14 +83,16 @@ remotemo::Config setup(int columns = 0, int lines = 0)
   return config;
 }
 
-struct Cursor_param {
-  SDL_Point param;
-  int result;
-  SDL_Point pos;
-};
+// ----- Tests ------
 
 TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 {
+  struct Cursor_param {
+    SDL_Point param;
+    int result;
+    SDL_Point pos;
+  };
+
   const std::vector<SDL_Point> area_sizes {{
       {default_columns, default_lines}, // i.e. use default
       {20, 12},                         // default / 2
@@ -309,8 +365,52 @@ TEST_CASE("pause(int)", "[pause]")
       auto elapsed_ms =
           std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
       UNSCOPED_INFO("pause(" << ok_duration << ") took " << elapsed_ms.count()
-                             << " to run.\n");
+                             << "ms to run.\n");
       REQUIRE(abs(elapsed_ms.count() - ok_duration) < 15);
+    }
+  }
+}
+
+TEST_CASE("print() and print_at() functions", "[print]")
+{
+  constexpr int columns = 20;
+  constexpr int lines = 5;
+  constexpr SDL_Point a_size {columns, lines};
+  const std::string empty_line(columns, ' ');
+  const std::deque<bool> normal_line(columns, false);
+  auto config = setup(columns, lines);
+  auto t = remotemo::create(config);
+  t->set_text_delay(0);
+
+  SECTION("Checking starting status")
+  {
+    std::vector<std::string> empty_console(lines, empty_line);
+    compare_to_content(empty_console, &*t);
+    std::vector<std::deque<bool>> normal_console(lines, normal_line);
+    compare_to_content(normal_console, &*t);
+    auto cursor_pos = t->get_cursor_position();
+    REQUIRE(cursor_pos.x == 0);
+    REQUIRE(cursor_pos.y == 0);
+    REQUIRE(t->get_scrolling() == true);
+    REQUIRE(t->get_wrapping() == remotemo::Wrapping::character);
+    REQUIRE(t->get_inverse() == false);
+  }
+
+  SECTION("Printing some text to starting position")
+  {
+    std::vector<std::string> expected_content(lines, empty_line);
+    std::vector<std::deque<bool>> expected_is_inverse(lines, normal_line);
+    int cursor_expected_column = 0;
+    SDL_Point cursor_pos {};
+    for (const auto& text : {"Foo!"s, "_bar_"s, "<spam>"s}) {
+      t->print(text);
+      expected_content[0].replace(cursor_expected_column, text.size(), text);
+      compare_to_content(expected_content, &*t);
+      compare_to_content(expected_is_inverse, &*t);
+      cursor_pos = t->get_cursor_position();
+      cursor_expected_column += text.size();
+      REQUIRE(cursor_pos.x == cursor_expected_column);
+      REQUIRE(cursor_pos.y == 0);
     }
   }
 }
