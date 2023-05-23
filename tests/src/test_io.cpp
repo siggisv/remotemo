@@ -465,6 +465,7 @@ TEST_CASE("print() and print_at() functions", "[print]")
 
 TEST_CASE("print() with delay", "[print][pause]")
 {
+  constexpr int allowed_error = 50;
   constexpr int columns = 20;
   constexpr int lines = 5;
   constexpr SDL_Point a_size {columns, lines};
@@ -473,7 +474,8 @@ TEST_CASE("print() with delay", "[print][pause]")
   auto config = setup(columns, lines);
   auto t = remotemo::create(config);
 
-  for (int delay_ms : {0, 50, 150, 300}) {
+  for (int delay_ms : {0, 30, 60, 100, 200}) {
+    t->set_cursor(0, 0);
     t->set_text_delay(delay_ms);
     for (const auto& text : {"Foo!"s, "_bar_"s, "<spam>"s}) {
       int expected_duration = delay_ms * text.size();
@@ -486,7 +488,8 @@ TEST_CASE("print() with delay", "[print][pause]")
                                << delay_ms << "ms and expected time "
                                << expected_duration << "ms took "
                                << elapsed_ms.count() << "ms to run.\n");
-      REQUIRE(abs(elapsed_ms.count() - expected_duration) < 50 * text.size());
+      REQUIRE(abs(elapsed_ms.count() - expected_duration) / text.size() <
+              allowed_error);
     }
   }
 }
