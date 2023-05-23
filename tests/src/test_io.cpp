@@ -28,7 +28,7 @@ std::string get_line_str(int line_num, const remotemo::Remotemo* t_monitor)
   return line.str();
 }
 
-void compare_to_content(const std::vector<std::string>& expected_content,
+void compare_to_content(const std::deque<std::string>& expected_content,
     const remotemo::Remotemo* t)
 {
   int max_line = expected_content.size();
@@ -52,7 +52,7 @@ std::deque<bool> get_line_is_inverse(
 }
 
 void compare_to_content(
-    const std::vector<std::deque<bool>>& expected_is_content_inv,
+    const std::deque<std::deque<bool>>& expected_is_content_inv,
     const remotemo::Remotemo* t)
 {
   int max_line = expected_is_content_inv.size();
@@ -63,8 +63,8 @@ void compare_to_content(
   }
 }
 
-void check_status(const std::vector<std::string>& expected_content,
-    const std::vector<std::deque<bool>>& expected_is_content_inv,
+void check_status(const std::deque<std::string>& expected_content,
+    const std::deque<std::deque<bool>>& expected_is_content_inv,
     const SDL_Point& expected_cursor_pos, const remotemo::Remotemo* t,
     bool expected_inverse = false, bool expected_scrolling = true,
     remotemo::Wrapping expected_wrapping = remotemo::Wrapping::character)
@@ -401,15 +401,15 @@ TEST_CASE("print() and print_at() functions", "[print]")
 
   SECTION("Checking starting status")
   {
-    std::vector<std::string> empty_console(lines, empty_line);
-    std::vector<std::deque<bool>> normal_console(lines, normal_line);
+    std::deque<std::string> empty_console(lines, empty_line);
+    std::deque<std::deque<bool>> normal_console(lines, normal_line);
     check_status(empty_console, normal_console, SDL_Point {0, 0}, &(*t));
   }
 
   SECTION("Printing text from starting position")
   {
-    std::vector<std::string> expected_content(lines, empty_line);
-    std::vector<std::deque<bool>> expected_is_inverse(lines, normal_line);
+    std::deque<std::string> expected_content(lines, empty_line);
+    std::deque<std::deque<bool>> expected_is_inverse(lines, normal_line);
     SDL_Point expected_cursor_pos {0, 0};
     for (const auto& text : {"Foo!"s, "_bar_"s, "<spam>"s}) {
       REQUIRE(t->print(text) == 0);
@@ -440,8 +440,8 @@ TEST_CASE("print() and print_at() functions", "[print]")
 
   SECTION("Printing text at given position")
   {
-    std::vector<std::string> expected_content(lines, empty_line);
-    std::vector<std::deque<bool>> expected_is_inverse(lines, normal_line);
+    std::deque<std::string> expected_content(lines, empty_line);
+    std::deque<std::deque<bool>> expected_is_inverse(lines, normal_line);
     SDL_Point expected_cursor_pos {0, 0};
     for (const auto& text : {"Foo!!!"s, "_bar_"s, "spam"s}) {
       REQUIRE(t->print_at(5, 2, text) == 0);
@@ -490,6 +490,50 @@ TEST_CASE("print() with delay", "[print][pause]")
                                << elapsed_ms.count() << "ms to run.\n");
       REQUIRE(abs(elapsed_ms.count() - expected_duration) / text.size() <
               allowed_error);
+    }
+  }
+}
+
+TEST_CASE("print() - scroll set to true", "[print][scroll]")
+{
+  constexpr int columns = 20;
+  constexpr int lines = 5;
+  constexpr SDL_Point a_size {columns, lines};
+  const std::string empty_line(columns, ' ');
+  const std::deque<bool> normal_line(columns, false);
+  auto config = setup(columns, lines);
+  auto t = remotemo::create(config);
+  t->set_text_delay(0);
+
+  SECTION("Printing text from starting position")
+  {
+    std::deque<std::string> expected_content(lines, empty_line);
+    std::deque<std::deque<bool>> expected_is_inverse(lines, normal_line);
+    SDL_Point expected_cursor_pos {0, 0};
+
+    // Fill screen:
+    for (const auto& text :
+        {"Foo!"s, "_bar_"s, "<spam>"s, "remoTemo"s, "Bottom"s}) {
+      REQUIRE(t->print(text + "\n") == 0);
+      expected_content[expected_cursor_pos.y].replace(
+          expected_cursor_pos.x, text.size(), text);
+      expected_cursor_pos.x = 0;
+      expected_cursor_pos.y++;
+    }
+    check_status(
+        expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
+
+    // Start scrolling:
+    for (const auto& text : {"Start"s, "scrolling"s, "now"s, "Bottom"s}) {
+      REQUIRE(t->print(text + "\n") == 0);
+      expected_content.pop_front();
+      expected_content.push_back(empty_line);
+      expected_content[lines - 1].replace(
+          expected_cursor_pos.x, text.size(), text);
+      expected_cursor_pos.x = 0;
+      expected_cursor_pos.y = lines;
+      check_status(
+          expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
     }
   }
 }
