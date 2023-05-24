@@ -6,6 +6,7 @@
 #include <chrono>
 
 #include "remotemo/remotemo.hpp"
+#include "../../src/engine.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
@@ -17,64 +18,57 @@ constexpr int default_lines = 24;
 
 // ----- Helper functions ------
 
-std::string get_line_str(int line_num, const remotemo::Remotemo* t_monitor)
+std::string get_line_str(int line_num, const remotemo::Engine* engine)
 {
   std::stringstream line {};
-  int col = 0;
-  char c {};
-  while ((c = t_monitor->get_char_at(col++, line_num)) != 0) {
-    line << c;
+  auto area_size = engine->text_area_size();
+  for (SDL_Point pos {0, line_num}; pos.x < area_size.x; pos.x++) {
+    line << engine->char_at(pos);
   }
   return line.str();
 }
 
 void compare_to_content(const std::deque<std::string>& expected_content,
-    const remotemo::Remotemo* t)
+    const remotemo::Engine* engine)
 {
   int max_line = expected_content.size();
   for (int i = 0; i < max_line; i++) {
     INFO("Checking line " << i);
-    std::string line_content = get_line_str(i, t);
+    std::string line_content = get_line_str(i, engine);
     REQUIRE(line_content == expected_content[i]);
   }
 }
 
 std::deque<bool> get_line_is_inverse(
-    int line_num, const remotemo::Remotemo* t_monitor)
+    int line_num, const remotemo::Engine* engine)
 {
   std::deque<bool> line {};
-  int col = 0;
-  while (t_monitor->get_char_at(col, line_num) != 0) {
-    line.push_back(t_monitor->is_inverse_at(col, line_num));
-    col++;
+  auto area_size = engine->text_area_size();
+  for (SDL_Point pos {0, line_num}; pos.x < area_size.x; pos.x++) {
+    line.push_back(engine->is_inverse_at(pos));
   }
   return line;
 }
 
 void compare_to_content(
     const std::deque<std::deque<bool>>& expected_is_content_inv,
-    const remotemo::Remotemo* t)
+    const remotemo::Engine* engine)
 {
   int max_line = expected_is_content_inv.size();
   for (int i = 0; i < max_line; i++) {
     INFO("Checking line " << i);
-    std::deque<bool> line_inverse = get_line_is_inverse(i, t);
+    std::deque<bool> line_inverse = get_line_is_inverse(i, engine);
     REQUIRE(line_inverse == expected_is_content_inv[i]);
   }
 }
 
 void check_status(const std::deque<std::string>& expected_content,
     const std::deque<std::deque<bool>>& expected_is_content_inv,
-    const SDL_Point& expected_cursor_pos, const remotemo::Remotemo* t,
-    bool expected_inverse = false, bool expected_scrolling = true,
-    remotemo::Wrapping expected_wrapping = remotemo::Wrapping::character)
+    const SDL_Point& expected_cursor_pos, const remotemo::Engine* engine)
 {
-  REQUIRE(t->get_scrolling() == expected_scrolling);
-  REQUIRE(t->get_wrapping() == expected_wrapping);
-  REQUIRE(t->get_inverse() == expected_inverse);
-  compare_to_content(expected_is_content_inv, t);
-  compare_to_content(expected_content, t);
-  auto cursor_pos = t->get_cursor_position();
+  compare_to_content(expected_is_content_inv, engine);
+  compare_to_content(expected_content, engine);
+  auto cursor_pos = engine->cursor_pos();
   REQUIRE(cursor_pos.x == expected_cursor_pos.x);
   REQUIRE(cursor_pos.y == expected_cursor_pos.y);
 }
@@ -392,18 +386,22 @@ TEST_CASE("print() and print_at() functions", "[print]")
 {
   constexpr int columns = 20;
   constexpr int lines = 5;
-  constexpr SDL_Point a_size {columns, lines};
   const std::string empty_line(columns, ' ');
   const std::deque<bool> normal_line(columns, false);
   auto config = setup(columns, lines);
-  auto t = remotemo::create(config);
-  t->set_text_delay(0);
+  auto eng = remotemo::Engine::create(config);
+  auto* engine = eng.get();
+  remotemo::Remotemo t {std::move(eng), config};
+  t.set_text_delay(0);
 
   SECTION("Checking starting status")
   {
     std::deque<std::string> empty_console(lines, empty_line);
     std::deque<std::deque<bool>> normal_console(lines, normal_line);
-    check_status(empty_console, normal_console, SDL_Point {0, 0}, &(*t));
+    check_status(empty_console, normal_console, SDL_Point {0, 0}, engine);
+    REQUIRE(t.get_scrolling() == true);
+    REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
+    REQUIRE(t.get_inverse() == false);
   }
 
   SECTION("Printing text from starting position")
@@ -412,28 +410,28 @@ TEST_CASE("print() and print_at() functions", "[print]")
     std::deque<std::deque<bool>> expected_is_inverse(lines, normal_line);
     SDL_Point expected_cursor_pos {0, 0};
     for (const auto& text : {"Foo!"s, "_bar_"s, "<spam>"s}) {
-      REQUIRE(t->print(text) == 0);
+      REQUIRE(t.print(text) == 0);
       expected_content[expected_cursor_pos.y].replace(
           expected_cursor_pos.x, text.size(), text);
       expected_cursor_pos.x += text.size();
       check_status(
-          expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
+          expected_content, expected_is_inverse, expected_cursor_pos, engine);
     }
     SECTION("Printing \"\\n\" should move cursor to beginning of next line")
     {
-      REQUIRE(t->print("\n\n") == 0);
+      REQUIRE(t.print("\n\n") == 0);
       expected_cursor_pos.x = 0;
       expected_cursor_pos.y += 2;
       check_status(
-          expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
+          expected_content, expected_is_inverse, expected_cursor_pos, engine);
       for (const auto& text : {"Foo!"s, "_bar_"s, "<spam>"s}) {
-        REQUIRE(t->print(text + "\n") == 0);
+        REQUIRE(t.print(text + "\n") == 0);
         expected_content[expected_cursor_pos.y].replace(
             expected_cursor_pos.x, text.size(), text);
         expected_cursor_pos.x = 0;
         expected_cursor_pos.y++;
         check_status(expected_content, expected_is_inverse,
-            expected_cursor_pos, &(*t));
+            expected_cursor_pos, engine);
       }
     }
   }
@@ -444,21 +442,21 @@ TEST_CASE("print() and print_at() functions", "[print]")
     std::deque<std::deque<bool>> expected_is_inverse(lines, normal_line);
     SDL_Point expected_cursor_pos {0, 0};
     for (const auto& text : {"Foo!!!"s, "_bar_"s, "spam"s}) {
-      REQUIRE(t->print_at(5, 2, text) == 0);
+      REQUIRE(t.print_at(5, 2, text) == 0);
       expected_content[2].replace(5, text.size(), text);
       expected_cursor_pos.x = 5 + text.size();
       expected_cursor_pos.y = 2;
       check_status(
-          expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
+          expected_content, expected_is_inverse, expected_cursor_pos, engine);
     }
     SECTION("Printing \"\\b\' (backspace) should delete previous content")
     {
-      REQUIRE(t->print("\b\b\b") == 0);
+      REQUIRE(t.print("\b\b\b") == 0);
       expected_cursor_pos.x -= 3;
       expected_content[expected_cursor_pos.y].replace(
           expected_cursor_pos.x, 3, "   ");
       check_status(
-          expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
+          expected_content, expected_is_inverse, expected_cursor_pos, engine);
     }
   }
 }
@@ -466,13 +464,7 @@ TEST_CASE("print() and print_at() functions", "[print]")
 TEST_CASE("print() with delay", "[print][pause]")
 {
   constexpr int allowed_error = 50;
-  constexpr int columns = 20;
-  constexpr int lines = 5;
-  constexpr SDL_Point a_size {columns, lines};
-  const std::string empty_line(columns, ' ');
-  const std::deque<bool> normal_line(columns, false);
-  auto config = setup(columns, lines);
-  auto t = remotemo::create(config);
+  auto t = remotemo::create(setup());
 
   for (int delay_ms : {0, 30, 60, 100, 200}) {
     t->set_cursor(0, 0);
@@ -498,12 +490,14 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
 {
   constexpr int columns = 20;
   constexpr int lines = 5;
-  constexpr SDL_Point a_size {columns, lines};
   const std::string empty_line(columns, ' ');
   const std::deque<bool> normal_line(columns, false);
   auto config = setup(columns, lines);
-  auto t = remotemo::create(config);
-  t->set_text_delay(0);
+  auto eng = remotemo::Engine::create(config);
+  auto* engine = eng.get();
+  remotemo::Remotemo t {std::move(eng), config};
+  t.set_text_delay(0);
+  REQUIRE(t.get_scrolling() == true);
 
   SECTION("Printing text from starting position")
   {
@@ -514,18 +508,18 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
     // Fill screen:
     for (const auto& text :
         {"Foo!"s, "_bar_"s, "<spam>"s, "remoTemo"s, "Bottom"s}) {
-      REQUIRE(t->print(text + "\n") == 0);
+      REQUIRE(t.print(text + "\n") == 0);
       expected_content[expected_cursor_pos.y].replace(
           expected_cursor_pos.x, text.size(), text);
       expected_cursor_pos.x = 0;
       expected_cursor_pos.y++;
     }
     check_status(
-        expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
+        expected_content, expected_is_inverse, expected_cursor_pos, engine);
 
     // Start scrolling:
     for (const auto& text : {"Start"s, "scrolling"s, "now"s, "Bottom"s}) {
-      REQUIRE(t->print(text + "\n") == 0);
+      REQUIRE(t.print(text + "\n") == 0);
       expected_content.pop_front();
       expected_content.push_back(empty_line);
       expected_content[lines - 1].replace(
@@ -533,7 +527,7 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
       expected_cursor_pos.x = 0;
       expected_cursor_pos.y = lines;
       check_status(
-          expected_content, expected_is_inverse, expected_cursor_pos, &(*t));
+          expected_content, expected_is_inverse, expected_cursor_pos, engine);
     }
   }
 }
