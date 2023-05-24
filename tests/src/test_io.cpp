@@ -530,4 +530,23 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
           expected_content, expected_is_inverse, expected_cursor_pos, engine);
     }
   }
+
+  SECTION("print_at() one line below bottom should scroll up")
+  {
+    std::deque<std::string> expected_content(lines, empty_line);
+    std::deque<std::deque<bool>> expected_is_inverse(lines, normal_line);
+    SDL_Point expected_cursor_pos {0, 0};
+    const SDL_Point print_to_pos {2, lines};
+
+    for (const auto& text : {"Start"s, "scrolling"s, "now"s, "Bottom"s}) {
+      REQUIRE(t.print_at(print_to_pos, text) == 0);
+      expected_content.pop_front();
+      expected_content.push_back(empty_line);
+      expected_content[lines - 1].replace(print_to_pos.x, text.size(), text);
+      expected_cursor_pos.x = print_to_pos.x + text.size();
+      expected_cursor_pos.y = lines - 1;
+      check_status(
+          expected_content, expected_is_inverse, expected_cursor_pos, engine);
+    }
+  }
 }
