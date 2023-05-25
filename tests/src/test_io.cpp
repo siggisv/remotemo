@@ -519,8 +519,8 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
         expected_content, expected_is_inverse, expected_cursor_pos, engine);
 
     // Start scrolling:
-    for (const auto& text : {"Start scrolling"s, "next 2 lines empty"s,
-        ""s, ""s, "New bottom line"s}) {
+    for (const auto& text : {"Start scrolling"s, "next 2 lines empty"s, ""s,
+             ""s, "New bottom line"s}) {
       REQUIRE(t.print(text + "\n") == 0);
       expected_content.pop_front();
       expected_content.push_back(empty_line);
@@ -540,8 +540,8 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
     SDL_Point expected_cursor_pos {0, 0};
     const SDL_Point print_to_pos {2, lines};
 
-    for (const auto& text : {"Start scrolling"s, "no lines empty"s,
-        "---"s, " "s, "New bottom line"s}) {
+    for (const auto& text : {"Start scrolling"s, "no lines empty"s, "---"s,
+             " "s, "New bottom line"s}) {
       REQUIRE(t.print_at(print_to_pos, text) == 0);
       expected_content.pop_front();
       expected_content.push_back(empty_line);
@@ -557,8 +557,8 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
         REQUIRE(t.print_at(print_to_pos, text) == 0);
         expected_cursor_pos.x = print_to_pos.x;
         expected_cursor_pos.y = print_to_pos.y;
-        check_status(
-            expected_content, expected_is_inverse, expected_cursor_pos, engine);
+        check_status(expected_content, expected_is_inverse,
+            expected_cursor_pos, engine);
       }
     }
   }
@@ -583,18 +583,17 @@ TEST_CASE("print() - wrap set to character", "[print][wrap]")
     std::deque<std::deque<bool>> expected_is_inverse(lines, normal_line);
     SDL_Point expected_cursor_pos {0, 0};
 
-    for (const auto& text : {
-        "This line is a bit long for a screen not wider than this"s,
-        "-- more long text that should wrap."s}) {
+    for (const auto& text :
+        {"This line is a bit long for a screen not wider than this"s,
+            "-- more long text that should wrap."s}) {
       REQUIRE(t.print(text) == 0);
       int pos_in_text = 0;
       while (pos_in_text < text.size()) {
         int left_of_line = columns - expected_cursor_pos.x;
-        int length_to_copy =
-          std::min(static_cast<int>(text.size() - pos_in_text), left_of_line);
-        expected_content[expected_cursor_pos.y].replace(
-            expected_cursor_pos.x, length_to_copy, text,
-            pos_in_text, length_to_copy);
+        int length_to_copy = std::min(
+            static_cast<int>(text.size() - pos_in_text), left_of_line);
+        expected_content[expected_cursor_pos.y].replace(expected_cursor_pos.x,
+            length_to_copy, text, pos_in_text, length_to_copy);
         pos_in_text += length_to_copy;
         expected_cursor_pos.x += length_to_copy;
         if (expected_cursor_pos.x == columns) {
@@ -628,10 +627,10 @@ TEST_CASE("print() - scroll is on and wrap set to character",
     std::deque<std::deque<bool>> expected_is_inverse(lines, normal_line);
     SDL_Point expected_cursor_pos {0, 0};
 
-    for (const auto& text : {
-        "This line is a bit long for a screen not wider than this"s,
-        " ... more text that now should wrap AND scroll......"s,
-        "... scroll and wrap and scroll, etc. ...."s}) {
+    for (const auto& text :
+        {"This line is a bit long for a screen not wider than this"s,
+            " ... more text that now should wrap AND scroll......"s,
+            "... scroll and wrap and scroll, etc. ...."s}) {
       REQUIRE(t.print(text) == 0);
       int pos_in_text = 0;
       while (pos_in_text < text.size()) {
@@ -641,11 +640,10 @@ TEST_CASE("print() - scroll is on and wrap set to character",
           expected_content.push_back(empty_line);
           expected_cursor_pos.y = lines - 1;
         }
-        int length_to_copy =
-          std::min(static_cast<int>(text.size() - pos_in_text), left_of_line);
-        expected_content[expected_cursor_pos.y].replace(
-            expected_cursor_pos.x, length_to_copy, text,
-            pos_in_text, length_to_copy);
+        int length_to_copy = std::min(
+            static_cast<int>(text.size() - pos_in_text), left_of_line);
+        expected_content[expected_cursor_pos.y].replace(expected_cursor_pos.x,
+            length_to_copy, text, pos_in_text, length_to_copy);
         pos_in_text += length_to_copy;
         expected_cursor_pos.x += length_to_copy;
         if (expected_cursor_pos.x == columns) {
