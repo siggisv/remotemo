@@ -25,7 +25,7 @@ struct Console_content {
         is_inv(std::deque<std::deque<bool>>(lines, def_is_line_inv))
   {}
 
-  std::deque<std::string> text{};
+  std::deque<std::string> text {};
   std::deque<std::deque<bool>> is_inv {};
 };
 // ----- Helper functions ------
@@ -449,8 +449,7 @@ TEST_CASE("print() and print_at() functions", "[print]")
       expected_content.text[2].replace(5, text.size(), text);
       expected_cursor_pos.x = 5 + text.size();
       expected_cursor_pos.y = 2;
-      check_status(
-          expected_content, expected_cursor_pos, engine);
+      check_status(expected_content, expected_cursor_pos, engine);
     }
     SECTION("Printing \"\\b\' (backspace) should delete previous content")
     {
@@ -515,8 +514,7 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
       expected_cursor_pos.x = 0;
       expected_cursor_pos.y++;
     }
-    check_status(
-        expected_content, expected_cursor_pos, engine);
+    check_status(expected_content, expected_cursor_pos, engine);
 
     // Start scrolling:
     for (const auto& text : {"Start scrolling"s, "next 2 lines empty"s, ""s,
@@ -528,8 +526,7 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
           expected_cursor_pos.x, text.size(), text);
       expected_cursor_pos.x = 0;
       expected_cursor_pos.y = lines;
-      check_status(
-          expected_content, expected_cursor_pos, engine);
+      check_status(expected_content, expected_cursor_pos, engine);
     }
   }
 
@@ -589,8 +586,8 @@ TEST_CASE("print() - wrap set to character", "[print][wrap]")
         int length_to_copy = std::min(
             static_cast<int>(text.size() - pos_in_text), left_of_line);
         expected_content.text[expected_cursor_pos.y].replace(
-            expected_cursor_pos.x,
-            length_to_copy, text, pos_in_text, length_to_copy);
+            expected_cursor_pos.x, length_to_copy, text, pos_in_text,
+            length_to_copy);
         pos_in_text += length_to_copy;
         expected_cursor_pos.x += length_to_copy;
         if (expected_cursor_pos.x == columns) {
@@ -638,8 +635,8 @@ TEST_CASE("print() - scroll is on and wrap set to character",
         int length_to_copy = std::min(
             static_cast<int>(text.size() - pos_in_text), left_of_line);
         expected_content.text[expected_cursor_pos.y].replace(
-            expected_cursor_pos.x,
-            length_to_copy, text, pos_in_text, length_to_copy);
+            expected_cursor_pos.x, length_to_copy, text, pos_in_text,
+            length_to_copy);
         pos_in_text += length_to_copy;
         expected_cursor_pos.x += length_to_copy;
         if (expected_cursor_pos.x == columns) {
@@ -663,7 +660,7 @@ TEST_CASE("set_inverse() should affect the 'inverse' setting", "[inverse]")
 
   SECTION("Try setting off and on again :P")
   {
-    for (auto& inv : {false, true, true, false, false, true}) {
+    for (auto inv : {false, true, true, false, false, true}) {
       t->set_inverse(inv);
       REQUIRE(t->get_inverse() == inv);
     }
@@ -711,7 +708,7 @@ TEST_CASE("The 'inverse' setting should affect printing", "[print][inverse]")
 
     SECTION("Just print(\"\\n\") should not change the content")
     {
-      for (auto& text : {"\n"s, "\n\n"s}) {
+      for (const auto& text : {"\n"s, "\n\n"s}) {
         t.set_cursor(0, 0);
         t.print(text);
         expected_cursor_pos.x = 0;
@@ -760,7 +757,7 @@ TEST_CASE("Inversed content should scroll the same way as the text",
   t.set_inverse(true);
 
   for (const auto& text : {"   "s, "Hello"s, "- there -"s, "          "s,
-      "start"s, "....scrolling!"s, ""s, ""s, "ok"s}) {
+           "start"s, "....scrolling!"s, ""s, ""s, "ok"s}) {
     int col = (columns - text.size()) / 2;
     int& line = expected_cursor_pos.y;
     t.set_cursor_column(col);
