@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <deque>
 #include <vector>
 #include <sstream>
@@ -559,6 +560,101 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
         check_status(
             expected_content, expected_is_inverse, expected_cursor_pos, engine);
       }
+    }
+  }
+}
+
+TEST_CASE("print() - wrap set to character", "[print][wrap]")
+{
+  constexpr int columns = 20;
+  constexpr int lines = 5;
+  const std::string empty_line(columns, ' ');
+  const std::deque<bool> normal_line(columns, false);
+  auto config = setup(columns, lines);
+  auto eng = remotemo::Engine::create(config);
+  auto* engine = eng.get();
+  remotemo::Remotemo t {std::move(eng), config};
+  t.set_text_delay(0);
+  REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
+
+  SECTION("Printing text from starting position")
+  {
+    std::deque<std::string> expected_content(lines, empty_line);
+    std::deque<std::deque<bool>> expected_is_inverse(lines, normal_line);
+    SDL_Point expected_cursor_pos {0, 0};
+
+    for (const auto& text : {
+        "This line is a bit long for a screen not wider than this"s,
+        "-- more long text that should wrap."s}) {
+      REQUIRE(t.print(text) == 0);
+      int pos_in_text = 0;
+      while (pos_in_text < text.size()) {
+        int left_of_line = columns - expected_cursor_pos.x;
+        int length_to_copy =
+          std::min(static_cast<int>(text.size() - pos_in_text), left_of_line);
+        expected_content[expected_cursor_pos.y].replace(
+            expected_cursor_pos.x, length_to_copy, text,
+            pos_in_text, length_to_copy);
+        pos_in_text += length_to_copy;
+        expected_cursor_pos.x += length_to_copy;
+        if (expected_cursor_pos.x == columns) {
+          expected_cursor_pos.x = 0;
+          expected_cursor_pos.y++;
+        }
+      }
+      check_status(
+          expected_content, expected_is_inverse, expected_cursor_pos, engine);
+    }
+  }
+}
+
+TEST_CASE("print() - scroll is on and wrap set to character",
+    "[print][scroll][wrap]")
+{
+  constexpr int columns = 12;
+  constexpr int lines = 5;
+  const std::string empty_line(columns, ' ');
+  const std::deque<bool> normal_line(columns, false);
+  auto config = setup(columns, lines);
+  auto eng = remotemo::Engine::create(config);
+  auto* engine = eng.get();
+  remotemo::Remotemo t {std::move(eng), config};
+  t.set_text_delay(0);
+  REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
+
+  SECTION("Printing text from starting position")
+  {
+    std::deque<std::string> expected_content(lines, empty_line);
+    std::deque<std::deque<bool>> expected_is_inverse(lines, normal_line);
+    SDL_Point expected_cursor_pos {0, 0};
+
+    for (const auto& text : {
+        "This line is a bit long for a screen not wider than this"s,
+        " ... more text that now should wrap AND scroll......"s,
+        "... scroll and wrap and scroll, etc. ...."s}) {
+      REQUIRE(t.print(text) == 0);
+      int pos_in_text = 0;
+      while (pos_in_text < text.size()) {
+        int left_of_line = columns - expected_cursor_pos.x;
+        if (expected_cursor_pos.y == lines) {
+          expected_content.pop_front();
+          expected_content.push_back(empty_line);
+          expected_cursor_pos.y = lines - 1;
+        }
+        int length_to_copy =
+          std::min(static_cast<int>(text.size() - pos_in_text), left_of_line);
+        expected_content[expected_cursor_pos.y].replace(
+            expected_cursor_pos.x, length_to_copy, text,
+            pos_in_text, length_to_copy);
+        pos_in_text += length_to_copy;
+        expected_cursor_pos.x += length_to_copy;
+        if (expected_cursor_pos.x == columns) {
+          expected_cursor_pos.x = 0;
+          expected_cursor_pos.y++;
+        }
+      }
+      check_status(
+          expected_content, expected_is_inverse, expected_cursor_pos, engine);
     }
   }
 }
