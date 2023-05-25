@@ -656,3 +656,77 @@ TEST_CASE("print() - scroll is on and wrap set to character",
     }
   }
 }
+
+TEST_CASE("set_inverse() should affect the 'inverse' setting", "[inverse]")
+{
+  auto t = remotemo::create(setup());
+
+  SECTION("Default for inverse should be 'false'")
+  {
+    REQUIRE(t->get_inverse() == false);
+  }
+
+  SECTION("Try setting off and on again :P")
+  {
+    for (auto& inv : {false, true, true, false, false, true}) {
+      t->set_inverse(inv);
+      REQUIRE(t->get_inverse() == inv);
+    }
+  }
+}
+
+TEST_CASE("The 'inverse' setting should affect printing", "[print][inverse]")
+{
+  constexpr int columns = 20;
+  constexpr int lines = 4;
+  const std::string empty_line(columns, ' ');
+  const std::deque<bool> normal_line(columns, false);
+  auto config = setup(columns, lines);
+  auto eng = remotemo::Engine::create(config);
+  auto* engine = eng.get();
+  remotemo::Remotemo t {std::move(eng), config};
+  t.set_text_delay(0);
+  std::deque<std::string> expected_content(lines, empty_line);
+  std::deque<std::deque<bool>> expected_is_inverse(lines, normal_line);
+  SDL_Point expected_cursor_pos {0, 0};
+
+  SECTION("Just calling set_inverse() should not change screen content")
+  {
+    for (auto& inv : {false, true, true, false}) {
+      t.set_inverse(inv);
+      check_status(
+          expected_content, expected_is_inverse, expected_cursor_pos, engine);
+    }
+  }
+
+  SECTION("print() with inverse set to 'true'")
+  {
+    t.set_inverse(true);
+
+    for (auto& text : {"   "s, "Hello"s, "- there -"s}) {
+      int col = (20 - text.size()) / 2;
+      int& line = expected_cursor_pos.y;
+      t.set_cursor_column(col);
+      t.print(text + "\n");
+      expected_content[line].replace(col, text.size(), text);
+      for (int i = col; i < col + text.size(); i++) {
+        expected_is_inverse[line][i] = true;
+      }
+      expected_cursor_pos.y++;
+      check_status(
+          expected_content, expected_is_inverse, expected_cursor_pos, engine);
+    }
+
+    SECTION("Just print(\"\\n\") should not change the content")
+    {
+      for (auto& text : {"\n"s, "\n\n"s}) {
+        t.set_cursor(0, 0);
+        t.print(text);
+        expected_cursor_pos.x = 0;
+        expected_cursor_pos.y = text.size();
+        check_status(expected_content, expected_is_inverse,
+            expected_cursor_pos, engine);
+      }
+    }
+  }
+}
