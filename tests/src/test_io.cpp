@@ -719,5 +719,64 @@ TEST_CASE("The 'inverse' setting should affect printing", "[print][inverse]")
         check_status(expected_content, expected_cursor_pos, engine);
       }
     }
+
+    SECTION("print() over inversed after setting 'inverse' back to false")
+    {
+      t.set_cursor(0, 0);
+      expected_cursor_pos.x = 0;
+      expected_cursor_pos.y = 0;
+      t.set_inverse(false);
+      for (const auto& text : {" "s, "Allo"s, "====="s}) {
+        int col = (columns - text.size()) / 2;
+        int& line = expected_cursor_pos.y;
+        t.set_cursor_column(col);
+        t.print(text + "\n");
+        expected_content.text[line].replace(col, text.size(), text);
+        for (int i = col; i < col + text.size(); i++) {
+          expected_content.is_inv[line][i] = false;
+        }
+        expected_cursor_pos.y++;
+        check_status(expected_content, expected_cursor_pos, engine);
+      }
+    }
+  }
+}
+
+TEST_CASE("Inversed content should scroll the same way as the text",
+    "[print][inverse][scroll]")
+{
+  constexpr int columns = 20;
+  constexpr int lines = 4;
+  const std::string empty_line(columns, ' ');
+  const std::deque<bool> normal_line(columns, false);
+  auto config = setup(columns, lines);
+  auto eng = remotemo::Engine::create(config);
+  auto* engine = eng.get();
+  remotemo::Remotemo t {std::move(eng), config};
+  t.set_text_delay(0);
+  Console_content expected_content {lines, empty_line, normal_line};
+  SDL_Point expected_cursor_pos {0, 0};
+
+  t.set_inverse(true);
+
+  for (const auto& text : {"   "s, "Hello"s, "- there -"s, "          "s,
+      "start"s, "....scrolling!"s, ""s, ""s, "ok"s}) {
+    int col = (columns - text.size()) / 2;
+    int& line = expected_cursor_pos.y;
+    t.set_cursor_column(col);
+    t.print(text + "\n");
+    if (line == lines) {
+      expected_content.text.pop_front();
+      expected_content.text.push_back(empty_line);
+      expected_content.is_inv.pop_front();
+      expected_content.is_inv.push_back(normal_line);
+      line--;
+    }
+    expected_content.text[line].replace(col, text.size(), text);
+    for (int i = col; i < col + text.size(); i++) {
+      expected_content.is_inv[line][i] = true;
+    }
+    expected_cursor_pos.y++;
+    check_status(expected_content, expected_cursor_pos, engine);
   }
 }
