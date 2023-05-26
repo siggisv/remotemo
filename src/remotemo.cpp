@@ -177,7 +177,7 @@ char Remotemo::get_char_at(const SDL_Point& pos) const
 {
   auto area_size = m_engine->text_area_size();
   if (pos.x < 0 || pos.x >= area_size.x ||
-      // NOTE Although ithe cursor is allowed to be one line below the screen,
+      // NOTE Although the cursor is allowed to be one line below the screen,
       // there is no content there.
       pos.y < 0 || pos.y > area_size.y) {
     return 0;
@@ -189,7 +189,7 @@ bool Remotemo::is_inverse_at(const SDL_Point& pos) const
 {
   auto area_size = m_engine->text_area_size();
   if (pos.x < 0 || pos.x >= area_size.x ||
-      // NOTE Although ithe cursor is allowed to be one line below the screen,
+      // NOTE Although the cursor is allowed to be one line below the screen,
       // there is no content there.
       pos.y < 0 || pos.y > area_size.y) {
     return false;

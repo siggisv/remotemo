@@ -694,19 +694,20 @@ between chars' property). With the exception of special characters like the
 `backspace` character and the `newline` character, each character displayed
 will move the cursor one space to the right (if already at the right border of
 the text area, it will stay put or wrap to next line depending on the wrapping
-settings. If wrapping set to `word` it might wrap even sooner).
+settings. If wrapping is set to `word` it might wrap even sooner).
 
 - Returns `0` on success.
 - Returns `-2` if some of the text could not get displayed (e.g. reached end
   of line while wrapping was set to `off`).
-- The `backspace` character will move the cursor one space to the left and
-  overwrite the content there with a single `space` character (unless the
-  cursor was already at the left border. Even with wrapping set on, it does
-  not move back to previous line).
 - The `newline` character just moves the cursor to the beginning of the next
   line.
-- If the inverse property is set to `true`, will display the string with the
-  foreground and background colors switched.
+- If the inverse property is set to `true`, the string will be displayed with
+  the foreground and background colors switched.
+- The `backspace` character will:
+  - make the function stop and return -2 if the cursor was already at the left
+    border. This happens even when wrapping is on.
+  - move the cursor one space to the left and overwrite the content there with
+    a single `space` character (using the current inverse property).
 
 > **Warning** Any non-ASCII character will be displayed as `�`. This will not
 > count as "text could not get displayed".
