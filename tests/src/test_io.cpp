@@ -17,6 +17,7 @@ using std::string_literals::operator""s;
 constexpr int default_columns = 40;
 constexpr int default_lines = 24;
 
+// ----- Helper functions and struct ------
 struct Console_content {
   Console_content() = default;
   Console_content(int lines, const std::string def_line,
@@ -28,7 +29,6 @@ struct Console_content {
   std::deque<std::string> text {};
   std::deque<std::deque<bool>> is_inv {};
 };
-// ----- Helper functions ------
 
 std::string get_line_str(int line_num, const remotemo::Engine* engine)
 {
@@ -405,10 +405,11 @@ TEST_CASE("print() and print_at() functions", "[print]")
   remotemo::Remotemo t {std::move(eng), config};
   t.set_text_delay(0);
   Console_content expected_content {lines, empty_line, normal_line};
+  SDL_Point expected_cursor_pos {0, 0};
 
   SECTION("Checking starting status")
   {
-    check_status(expected_content, SDL_Point {0, 0}, engine);
+    check_status(expected_content, expected_cursor_pos, engine);
     REQUIRE(t.get_scrolling() == true);
     REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
     REQUIRE(t.get_inverse() == false);
@@ -416,7 +417,6 @@ TEST_CASE("print() and print_at() functions", "[print]")
 
   SECTION("Printing text from starting position")
   {
-    SDL_Point expected_cursor_pos {0, 0};
     for (const auto& text : {"Foo!"s, "_bar_"s, "<spam>"s}) {
       REQUIRE(t.print(text) == 0);
       expected_content.text[expected_cursor_pos.y].replace(
@@ -439,11 +439,18 @@ TEST_CASE("print() and print_at() functions", "[print]")
         check_status(expected_content, expected_cursor_pos, engine);
       }
     }
+    SECTION("Printing \"\\b\' (backspace) should delete previous content")
+    {
+      REQUIRE(t.print("\b\b\b") == 0);
+      expected_cursor_pos.x -= 3;
+      expected_content.text[expected_cursor_pos.y].replace(
+          expected_cursor_pos.x, 3, "   ");
+      check_status(expected_content, expected_cursor_pos, engine);
+    }
   }
 
   SECTION("Printing text at given position")
   {
-    SDL_Point expected_cursor_pos {0, 0};
     for (const auto& text : {"Foo!!!"s, "_bar_"s, "spam"s}) {
       REQUIRE(t.print_at(5, 2, text) == 0);
       expected_content.text[2].replace(5, text.size(), text);
@@ -451,12 +458,21 @@ TEST_CASE("print() and print_at() functions", "[print]")
       expected_cursor_pos.y = 2;
       check_status(expected_content, expected_cursor_pos, engine);
     }
-    SECTION("Printing \"\\b\' (backspace) should delete previous content")
-    {
-      REQUIRE(t.print("\b\b\b") == 0);
-      expected_cursor_pos.x -= 3;
+  }
+
+  SECTION("Printing non-ascii characters")
+  {
+    for (auto text : {"Fóö!"s, "_bär_"s, "<ßpåm>"s}) {
+      REQUIRE(t.print(text + '\n') == 0);
+      for (auto& c : text) {
+        if (c < 0 || c > 127) {
+          c = 1;
+        }
+      }
       expected_content.text[expected_cursor_pos.y].replace(
-          expected_cursor_pos.x, 3, "   ");
+          expected_cursor_pos.x, text.size(), text);
+      expected_cursor_pos.x = 0;
+      expected_cursor_pos.y++;
       check_status(expected_content, expected_cursor_pos, engine);
     }
   }
