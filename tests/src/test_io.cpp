@@ -516,11 +516,10 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
   t.set_text_delay(0);
   REQUIRE(t.get_scrolling() == true);
   Console_content expected_content {lines, empty_line, normal_line};
+  SDL_Point expected_cursor_pos {0, 0};
 
   SECTION("Printing text from starting position")
   {
-    SDL_Point expected_cursor_pos {0, 0};
-
     // Fill screen:
     for (const auto& text :
         {"Foo!"s, "_bar_"s, "<spam>"s, "remoTemo"s, "Bottom"s}) {
@@ -548,7 +547,6 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
 
   SECTION("print_at() w/ content one line below bottom should scroll up")
   {
-    SDL_Point expected_cursor_pos {0, 0};
     const SDL_Point print_to_pos {2, lines};
 
     for (const auto& text : {"Start scrolling"s, "no lines empty"s, "---"s,
@@ -587,11 +585,10 @@ TEST_CASE("print() - wrap set to character", "[print][wrap]")
   t.set_text_delay(0);
   REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
   Console_content expected_content {lines, empty_line, normal_line};
+  SDL_Point expected_cursor_pos {0, 0};
 
   SECTION("Printing text from starting position")
   {
-    SDL_Point expected_cursor_pos {0, 0};
-
     for (const auto& text :
         {"This line is a bit long for a screen not wider than this"s,
             "-- more long text that should wrap."s}) {
@@ -614,6 +611,28 @@ TEST_CASE("print() - wrap set to character", "[print][wrap]")
       check_status(expected_content, expected_cursor_pos, engine);
     }
   }
+  SECTION("Trying to backspace beyond left border not only should not wrap "
+          "back to previous line, but also should stop and return an error "
+          "at that point")
+  {
+    int count = 1;
+    for (const auto& text : {"Foo!"s, "_bar_"s, "<spam>"s}) {
+      REQUIRE(t.print(text) == 0);
+      expected_content.text[expected_cursor_pos.y].replace(
+          expected_cursor_pos.x, text.size(), text);
+      expected_cursor_pos.x += text.size();
+      check_status(expected_content, expected_cursor_pos, engine);
+      REQUIRE(t.print(std::string(text.size() + count, '\b') +
+                      "this should be ignored") == -2);
+      expected_cursor_pos.x = 0;
+      expected_content.text[expected_cursor_pos.y].replace(
+          expected_cursor_pos.x, text.size(), std::string(text.size(), ' '));
+      t.print("\n");
+      expected_cursor_pos.y++;
+      check_status(expected_content, expected_cursor_pos, engine);
+      count++;
+    }
+  }
 }
 
 TEST_CASE("print() - scroll is on and wrap set to character",
@@ -630,11 +649,10 @@ TEST_CASE("print() - scroll is on and wrap set to character",
   t.set_text_delay(0);
   REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
   Console_content expected_content {lines, empty_line, normal_line};
+  SDL_Point expected_cursor_pos {0, 0};
 
   SECTION("Printing text from starting position")
   {
-    SDL_Point expected_cursor_pos {0, 0};
-
     for (const auto& text :
         {"This line is a bit long for a screen not wider than this"s,
             " ... more text that now should wrap AND scroll......"s,
