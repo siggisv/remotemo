@@ -751,7 +751,7 @@ TEST_CASE("The 'inverse' setting should affect printing", "[print][inverse]")
       }
     }
 
-    SECTION("print() over inversed after setting 'inverse' back to false")
+    SECTION("print() over inversed content with 'inverse' to false")
     {
       t.set_cursor(0, 0);
       expected_cursor_pos.x = 0;
@@ -769,6 +769,36 @@ TEST_CASE("The 'inverse' setting should affect printing", "[print][inverse]")
         expected_cursor_pos.y++;
         check_status(expected_content, expected_cursor_pos, engine);
       }
+    }
+  }
+
+  SECTION("Backspace should use the 'inverse' setting when overwriting "
+          "the previous character.")
+  {
+    constexpr int start_column = 4;
+    constexpr int num_backspaces = 2;
+    int line = 0;
+    bool is_text_inv = GENERATE(true, false);
+    for (const auto& text : {"   "s, "Hello"s, "- there -"s}) {
+      line++;
+      t.set_inverse(is_text_inv);
+      t.set_cursor(start_column, line);
+      t.print(text);
+      expected_content.text[line].replace(start_column, text.size(), text);
+      for (int i = start_column; i < start_column + text.size(); i++) {
+        expected_content.is_inv[line][i] = is_text_inv;
+      }
+      t.set_inverse(!is_text_inv);
+      t.set_cursor_column(start_column + 1 + num_backspaces);
+      t.print(std::string(num_backspaces, '\b'));
+      expected_content.text[line].replace(
+          start_column + 1, num_backspaces, num_backspaces, ' ');
+      for (int i = 0; i < num_backspaces; i++) {
+        expected_content.is_inv[line][start_column + 1 + i] = !is_text_inv;
+      }
+      expected_cursor_pos.x = start_column + 1;
+      expected_cursor_pos.y = line;
+      check_status(expected_content, expected_cursor_pos, engine);
     }
   }
 }
