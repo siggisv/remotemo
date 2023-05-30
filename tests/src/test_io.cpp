@@ -1,3 +1,4 @@
+#include <thread>
 #include <algorithm>
 #include <deque>
 #include <vector>
@@ -8,6 +9,8 @@
 
 #include "remotemo/remotemo.hpp"
 #include "../../src/engine.hpp"
+
+#include <SDL.h>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
@@ -103,6 +106,29 @@ remotemo::Config setup(int columns = 0, int lines = 0)
   }
   config.text_area_size(columns, lines);
   return config;
+}
+
+struct Get_key_test_param {
+  SDL_Scancode scancode; // pressed key physical code.
+  SDL_Keycode sym;       // pressed key virtual code.
+  remotemo::Key result;  // expected result.
+};
+
+void push_key(const Get_key_test_param& key)
+{
+  SDL_Event ev {};
+  ev.type = SDL_KEYDOWN;
+  ev.key.state = SDL_PRESSED;
+  ev.key.keysym.mod = KMOD_NONE;
+  ev.key.keysym.scancode = key.scancode;
+  ev.key.keysym.sym = key.sym;
+  SDL_PushEvent(&ev);
+}
+
+void delayed_key_press(int delay_ms, const Get_key_test_param& key)
+{
+  std::this_thread::sleep_for(std::chrono::milliseconds {delay_ms});
+  push_key(key);
 }
 
 // ----- Tests ------
@@ -839,5 +865,74 @@ TEST_CASE("Inversed content should scroll the same way as the text",
     }
     expected_cursor_pos.y++;
     check_status(expected_content, expected_cursor_pos, engine);
+  }
+}
+
+TEST_CASE("get_key() can be used to get pressed key", "[get key]")
+{
+  auto config = setup();
+  auto t = remotemo::create(config);
+  t->set_text_delay(0);
+
+  SECTION("get_key() should return pressed key (based on physical key, "
+          "from event queue)")
+  {
+    const std::vector<Get_key_test_param> key_presses {{
+        {SDL_SCANCODE_A, SDLK_a, remotemo::Key::K_a},           //
+        {SDL_SCANCODE_R, SDLK_3, remotemo::Key::K_r},           //
+        {SDL_SCANCODE_3, SDLK_a, remotemo::Key::K_3},           //
+        {SDL_SCANCODE_ESCAPE, SDLK_0, remotemo::Key::K_esc},    //
+        {SDL_SCANCODE_UP, SDLK_0, remotemo::Key::K_up},         //
+        {SDL_SCANCODE_RETURN, SDLK_0, remotemo::Key::K_return}, //
+    }};
+
+    auto key_press = GENERATE_REF(from_range(key_presses));
+    push_key(key_press);
+    REQUIRE(t->get_key() == key_press.result);
+  }
+
+  SECTION("get_key() should ignore some keys (e.g. F1-F12)")
+  {
+    const std::vector<Get_key_test_param> key_presses {{
+        {SDL_SCANCODE_F1, SDLK_F1, remotemo::Key::K_0}, //
+        {SDL_SCANCODE_F2, SDLK_F2, remotemo::Key::K_0}, //
+        {SDL_SCANCODE_F3, SDLK_0, remotemo::Key::K_0},  //
+        {SDL_SCANCODE_F5, SDLK_0, remotemo::Key::K_0},  //
+        {SDL_SCANCODE_F12, SDLK_0, remotemo::Key::K_0}, //
+        {SDL_SCANCODE_A, SDLK_a, remotemo::Key::K_a},   //
+    }};
+
+    for (auto key_press : key_presses) {
+      push_key(key_press);
+    }
+    REQUIRE(t->get_key() == key_presses.back().result);
+  }
+
+  SECTION("get_key() should wait for key if none in queue")
+  {
+    const std::vector<Get_key_test_param> key_presses {{
+        {SDL_SCANCODE_A, SDLK_a, remotemo::Key::K_a},           //
+        {SDL_SCANCODE_R, SDLK_3, remotemo::Key::K_r},           //
+        {SDL_SCANCODE_3, SDLK_a, remotemo::Key::K_3},           //
+        {SDL_SCANCODE_ESCAPE, SDLK_0, remotemo::Key::K_esc},    //
+        {SDL_SCANCODE_UP, SDLK_0, remotemo::Key::K_up},         //
+        {SDL_SCANCODE_RETURN, SDLK_0, remotemo::Key::K_return}, //
+    }};
+
+    int delay = 30;
+    for (auto key_press : key_presses) {
+      auto start = std::chrono::high_resolution_clock::now();
+      std::thread press_later {delayed_key_press, delay, key_press};
+      REQUIRE(t->get_key() == key_press.result);
+      auto end = std::chrono::high_resolution_clock::now();
+      auto elapsed_ms =
+          std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+      UNSCOPED_INFO("get_key() (keypress delayed:" << delay << ") took "
+                                                   << elapsed_ms.count()
+                                                   << "ms to run.\n");
+      REQUIRE(abs(elapsed_ms.count() - delay) < 15);
+      delay *= 2;
+      press_later.join();
+    }
   }
 }

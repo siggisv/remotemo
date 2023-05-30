@@ -1,6 +1,8 @@
 add_subdirectory(tools/Catch2)
 add_subdirectory(tools/trompeloeil)
 
+find_package(Threads REQUIRED)
+
 option(REMOTEMO_VERBOSE_TESTS
     "Should the output from the tests themselve be more verbose?"
     OFF
@@ -38,5 +40,6 @@ target_link_libraries(test_io PRIVATE
     remotemo
     Catch2::Catch2WithMain
     trompeloeil::trompeloeil
+    Threads::Threads
 )
 add_test(test_io test_io ${TEST_ARG})
