@@ -4,13 +4,13 @@
 
 #include "remotemo/remotemo.hpp"
 
-#include "init.hpp"
+#include "test_init.hpp"
 
 using trompeloeil::_;
 
 // Test cases:
 
-TEST_CASE("create() - config resources invalid - invalid window")
+TEST_CASE("create() - config resources invalid - invalid window", "[init]")
 {
   std::list<tr_exp> exps {};
   Uint32 conf_winID = 0;
@@ -42,7 +42,8 @@ TEST_CASE("create() - config resources invalid - invalid window")
   }
 }
 
-TEST_CASE("create() - config resources invalid - texture(s) but no renderer")
+TEST_CASE("create() - config resources invalid - texture(s) but no renderer",
+    "[init]")
 {
   std::list<tr_exp> exps {};
   Uint32 conf_winID = 1;
@@ -77,7 +78,8 @@ TEST_CASE("create() - config resources invalid - texture(s) but no renderer")
   }
 }
 
-TEST_CASE("create() - config resources invalid - can't get renderer settings")
+TEST_CASE("create() - config resources invalid - can't get renderer settings",
+    "[init]")
 {
   std::list<tr_exp> exps {};
   Uint32 conf_winID = 1;
@@ -108,7 +110,8 @@ TEST_CASE("create() - config resources invalid - can't get renderer settings")
   }
 }
 
-TEST_CASE("create() - config resources invalid - incorrect renderer settings")
+TEST_CASE("create() - config resources invalid - incorrect renderer settings",
+    "[init]")
 {
   std::list<tr_exp> exps {};
   Uint32 conf_winID = 1;
@@ -144,7 +147,8 @@ TEST_CASE("create() - config resources invalid - incorrect renderer settings")
 }
 
 TEST_CASE(
-    "create() - config resources invalid - texture has incorrect renderer")
+    "create() - config resources invalid - texture has incorrect renderer",
+    "[init]")
 {
   std::list<tr_exp> exps {};
   Uint32 conf_winID = 1;

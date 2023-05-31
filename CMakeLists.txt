@@ -1,12 +1,17 @@
 cmake_minimum_required(VERSION 3.16..3.25)
 
 project(remotemo
-    VERSION 0.0.1
+    VERSION 0.1.0
     LANGUAGES CXX
 )
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/src/version.hpp.in"
+    "${PROJECT_BINARY_DIR}/src/version.hpp"
+)
 
 option(REMOTEMO_BUILD_TESTS "Enable building the tests" OFF)
 option(REMOTEMO_BUILD_SAMPLES "Enable building the samples" OFF)
@@ -52,6 +57,8 @@ set(SDL2_IMAGE_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
 
 add_library(remotemo
     src/remotemo.cpp
+    src/exceptions.cpp
+    src/keyboard.cpp
     src/config.cpp
     src/engine.cpp
     src/window.cpp
@@ -65,6 +72,7 @@ add_library(remotemo
 # https://www.foonathan.net/2018/10/cmake-warnings
 target_include_directories(remotemo PRIVATE
     include/
+    "${PROJECT_BINARY_DIR}/src"
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
 )
@@ -94,15 +102,19 @@ add_custom_target(copy_resources ALL
 )
 
 IF (REMOTEMO_BUILD_SAMPLES)
-    add_executable(hello_sample src/hello_sample.cpp)
-    target_link_libraries(hello_sample PRIVATE
-        remotemo
-    )
-    target_compile_options(hello_sample PRIVATE
-        ${w_compile_options}
-    )
+    add_executable(hello_sample samples/hello_sample.cpp)
+    target_link_libraries(hello_sample PRIVATE remotemo)
+    target_compile_options(hello_sample PRIVATE ${w_compile_options})
     target_compile_definitions(hello_sample PRIVATE $<$<CONFIG:Debug>:DEBUG>)
     add_dependencies(hello_sample copy_resources)
+
+    add_executable(wrap_n_scroll_test samples/wrap_n_scroll_test.cpp)
+    target_link_libraries(wrap_n_scroll_test PRIVATE remotemo)
+    target_compile_options(wrap_n_scroll_test PRIVATE ${w_compile_options})
+    target_compile_definitions(wrap_n_scroll_test PRIVATE
+        $<$<CONFIG:Debug>:DEBUG>
+    )
+    add_dependencies(wrap_n_scroll_test copy_resources)
 endif()
 
 if (REMOTEMO_BUILD_TESTS)

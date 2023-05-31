@@ -6,13 +6,14 @@
 
 #include "remotemo/remotemo.hpp"
 
-#include "init.hpp"
+#include "test_init.hpp"
 
 Uint32 init_flags = 0, quit_flags = 0;
 
 // Test cases:
 
-TEST_CASE("create() - config resources ARE valid (but SDL_Init() fails):")
+TEST_CASE(
+    "create() - config resources ARE valid (but SDL_Init() fails):", "[init]")
 {
   Init_status init;
   auto& exps = init.exps;
@@ -37,7 +38,7 @@ TEST_CASE("create() - config resources ARE valid (but SDL_Init() fails):")
   }
 }
 
-TEST_CASE("create() - resourceless config - create window fails:")
+TEST_CASE("create() - resourceless config - create window fails:", "[init]")
 {
   Init_status init;
   auto& exps = init.exps;
@@ -81,7 +82,8 @@ TEST_CASE("create() - resourceless config - create window fails:")
   }
 }
 
-TEST_CASE("create() - valid rendererless config - create renderer fails:")
+TEST_CASE(
+    "create() - valid rendererless config - create renderer fails:", "[init]")
 {
   Init_status init;
   auto& exps = init.exps;
@@ -124,7 +126,7 @@ TEST_CASE("create() - valid rendererless config - create renderer fails:")
   }
 }
 
-TEST_CASE("create() - valid config - setup of textures fails:")
+TEST_CASE("create() - valid config - setup of textures fails:", "[init]")
 {
   char* d_bpath = const_cast<char*>(&d_basepath[0]);
   const std::vector<Texture_results> all_texture_results {{
@@ -206,7 +208,7 @@ TEST_CASE("create() - valid config - setup of textures fails:")
   }
 }
 
-TEST_CASE("create() - all succeeds:")
+TEST_CASE("create() - all succeeds:", "[init]")
 {
   auto do_cleanup_all = GENERATE(false, true);
   auto conf = GENERATE_REF(from_range(valid_conf_res));
@@ -262,7 +264,8 @@ TEST_CASE("create() - all succeeds:")
   }
 }
 
-TEST_CASE("create() succeeds - test if config is used to create the window:")
+TEST_CASE("create() succeeds - test if config is used to create the window:",
+    "[init]")
 {
   auto do_cleanup_all = GENERATE(false, true);
   auto conf_res = valid_conf_res[0];
@@ -323,7 +326,8 @@ TEST_CASE("create() succeeds - test if config is used to create the window:")
   }
 }
 
-TEST_CASE("create() succeeds - test if config is used to setup the textures:")
+TEST_CASE("create() succeeds - test if config is used to setup the textures:",
+    "[init]")
 {
   auto do_cleanup_all = GENERATE(false, true);
   auto conf_res = valid_conf_res[0];
@@ -384,7 +388,8 @@ TEST_CASE("create() succeeds - test if config is used to setup the textures:")
   }
 }
 
-TEST_CASE("create() succeeds - test if move ctor and move assignment works:")
+TEST_CASE("create() succeeds - test if move ctor and move assignment works:",
+    "[init]")
 {
   bool do_cleanup_all {true};
   auto conf_res = valid_conf_res[0];

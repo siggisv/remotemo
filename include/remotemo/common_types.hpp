@@ -5,6 +5,9 @@
 
 namespace remotemo {
 
+enum class Wrapping { off, character, word };
+enum class Do_reset { none, cursor, inverse, all };
+
 struct Color {
   Uint8 red {}, green {}, blue {};
 };

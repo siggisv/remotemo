@@ -16,7 +16,6 @@ bool Texture::set_base_path()
   m_base_path = c_base_path;
   // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
   ::SDL_free(c_base_path); // NOLINT(cppcoreguidelines-owning-memory)
-  ::SDL_Log("Texture::base_path: %s", m_base_path->c_str());
   return true;
 }
 
@@ -28,7 +27,6 @@ bool Texture::load(SDL_Renderer* renderer, const std::string& file_path)
     }
   }
   auto texture_path = *m_base_path / file_path;
-  SDL_Log("Texture path: %s", texture_path.c_str());
   res(::IMG_LoadTexture(renderer, texture_path.c_str()));
   if (res() == nullptr) {
     ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
@@ -37,6 +35,13 @@ bool Texture::load(SDL_Renderer* renderer, const std::string& file_path)
     return false;
   }
   is_owned(true);
+  if (::SDL_QueryTexture(res(), nullptr, nullptr, &m_texture_size.x,
+          &m_texture_size.y) != 0) {
+    ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+        "Getting size of texture \"%s\" failed: %s\n", texture_path.c_str(),
+        ::SDL_GetError());
+    return false;
+  }
   return true;
 }
 } // namespace remotemo

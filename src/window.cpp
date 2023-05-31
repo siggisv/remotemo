@@ -10,6 +10,8 @@ std::optional<Window> Window::create(
       return {};
     }
   }
+  window.refresh_local_flags();
+  window.refresh_local_size();
   return window;
 }
 
@@ -26,6 +28,27 @@ bool Window::setup(const Window_config& window_config)
   }
   is_owned(true);
   return true;
+}
+
+void Window::refresh_local_size()
+{
+  ::SDL_GetWindowSize(res(), &m_size.x, &m_size.y);
+}
+
+void Window::refresh_local_flags()
+{
+  auto window_flags = SDL_GetWindowFlags(res());
+  m_is_fullscreen = ((window_flags & SDL_WINDOW_FULLSCREEN) != 0);
+}
+
+void Window::set_fullscreen(bool do_make_fullscreen)
+{
+  if (do_make_fullscreen) {
+    SDL_SetWindowFullscreen(res(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+  } else {
+    SDL_SetWindowFullscreen(res(), 0);
+  }
+  refresh_local_flags();
 }
 
 } // namespace remotemo

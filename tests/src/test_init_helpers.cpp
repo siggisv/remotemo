@@ -4,7 +4,7 @@
 #include "remotemo/remotemo.hpp"
 #include "../../src/texture.hpp"
 
-#include "init.hpp"
+#include "test_init.hpp"
 
 using std::string_literals::operator""s;
 
@@ -39,6 +39,11 @@ SDL_Window* SDL_CreateWindow(
     const char* title, int x, int y, int w, int h, Uint32 flags)
 {
   return mock_SDL.mock_CreateWindow(title, x, y, w, h, flags);
+}
+void SDL_GetWindowSize(SDL_Window* window, int* w, int* h)
+{ // Stub, not mock
+  *w = 1000;
+  *h = 1000;
 }
 void SDL_DestroyWindow(SDL_Window* window)
 {
@@ -77,6 +82,13 @@ void SDL_free(void* mem)
 SDL_Texture* IMG_LoadTexture(SDL_Renderer* renderer, const char* file_path)
 {
   return mock_SDL.mock_LoadTexture(renderer, file_path);
+}
+int SDL_QueryTexture( // Stub, not mock
+    SDL_Texture* texture, Uint32* format, int* access, int* w, int* h)
+{
+  *w = 1000;
+  *h = 1000;
+  return 0;
 }
 void SDL_DestroyTexture(SDL_Texture* texture)
 {
@@ -291,6 +303,9 @@ bool try_running_create(bool do_cleanup_all, const Conf_resources& conf_res,
   if (texture_conf.text_color.has_value()) {
     config.text_color(*texture_conf.text_color);
   }
+  // Silence all logging:
+  SDL_LogSetAllPriority(SDL_NUM_LOG_PRIORITIES);
+
   auto t = remotemo::create(config);
   // This dummy function is here so we can check if cleanup happens before
   // `t` goes out of scope or after:
@@ -497,7 +512,7 @@ void Init_status::attempt_setup_textures(
   exps_t_area.setup = NAMED_REQUIRE_CALL(mock_SDL,
       mock_CreateTexture(ready_res.render, SDL_PIXELFORMAT_RGBA32,
           SDL_TEXTUREACCESS_TARGET, (t_area_size.x * font_size.x) + 2,
-          (t_area_size.y * font_size.y) + 2))
+          ((t_area_size.y + 1) * font_size.y) + 2))
                           .TIMES(0, 1)
                           .RETURN(exp_results.t_area)
                           .IN_SEQUENCE(seqs.main, seqs.t_area);
