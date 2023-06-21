@@ -37,7 +37,7 @@ In short:
 - `Major` is increased when incompatible changes are made to the public API.
 - `Minor` is increased when backward compatible changes are made to the public
   API (i.e. new functionality is added).
-- `Patch` is increased when backward compatible bug fixes are made.
+- `Patch` is increased when backward compatible bugfixes are made.
 - `Major` is zero while in initial development. At that time anything might
   change when `Minor` is increased.
 - The `Major.Minor.Patch`-part of pre-release versions denotes the release

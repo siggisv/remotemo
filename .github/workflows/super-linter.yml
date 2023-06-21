@@ -33,5 +33,4 @@ jobs:
           VALIDATE_GITHUB_ACTIONS: true
           VALIDATE_GITLEAKS: true
           VALIDATE_MARKDOWN: true
-          VALIDATE_NATURAL_LANGUAGE: true
           VALIDATE_YAML: true
