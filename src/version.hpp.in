@@ -6,6 +6,8 @@ namespace version {
 constexpr int major = @remotemo_VERSION_MAJOR@;
 constexpr int minor = @remotemo_VERSION_MINOR@;
 constexpr int patch = @remotemo_VERSION_PATCH@;
+const char* const full = "@remotemo_VERSION@";
+const char* const pre_release_label = "@remotemo_PRE_RELEASE_LABEL@";
 } // namespace version
 } // namespace remotemo
 #endif // REMOTEMO_SRC_VERSION_HPP
