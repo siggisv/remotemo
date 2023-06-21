@@ -1,12 +1,12 @@
 # remoTemo API design
-_7th draft_
+_8th draft_
 
 > **Warning**
 >
 > **Both** the design and the implementation are work-in-progress.
 
 ## Table of contents
-- [Getting the version number](#getting-the-version-number)
+- [Version number](#version-number)
 - [Initialization, cleanup and config](#initialization-cleanup-and-config)
   - [Initialization](#initialization)
   - [Cleanup](#cleanup)
@@ -19,26 +19,61 @@ _7th draft_
   - [Window settings](#window-settings)
 
 <sup>[Back to top](#remotemo-api-design)</sup>
-## Getting the version number
+## Version number
 
-The library provides a few functions that can be called to get its name and
-its version:
+The version number of this library is assigned and incremented according to
+the rules set by [Semantic Versioning
+2.0.0](https://semver.org/spec/v2.0.0.html), using the optional pre-release
+label for alpha and beta versions.
+
+In short:
+
+- The format of the version number is `Major.Minor.Patch` for release versions
+  (e.g. 1.0.3) and `Major.Minor.Patch-PreReleaseLabel` for pre-release
+  versions (e.g. 1.0.3-alpha.3 or 1.0.3-beta.1).
+- The format of `PreReleaseLabel` is "alpha", "beta" or "rc", followed by a
+  dot and an incrementing number (that is reset to zero when going from alpha
+  to beta and from beta to release-candidate).
+- `Major` is increased when incompatible changes are made to the public API.
+- `Minor` is increased when backward compatible changes are made to the public
+  API (i.e. new functionality is added).
+- `Patch` is increased when backward compatible bugfixes are made.
+- `Major` is zero while in initial development. At that time anything might
+  change when `Minor` is increased.
+- The `Major.Minor.Patch`-part of pre-release versions denotes the release
+  version that will be released, not the one that is built on.
+
+The library provides a few functions that returns its name and its version:
 
 ```C++
 std::string remotemo::full_name();
-std::string remotemo::full_version();
+std::string remotemo::version_full();
 int remotemo::version_major();
 int remotemo::version_minor();
 int remotemo::version_patch();
+std::string remotemo::version_pre_release_label();
+bool remotemo::version_is_pre_release();
 ```
 
-Assuming the version to be `v1.0.3`, they would return the following:
+Assuming the version to be `1.0.3`, they would return the following:
 
 - `remotemo::full_name()` will return the string `"remoTemo v1.0.3"`.
-- `remotemo::full_version()` will return the string `"v1.0.3"`.
+- `remotemo::version_full()` will return the string `"1.0.3"`.
 - `remotemo::version_major()` will return the int `1`.
 - `remotemo::version_minor()` will return the int `0`.
 - `remotemo::version_patch()` will return the int `3`.
+- `remotemo::version_pre_release_label()` will return the string `""`.
+- `remotemo::version_is_pre_release()` will return the bool `false`.
+
+Assuming the version to be `1.1.0-beta.2`, they would return the following:
+
+- `remotemo::full_name()` will return the string `"remoTemo v1.1.0-beta.2"`.
+- `remotemo::version_full()` will return the string `"1.1.0-beta.2"`.
+- `remotemo::version_major()` will return the int `1`.
+- `remotemo::version_minor()` will return the int `1`.
+- `remotemo::version_patch()` will return the int `0`.
+- `remotemo::version_pre_release_label()` will return the string `"beta.2"`.
+- `remotemo::version_is_pre_release()` will return the bool `true`.
 
 <sup>[Back to top](#remotemo-api-design)</sup>
 ## Initialization, cleanup and config

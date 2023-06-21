@@ -33,16 +33,13 @@ std::optional<Remotemo> create(const Config& config)
 std::string full_name()
 {
   std::stringstream full_n;
-  full_n << "remoTemo " << full_version();
+  full_n << "remoTemo v" << version::full;
   return full_n.str();
 }
 
-std::string full_version()
+std::string version_full()
 {
-  std::stringstream full_v;
-  full_v << 'v' << version::major << '.' << version::minor << '.'
-         << version::patch;
-  return full_v.str();
+  return static_cast<std::string>(version::full);
 }
 
 int version_major()
@@ -58,6 +55,16 @@ int version_minor()
 int version_patch()
 {
   return version::patch;
+}
+
+std::string version_pre_release_label()
+{
+  return static_cast<std::string>(version::pre_release_label);
+}
+
+bool version_is_pre_release()
+{
+  return (*version::pre_release_label != '\0');
 }
 
 
