@@ -1,0 +1,3 @@
+#! /bin/bash -x
+
+clang-tidy src/*.cpp src/res_handler.hpp "$@" -header-filter="^include/|^src/"

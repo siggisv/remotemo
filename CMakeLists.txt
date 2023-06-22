@@ -16,6 +16,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL
+    "Enable generation of 'compile_commands.json'"
+)
+
 configure_file(
     "${PROJECT_SOURCE_DIR}/src/version.hpp.in"
     "${PROJECT_BINARY_DIR}/src/version.hpp"
