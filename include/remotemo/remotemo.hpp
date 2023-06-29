@@ -9,8 +9,6 @@
 #include "remotemo/common_types.hpp"
 #include "remotemo/config.hpp"
 
-#include <SDL.h>
-
 namespace remotemo {
 class Engine;
 class Remotemo {
@@ -23,16 +21,16 @@ public:
   Remotemo(const Remotemo&) = delete;
   Remotemo& operator=(const Remotemo&) = delete;
 
-  int move_cursor(int x, int y) { return move_cursor(SDL_Point {x, y}); }
-  int move_cursor(const SDL_Point& move);
+  int move_cursor(int x, int y) { return move_cursor(Point {x, y}); }
+  int move_cursor(const Point& move);
   int set_cursor(int column, int line)
   {
-    return set_cursor(SDL_Point {column, line});
+    return set_cursor(Point {column, line});
   }
-  int set_cursor(const SDL_Point& position);
+  int set_cursor(const Point& position);
   int set_cursor_column(int column);
   int set_cursor_line(int line);
-  [[nodiscard]] SDL_Point get_cursor_position() const;
+  [[nodiscard]] Point get_cursor_position() const;
 
   int pause(int pause_in_ms);
   void clear(Do_reset do_reset = Do_reset::all);
@@ -42,18 +40,18 @@ public:
   int print(const std::string& text);
   int print_at(int column, int line, const std::string& text)
   {
-    return print_at(SDL_Point {column, line}, text);
+    return print_at(Point {column, line}, text);
   }
-  int print_at(const SDL_Point& position, const std::string& text);
-  [[nodiscard]] char get_char_at(const SDL_Point& pos) const;
+  int print_at(const Point& position, const std::string& text);
+  [[nodiscard]] char get_char_at(const Point& pos) const;
   [[nodiscard]] char get_char_at(int column, int line) const
   {
-    return get_char_at(SDL_Point {column, line});
+    return get_char_at(Point {column, line});
   }
-  [[nodiscard]] bool is_inverse_at(const SDL_Point& pos) const;
+  [[nodiscard]] bool is_inverse_at(const Point& pos) const;
   [[nodiscard]] bool is_inverse_at(int column, int line) const
   {
-    return is_inverse_at(SDL_Point {column, line});
+    return is_inverse_at(Point {column, line});
   }
   bool set_text_delay(int delay_in_ms);
   bool set_text_speed(double char_per_second);

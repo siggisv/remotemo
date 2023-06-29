@@ -91,8 +91,8 @@ Engine::Engine(Main_SDL_handler main_sdl_handler,
 void Engine::set_screen_display_settings()
 {
   auto backgr_texture_size = m_background->texture_size();
-  m_background_target.w = backgr_texture_size.x;
-  m_background_target.h = backgr_texture_size.y;
+  m_background_target.w = backgr_texture_size.width;
+  m_background_target.h = backgr_texture_size.height;
   auto backgr_text_area = m_background->text_area();
   m_text_target.w = backgr_text_area.w;
   m_text_target.h = backgr_text_area.h;
@@ -103,18 +103,20 @@ void Engine::refresh_screen_display_settings()
 {
   auto window_size = m_window->size();
   auto backgr_min_area = m_background->min_area();
-  float scale_w = static_cast<float>(window_size.x) /
+  float scale_w = static_cast<float>(window_size.width) /
                   static_cast<float>(backgr_min_area.w);
-  float scale_h = static_cast<float>(window_size.y) /
+  float scale_h = static_cast<float>(window_size.height) /
                   static_cast<float>(backgr_min_area.h);
   m_screen_scale = std::min(scale_w, scale_h);
   m_background_target.x =
-      ((static_cast<int>(static_cast<float>(window_size.x) / m_screen_scale) -
+      ((static_cast<int>(
+            static_cast<float>(window_size.width) / m_screen_scale) -
            backgr_min_area.w + 1) /
           2) -
       backgr_min_area.x;
   m_background_target.y =
-      ((static_cast<int>(static_cast<float>(window_size.y) / m_screen_scale) -
+      ((static_cast<int>(
+            static_cast<float>(window_size.height) / m_screen_scale) -
            backgr_min_area.h + 1) /
           2) -
       backgr_min_area.y;
@@ -184,25 +186,25 @@ std::unique_ptr<Engine> Engine::create(const Config& config)
 }
 
 
-SDL_Point Engine::cursor_pos() const
+Point Engine::cursor_pos() const
 {
   throw_if_window_closed();
   return m_text_display->cursor_pos();
 }
 
-SDL_Point Engine::text_area_size() const
+Size Engine::text_area_size() const
 {
   throw_if_window_closed();
-  return SDL_Point {m_text_display->columns(), m_text_display->lines()};
+  return Size {m_text_display->columns(), m_text_display->lines()};
 }
 
-char Engine::char_at(const SDL_Point& pos) const
+char Engine::char_at(const Point& pos) const
 {
   throw_if_window_closed();
   return m_text_display->char_at(pos);
 }
 
-bool Engine::is_inverse_at(const SDL_Point& pos) const
+bool Engine::is_inverse_at(const Point& pos) const
 {
   throw_if_window_closed();
   return m_text_display->is_inverse_at(pos);
@@ -277,7 +279,7 @@ void Engine::clear_screen()
   }
 }
 
-bool Engine::scroll_if_needed(SDL_Point* cursor_pos)
+bool Engine::scroll_if_needed(Point* cursor_pos)
 {
   if (!m_is_scrolling_allowed && cursor_pos->y >= m_text_display->lines()) {
     return false;
@@ -292,7 +294,7 @@ bool Engine::scroll_if_needed(SDL_Point* cursor_pos)
   return true;
 }
 
-void Engine::cursor_pos(const SDL_Point& pos)
+void Engine::cursor_pos(const Point& pos)
 {
   delay(m_delay_between_chars_ms);
   m_text_display->cursor_pos(pos);

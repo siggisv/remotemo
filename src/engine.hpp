@@ -69,12 +69,12 @@ public:
 
   static std::unique_ptr<Engine> create(const Config& config);
 
-  [[nodiscard]] SDL_Point cursor_pos() const;
-  [[nodiscard]] SDL_Point text_area_size() const;
-  [[nodiscard]] char char_at(const SDL_Point& pos) const;
-  [[nodiscard]] bool is_inverse_at(const SDL_Point& pos) const;
+  [[nodiscard]] Point cursor_pos() const;
+  [[nodiscard]] Size text_area_size() const;
+  [[nodiscard]] char char_at(const Point& pos) const;
+  [[nodiscard]] bool is_inverse_at(const Point& pos) const;
 
-  void cursor_pos(const SDL_Point& pos);
+  void cursor_pos(const Point& pos);
   bool display_string_at_cursor(
       const std::string& text, Wrapping text_wrapping);
 
@@ -106,7 +106,7 @@ protected:
   bool handle_standard_event(const SDL_Event& event);
   bool handle_window_event(const SDL_Event& event);
   void render_window();
-  bool scroll_if_needed(SDL_Point* cursor_pos);
+  bool scroll_if_needed(Point* cursor_pos);
   void set_screen_display_settings();
   void refresh_screen_display_settings();
   void throw_if_window_closed() const;

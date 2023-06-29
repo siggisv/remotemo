@@ -37,7 +37,7 @@ std::string get_line_str(int line_num, const remotemo::Engine* engine)
 {
   std::stringstream line {};
   auto area_size = engine->text_area_size();
-  for (SDL_Point pos {0, line_num}; pos.x < area_size.x; pos.x++) {
+  for (remotemo::Point pos {0, line_num}; pos.x < area_size.width; pos.x++) {
     line << engine->char_at(pos);
   }
   return line.str();
@@ -59,7 +59,7 @@ std::deque<bool> get_line_is_inverse(
 {
   std::deque<bool> line {};
   auto area_size = engine->text_area_size();
-  for (SDL_Point pos {0, line_num}; pos.x < area_size.x; pos.x++) {
+  for (remotemo::Point pos {0, line_num}; pos.x < area_size.width; pos.x++) {
     line.push_back(engine->is_inverse_at(pos));
   }
   return line;
@@ -78,7 +78,8 @@ void compare_to_content(
 }
 
 void check_status(const Console_content& expected_content,
-    const SDL_Point& expected_cursor_pos, const remotemo::Engine* engine)
+    const remotemo::Point& expected_cursor_pos,
+    const remotemo::Engine* engine)
 {
   compare_to_content(expected_content.is_inv, engine);
   compare_to_content(expected_content.text, engine);
@@ -136,18 +137,18 @@ void delayed_key_press(int delay_ms, const Get_key_test_param& key)
 TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 {
   struct Cursor_param {
-    SDL_Point param;
+    remotemo::Point param;
     int result;
-    SDL_Point pos;
+    remotemo::Point pos;
   };
 
-  const std::vector<SDL_Point> area_sizes {{
+  const std::vector<remotemo::Size> area_sizes {{
       {default_columns, default_lines}, // i.e. use default
       {20, 12},                         // default / 2
       {80, 36}                          //
   }};
   auto a_size = GENERATE_REF(from_range(area_sizes));
-  auto config = setup(a_size.x, a_size.y);
+  auto config = setup(a_size.width, a_size.height);
   auto t = remotemo::create(config);
   t->set_text_delay(0);
 
@@ -169,15 +170,15 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
     }};
 
     auto move = GENERATE_COPY(from_range(valid_moves));
-    if (move.param.x + 10 >= a_size.x) {
-      move.param.x = a_size.x - 11;
-      move.pos.x = a_size.x - 1;
+    if (move.param.x + 10 >= a_size.width) {
+      move.param.x = a_size.width - 11;
+      move.pos.x = a_size.width - 1;
     }
-    if (move.param.y + 10 > a_size.y) {
-      move.param.y = a_size.y - 10;
-      move.pos.y = a_size.y;
+    if (move.param.y + 10 > a_size.height) {
+      move.param.y = a_size.height - 10;
+      move.pos.y = a_size.height;
     }
-    INFO("Area size (" << a_size.x << ", " << a_size.y << ") "
+    INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                        << "Start pos (10, 10). Move (" << move.param.x << ", "
                        << move.param.y << ") Expected: (" << move.pos.x
                        << ", " << move.pos.y << ")\n");
@@ -192,7 +193,8 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
       REQUIRE(pos.y == move.pos.y);
     }
 
-    SECTION("move_cursor(SDL_Point&), with valid parameters, should work")
+    SECTION(
+        "move_cursor(remotemo::Point&), with valid parameters, should work")
     {
       t->set_cursor(10, 10);
 
@@ -206,18 +208,18 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
   SECTION("move_cursor(), with invalid parameters, should fail")
   {
     const std::vector<Cursor_param> invalid_moves {{
-        {{400, 5}, -1, {a_size.x - 1, 10}},       // right
-        {{6, 400}, -2, {16, a_size.y}},           // bottom
-        {{-13, 6}, -4, {0, 11}},                  // left
-        {{4, -17}, -8, {14, 0}},                  // top
-        {{90, 90}, -3, {a_size.x - 1, a_size.y}}, // bottom right
-        {{99, -14}, -9, {a_size.x - 1, 0}},       // top right
-        {{-15, 60}, -6, {0, a_size.y}},           // bottom left
-        {{-13, -12}, -12, {0, 0}}                 // top left
+        {{400, 5}, -1, {a_size.width - 1, 10}},            // right
+        {{6, 400}, -2, {16, a_size.height}},               // bottom
+        {{-13, 6}, -4, {0, 11}},                           // left
+        {{4, -17}, -8, {14, 0}},                           // top
+        {{90, 90}, -3, {a_size.width - 1, a_size.height}}, // bottom right
+        {{99, -14}, -9, {a_size.width - 1, 0}},            // top right
+        {{-15, 60}, -6, {0, a_size.height}},               // bottom left
+        {{-13, -12}, -12, {0, 0}}                          // top left
     }};
 
     auto move = GENERATE_REF(from_range(invalid_moves));
-    INFO("Area size (" << a_size.x << ", " << a_size.y << ") "
+    INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                        << "Start pos (10, 5). Move (" << move.param.x << ", "
                        << move.param.y << ") Expected: (" << move.pos.x
                        << ", " << move.pos.y << ")\n");
@@ -231,7 +233,8 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
       REQUIRE(pos.x == move.pos.x);
       REQUIRE(pos.y == move.pos.y);
     }
-    SECTION("move_cursor(SDL_Point&), with invalid parameters, should fail")
+    SECTION(
+        "move_cursor(remotemo::Point&), with invalid parameters, should fail")
     {
       t->set_cursor(10, 5);
 
@@ -245,14 +248,14 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
   SECTION("set_cursor(), with valid parameters, should work")
   {
     const std::vector<Cursor_param> positions {{
-        {{4, 8}, 0, {4, 8}},                       //
-        {{2, 6}, 0, {2, 6}},                       //
-        {{a_size.x - 1, 5}, 0, {a_size.x - 1, 5}}, //
-        {{2, a_size.y}, 0, {2, a_size.y}}          //
+        {{4, 8}, 0, {4, 8}},                               //
+        {{2, 6}, 0, {2, 6}},                               //
+        {{a_size.width - 1, 5}, 0, {a_size.width - 1, 5}}, //
+        {{2, a_size.height}, 0, {2, a_size.height}}        //
     }};
 
     auto p = GENERATE_REF(from_range(positions));
-    INFO("Area size (" << a_size.x << ", " << a_size.y << ") "
+    INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                        << "Set (" << p.param.x << ", " << p.param.y
                        << ") Expected: (" << p.pos.x << ", " << p.pos.y
                        << ")\n");
@@ -264,7 +267,8 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
       REQUIRE(pos.x == p.pos.x);
       REQUIRE(pos.y == p.pos.y);
     }
-    SECTION("set_cursor(SDL_Point&), with valid parameters, should work")
+    SECTION(
+        "set_cursor(remotemo::Point&), with valid parameters, should work")
     {
       REQUIRE(t->set_cursor(p.param) == p.result);
       auto pos = t->get_cursor_position();
@@ -275,17 +279,17 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
   SECTION("set_cursor(), with invalid parameters, should fail")
   {
     const std::vector<Cursor_param> positions {{
-        {{-4, 8}, -1, {15, 10}},            //
-        {{8, -7}, -1, {15, 10}},            //
-        {{a_size.x, 10}, -1, {15, 10}},     //
-        {{15, a_size.y + 1}, -1, {15, 10}}, //
-        {{a_size.x + 5, 10}, -1, {15, 10}}, //
-        {{15, a_size.y + 5}, -1, {15, 10}}, //
+        {{-4, 8}, -1, {15, 10}},                 //
+        {{8, -7}, -1, {15, 10}},                 //
+        {{a_size.width, 10}, -1, {15, 10}},      //
+        {{15, a_size.height + 1}, -1, {15, 10}}, //
+        {{a_size.width + 5, 10}, -1, {15, 10}},  //
+        {{15, a_size.height + 5}, -1, {15, 10}}, //
     }};
     t->set_cursor(15, 10);
 
     auto p = GENERATE_REF(from_range(positions));
-    INFO("Area size (" << a_size.x << ", " << a_size.y << ") "
+    INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                        << "Set (" << p.param.x << ", " << p.param.y
                        << ") Expected: (" << p.pos.x << ", " << p.pos.y
                        << ")\n");
@@ -297,7 +301,8 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
       REQUIRE(pos.x == p.pos.x);
       REQUIRE(pos.y == p.pos.y);
     }
-    SECTION("set_cursor(SDL_Point&), with invalid parameters, should fail")
+    SECTION(
+        "set_cursor(remotemo::Point&), with invalid parameters, should fail")
     {
       REQUIRE(t->set_cursor(p.param) == p.result);
       auto pos = t->get_cursor_position();
@@ -309,14 +314,14 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
   SECTION("set_cursor_column(int), with a valid parameter, should work")
   {
     const std::vector<Cursor_param> positions {{
-        {{4, 0}, 0, {4, 5}},                       //
-        {{0, 0}, 0, {0, 5}},                       //
-        {{a_size.x - 7, 0}, 0, {a_size.x - 7, 5}}, //
-        {{a_size.x - 1, 0}, 0, {a_size.x - 1, 5}}  //
+        {{4, 0}, 0, {4, 5}},                               //
+        {{0, 0}, 0, {0, 5}},                               //
+        {{a_size.width - 7, 0}, 0, {a_size.width - 7, 5}}, //
+        {{a_size.width - 1, 0}, 0, {a_size.width - 1, 5}}  //
     }};
     for (auto p : positions) {
       t->set_cursor(5, 5);
-      INFO("Area size (" << a_size.x << ", " << a_size.y << ") "
+      INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                          << "Set column (" << p.param.x << ") Expected: ("
                          << p.pos.x << ", " << p.pos.y << ")\n");
 
@@ -330,13 +335,13 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
   SECTION("set_cursor_column(int), with invalid parameters, should fail")
   {
     const std::vector<Cursor_param> positions {{
-        {{-4, 0}, -1, {10, 10}},           //
-        {{a_size.x, 0}, -1, {10, 10}},     //
-        {{a_size.x + 4, 0}, -1, {10, 10}}, //
+        {{-4, 0}, -1, {10, 10}},               //
+        {{a_size.width, 0}, -1, {10, 10}},     //
+        {{a_size.width + 4, 0}, -1, {10, 10}}, //
     }};
     for (auto p : positions) {
       t->set_cursor(10, 10);
-      INFO("Area size (" << a_size.x << ", " << a_size.y << ") "
+      INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                          << "Set column (" << p.param.x << ") Expected: ("
                          << p.pos.x << ", " << p.pos.y << ")\n");
 
@@ -350,14 +355,14 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
   SECTION("set_cursor_line(int), with a valid parameter, should work")
   {
     const std::vector<Cursor_param> positions {{
-        {{0, 0}, 0, {5, 0}},              //
-        {{0, 6}, 0, {5, 6}},              //
-        {{0, 5}, 0, {5, 5}},              //
-        {{0, a_size.y}, 0, {5, a_size.y}} //
+        {{0, 0}, 0, {5, 0}},                        //
+        {{0, 6}, 0, {5, 6}},                        //
+        {{0, 5}, 0, {5, 5}},                        //
+        {{0, a_size.height}, 0, {5, a_size.height}} //
     }};
     for (auto p : positions) {
       t->set_cursor(5, 5);
-      INFO("Area size (" << a_size.x << ", " << a_size.y << ") "
+      INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                          << "Set line (" << p.param.y << ") Expected: ("
                          << p.pos.x << ", " << p.pos.y << ")\n");
 
@@ -371,14 +376,14 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
   SECTION("set_cursor_line(int), with invalid parameters, should fail")
   {
     const std::vector<Cursor_param> positions {{
-        {{0, -8}, -1, {5, 10}},           //
-        {{0, a_size.y + 1}, -1, {5, 10}}, //
-        {{0, 50}, -1, {5, 10}},           //
+        {{0, -8}, -1, {5, 10}},                //
+        {{0, a_size.height + 1}, -1, {5, 10}}, //
+        {{0, 50}, -1, {5, 10}},                //
     }};
 
     for (auto p : positions) {
       t->set_cursor(5, 10);
-      INFO("Area size (" << a_size.x << ", " << a_size.y << ") "
+      INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                          << "Set line (" << p.param.y << ") Expected: ("
                          << p.pos.x << ", " << p.pos.y << ")\n");
 
@@ -431,7 +436,7 @@ TEST_CASE("print() and print_at() functions", "[print]")
   remotemo::Remotemo t {std::move(eng), config};
   t.set_text_delay(0);
   Console_content expected_content {lines, empty_line, normal_line};
-  SDL_Point expected_cursor_pos {0, 0};
+  remotemo::Point expected_cursor_pos {0, 0};
 
   SECTION("Checking starting status")
   {
@@ -542,7 +547,7 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
   t.set_text_delay(0);
   REQUIRE(t.get_scrolling() == true);
   Console_content expected_content {lines, empty_line, normal_line};
-  SDL_Point expected_cursor_pos {0, 0};
+  remotemo::Point expected_cursor_pos {0, 0};
 
   SECTION("Printing text from starting position")
   {
@@ -573,7 +578,7 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
 
   SECTION("print_at() w/ content one line below bottom should scroll up")
   {
-    const SDL_Point print_to_pos {2, lines};
+    const remotemo::Point print_to_pos {2, lines};
 
     for (const auto& text : {"Start scrolling"s, "no lines empty"s, "---"s,
              " "s, "New bottom line"s}) {
@@ -611,7 +616,7 @@ TEST_CASE("print() - wrap set to character", "[print][wrap]")
   t.set_text_delay(0);
   REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
   Console_content expected_content {lines, empty_line, normal_line};
-  SDL_Point expected_cursor_pos {0, 0};
+  remotemo::Point expected_cursor_pos {0, 0};
 
   SECTION("Printing text from starting position")
   {
@@ -675,7 +680,7 @@ TEST_CASE("print() - scroll is on and wrap set to character",
   t.set_text_delay(0);
   REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
   Console_content expected_content {lines, empty_line, normal_line};
-  SDL_Point expected_cursor_pos {0, 0};
+  remotemo::Point expected_cursor_pos {0, 0};
 
   SECTION("Printing text from starting position")
   {
@@ -739,7 +744,7 @@ TEST_CASE("The 'inverse' setting should affect printing", "[print][inverse]")
   remotemo::Remotemo t {std::move(eng), config};
   t.set_text_delay(0);
   Console_content expected_content {lines, empty_line, normal_line};
-  SDL_Point expected_cursor_pos {0, 0};
+  remotemo::Point expected_cursor_pos {0, 0};
 
   SECTION("Just calling set_inverse() should not change screen content")
   {
@@ -842,7 +847,7 @@ TEST_CASE("Inversed content should scroll the same way as the text",
   remotemo::Remotemo t {std::move(eng), config};
   t.set_text_delay(0);
   Console_content expected_content {lines, empty_line, normal_line};
-  SDL_Point expected_cursor_pos {0, 0};
+  remotemo::Point expected_cursor_pos {0, 0};
 
   t.set_inverse(true);
 

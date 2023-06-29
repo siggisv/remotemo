@@ -35,8 +35,8 @@ bool Texture::load(SDL_Renderer* renderer, const std::string& file_path)
     return false;
   }
   is_owned(true);
-  if (::SDL_QueryTexture(res(), nullptr, nullptr, &m_texture_size.x,
-          &m_texture_size.y) != 0) {
+  if (::SDL_QueryTexture(res(), nullptr, nullptr, &m_texture_size.width,
+          &m_texture_size.height) != 0) {
     ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
         "Getting size of texture \"%s\" failed: %s\n", texture_path.c_str(),
         ::SDL_GetError());

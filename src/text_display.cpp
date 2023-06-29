@@ -8,11 +8,11 @@ std::optional<Text_display> Text_display::create(Font&& font,
   // That seems to be needed so that when stretching the content to the
   // screen, then the outer border of the content gets the same look as the
   // rest of the content:
-  SDL_Point area_size {(font.char_width() * text_area_config.columns) + 2,
+  Size area_size {(font.char_width() * text_area_config.columns) + 2,
       // + 1 line to make scrolling simpler:
       (font.char_height() * (text_area_config.lines + 1)) + 2};
   auto* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
-      SDL_TEXTUREACCESS_TARGET, area_size.x, area_size.y);
+      SDL_TEXTUREACCESS_TARGET, area_size.width, area_size.height);
   if (texture == nullptr) {
     ::SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
         "SDL_CreateTexture() failed: %s\n", ::SDL_GetError());
@@ -28,17 +28,17 @@ std::optional<Text_display> Text_display::create(Font&& font,
 }
 
 
-char Text_display::char_at(const SDL_Point& pos) const
+char Text_display::char_at(const Point& pos) const
 {
   return m_display_content[pos.y][pos.x].character;
 }
 
-bool Text_display::is_inverse_at(const SDL_Point& pos) const
+bool Text_display::is_inverse_at(const Point& pos) const
 {
   return m_display_content[pos.y][pos.x].is_inversed;
 }
 
-void Text_display::cursor_pos(const SDL_Point& pos)
+void Text_display::cursor_pos(const Point& pos)
 {
   if (m_cursor_pos.x != pos.x || m_cursor_pos.y != pos.y) {
     show_char_hidden_by_cursor();
@@ -95,10 +95,10 @@ void Text_display::clear_line(int line)
   SDL_SetTextureBlendMode(res(), SDL_BLENDMODE_NONE);
   SDL_SetTextureColorMod(res(), white.red, white.green, white.blue);
 
-  int line_length = texture_size().x - 2;
+  int line_length = texture_size().width - 2;
   int line_height = m_font.char_height();
   SDL_Rect area_to_be_copied = {
-      1, texture_size().y - line_height, line_length, line_height};
+      1, texture_size().height - line_height, line_length, line_height};
   SDL_Rect target_area = {
       1, 1 + (line * line_height), line_length, line_height};
   SDL_RenderCopy(m_renderer, res(), &area_to_be_copied, &target_area);
@@ -118,9 +118,9 @@ void Text_display::scroll_up_one_line()
   SDL_SetTextureBlendMode(res(), SDL_BLENDMODE_NONE);
   SDL_SetTextureColorMod(res(), white.red, white.green, white.blue);
 
-  int line_length = texture_size().x - 2;
+  int line_length = texture_size().width - 2;
   int line_height = m_font.char_height();
-  int scrolling_lines_height = texture_size().y - 2 - line_height;
+  int scrolling_lines_height = texture_size().height - 2 - line_height;
   SDL_Rect area_to_be_moved = {
       1, 1 + line_height, line_length, scrolling_lines_height};
   SDL_Rect target_area = {1, 1, line_length, scrolling_lines_height};
@@ -136,7 +136,7 @@ void Text_display::scroll_up_one_line()
 }
 
 void Text_display::display_char_at(
-    int character, bool is_output_inversed, const SDL_Point& pos)
+    int character, bool is_output_inversed, const Point& pos)
 {
   if (pos.x >= m_columns || pos.y >= m_lines) {
     return;

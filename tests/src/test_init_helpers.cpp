@@ -335,7 +335,8 @@ std::string Win_conf::describe() const
     oss << "Title:           " << *title << "\n";
   }
   if (size.has_value()) {
-    oss << "Size:            (" << size->x << ", " << size->y << ")\n";
+    oss << "Size:            (" << size->width << ", " << size->height
+        << ")\n";
   }
   if (pos.has_value()) {
     oss << "Position:        (" << pos->x << ", " << pos->y << ")\n";
@@ -361,12 +362,12 @@ std::string Texture_conf::describe() const
     oss << "Font bitm. path: " << *font_bitmap_file_path << "\n";
   }
   if (font_size.has_value()) {
-    oss << "Font size:       (" << font_size->x << ", " << font_size->y
-        << ")\n";
+    oss << "Font size:       (" << font_size->width << ", "
+        << font_size->height << ")\n";
   }
   if (text_area_size.has_value()) {
-    oss << "Text area size:  (" << text_area_size->x << ", "
-        << text_area_size->y << ")\n";
+    oss << "Text area size:  (" << text_area_size->width << ", "
+        << text_area_size->height << ")\n";
   }
   if (text_blend_mode.has_value()) {
     oss << "Text blend mode: ";
@@ -433,19 +434,19 @@ void Init_status::attempt_create_window(
   std::string regex_title =
       "^"s + win_conf.title.value_or("Retro Monochrome Text Monitor") + "$";
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  SDL_Point size = win_conf.size.value_or(SDL_Point {1280, 720});
-  SDL_Point pos = win_conf.pos.value_or(
-      SDL_Point {SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED});
+  remotemo::Size size = win_conf.size.value_or(remotemo::Size {1280, 720});
+  remotemo::Point pos = win_conf.pos.value_or(
+      remotemo::Point {SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED});
   Uint32 flags =
       (win_conf.is_resizable.value_or(true) ? SDL_WINDOW_RESIZABLE : 0) |
       (win_conf.is_fullscreen.value_or(false) ? SDL_WINDOW_FULLSCREEN_DESKTOP
                                               : 0);
   SDL_Window* create_win_ret = should_success ? d_new_win : nullptr;
-  exps.push_back(NAMED_REQUIRE_CALL(mock_SDL,
-      mock_CreateWindow(re(regex_title), pos.x, pos.y, size.x, size.y, flags))
-                     .RETURN(create_win_ret)
-                     .IN_SEQUENCE(
-                         seqs.main, seqs.font, seqs.backgr, seqs.t_area));
+  exps.push_back(
+      NAMED_REQUIRE_CALL(mock_SDL, mock_CreateWindow(re(regex_title), pos.x,
+                                       pos.y, size.width, size.height, flags))
+          .RETURN(create_win_ret)
+          .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr, seqs.t_area));
   ready_res.win = create_win_ret;
   to_be_cleaned_up.win = create_win_ret;
 }
@@ -506,13 +507,13 @@ void Init_status::attempt_setup_textures(
     }
   }
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-  auto font_size = texture_conf.font_size.value_or(SDL_Point {7, 18});
-  auto t_area_size = texture_conf.text_area_size.value_or(
-      SDL_Point {40, 24}); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+  auto font_size = texture_conf.font_size.value_or(remotemo::Size {7, 18});
+  auto t_area_size = texture_conf.text_area_size.value_or(remotemo::Size {
+      40, 24}); // NOLINT(cppcoreguidelines-avoid-magic-numbers)
   exps_t_area.setup = NAMED_REQUIRE_CALL(mock_SDL,
       mock_CreateTexture(ready_res.render, SDL_PIXELFORMAT_RGBA32,
-          SDL_TEXTUREACCESS_TARGET, (t_area_size.x * font_size.x) + 2,
-          ((t_area_size.y + 1) * font_size.y) + 2))
+          SDL_TEXTUREACCESS_TARGET, (t_area_size.width * font_size.width) + 2,
+          ((t_area_size.height + 1) * font_size.height) + 2))
                           .TIMES(0, 1)
                           .RETURN(exp_results.t_area)
                           .IN_SEQUENCE(seqs.main, seqs.t_area);

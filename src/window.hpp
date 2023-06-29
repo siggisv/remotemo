@@ -21,13 +21,13 @@ public:
   void refresh_local_size();
   void refresh_local_flags();
   void set_fullscreen(bool do_make_fullscreen);
-  [[nodiscard]] const SDL_Point& size() const { return m_size; }
+  [[nodiscard]] const Size& size() const { return m_size; }
   [[nodiscard]] bool is_fullscreen() const { return m_is_fullscreen; }
 
 private:
   bool setup(const Window_config& window_config);
 
-  SDL_Point m_size {0, 0};
+  Size m_size {0, 0};
   bool m_is_fullscreen {false};
 };
 } // namespace remotemo

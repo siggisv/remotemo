@@ -32,7 +32,7 @@ bool Window::setup(const Window_config& window_config)
 
 void Window::refresh_local_size()
 {
-  ::SDL_GetWindowSize(res(), &m_size.x, &m_size.y);
+  ::SDL_GetWindowSize(res(), &m_size.width, &m_size.height);
 }
 
 void Window::refresh_local_flags()

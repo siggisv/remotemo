@@ -59,9 +59,9 @@ public:
   Config& window(SDL_Window* window);
   Config& window_title(const std::string& title);
   Config& window_size(int width, int height);
-  Config& window_size(const SDL_Point& size);
+  Config& window_size(const Size& size);
   Config& window_position(int x, int y);
-  Config& window_position(const SDL_Point& pos);
+  Config& window_position(const Point& pos);
   Config& window_resizable(bool is_resizable);
   Config& window_fullscreen(bool is_fullscreen);
   [[nodiscard]] const Window_config& window() const { return m_window; }
@@ -96,11 +96,11 @@ public:
   Config& font_bitmap(SDL_Texture* font_bitmap);
   Config& font_bitmap_file_path(const std::string& file_path);
   Config& font_size(int width, int height);
-  Config& font_size(const SDL_Point& size);
+  Config& font_size(const Size& size);
   [[nodiscard]] const Font_config& font() const { return m_font; }
 
   Config& text_area_size(int columns, int lines);
-  Config& text_area_size(const SDL_Point& size);
+  Config& text_area_size(const Size& size);
   Config& text_blend_mode(SDL_BlendMode mode);
   Config& text_color(Uint8 red, Uint8 green, Uint8 blue);
   Config& text_color(const Color& color);

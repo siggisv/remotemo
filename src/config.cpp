@@ -23,9 +23,9 @@ Config& Config::window_size(int width, int height)
   m_window.height = height;
   return *this;
 }
-Config& Config::window_size(const SDL_Point& size)
+Config& Config::window_size(const Size& size)
 {
-  return window_size(size.x, size.y);
+  return window_size(size.width, size.height);
 }
 Config& Config::window_position(int x, int y)
 {
@@ -33,7 +33,7 @@ Config& Config::window_position(int x, int y)
   m_window.pos_y = y;
   return *this;
 }
-Config& Config::window_position(const SDL_Point& pos)
+Config& Config::window_position(const Point& pos)
 {
   return window_position(pos.x, pos.y);
 }
@@ -189,9 +189,9 @@ Config& Config::font_size(int width, int height)
   m_font.height = height;
   return *this;
 }
-Config& Config::font_size(const SDL_Point& size)
+Config& Config::font_size(const Size& size)
 {
-  return font_size(size.x, size.y);
+  return font_size(size.width, size.height);
 }
 
 Config& Config::text_area_size(int columns, int lines)
@@ -200,9 +200,9 @@ Config& Config::text_area_size(int columns, int lines)
   m_text_area.lines = lines;
   return *this;
 }
-Config& Config::text_area_size(const SDL_Point& size)
+Config& Config::text_area_size(const Size& size)
 {
-  return text_area_size(size.x, size.y);
+  return text_area_size(size.width, size.height);
 }
 Config& Config::text_blend_mode(SDL_BlendMode mode)
 {
