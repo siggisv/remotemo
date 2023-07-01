@@ -68,12 +68,12 @@ bool version_is_pre_release()
 }
 
 
-int Remotemo::move_cursor(const Point& move)
+int Remotemo::move_cursor(const Size& move)
 {
   auto new_pos = m_engine->cursor_pos();
   auto area_size = m_engine->text_area_size();
   int return_code = 0;
-  new_pos.x += move.x;
+  new_pos.x += move.width;
   if (new_pos.x >= area_size.width) {
     new_pos.x = area_size.width - 1;
     return_code -= 1;
@@ -81,7 +81,7 @@ int Remotemo::move_cursor(const Point& move)
     new_pos.x = 0;
     return_code -= 4;
   }
-  new_pos.y += move.y;
+  new_pos.y += move.height;
   // NOTE Cursor is allowed to be one line below visible area:
   if (new_pos.y > area_size.height) {
     new_pos.y = area_size.height;

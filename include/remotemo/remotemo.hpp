@@ -21,8 +21,11 @@ public:
   Remotemo(const Remotemo&) = delete;
   Remotemo& operator=(const Remotemo&) = delete;
 
-  int move_cursor(int x, int y) { return move_cursor(Point {x, y}); }
-  int move_cursor(const Point& move);
+  int move_cursor(int width, int height)
+  {
+    return move_cursor(Size {width, height});
+  }
+  int move_cursor(const Size& move);
   int set_cursor(int column, int line)
   {
     return set_cursor(Point {column, line});

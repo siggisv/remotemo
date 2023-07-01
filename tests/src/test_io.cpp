@@ -136,7 +136,13 @@ void delayed_key_press(int delay_ms, const Get_key_test_param& key)
 
 TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 {
-  struct Cursor_param {
+  struct Cursor_move {
+    remotemo::Size param;
+    int result;
+    remotemo::Point pos;
+  };
+
+  struct Cursor_set {
     remotemo::Point param;
     int result;
     remotemo::Point pos;
@@ -161,7 +167,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 
   SECTION("move_cursor(), with valid parameters, should work")
   {
-    const std::vector<Cursor_param> valid_moves {{
+    const std::vector<Cursor_move> valid_moves {{
         {{4, 8}, 0, {14, 18}}, //
         {{-2, 6}, 0, {8, 16}}, //
         {{3, -5}, 0, {13, 5}}, //
@@ -170,31 +176,32 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
     }};
 
     auto move = GENERATE_COPY(from_range(valid_moves));
-    if (move.param.x + 10 >= a_size.width) {
-      move.param.x = a_size.width - 11;
+    if (move.param.width + 10 >= a_size.width) {
+      move.param.width = a_size.width - 11;
       move.pos.x = a_size.width - 1;
     }
-    if (move.param.y + 10 > a_size.height) {
-      move.param.y = a_size.height - 10;
+    if (move.param.height + 10 > a_size.height) {
+      move.param.height = a_size.height - 10;
       move.pos.y = a_size.height;
     }
     INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
-                       << "Start pos (10, 10). Move (" << move.param.x << ", "
-                       << move.param.y << ") Expected: (" << move.pos.x
-                       << ", " << move.pos.y << ")\n");
+                       << "Start pos (10, 10). Move (" << move.param.width
+                       << ", " << move.param.height << ") Expected: ("
+                       << move.pos.x << ", " << move.pos.y << ")\n");
 
     SECTION("move_cursor(int, int), with valid parameters, should work")
     {
       t->set_cursor(10, 10);
 
-      REQUIRE(t->move_cursor(move.param.x, move.param.y) == move.result);
+      REQUIRE(
+          t->move_cursor(move.param.width, move.param.height) == move.result);
       auto pos = t->get_cursor_position();
       REQUIRE(pos.x == move.pos.x);
       REQUIRE(pos.y == move.pos.y);
     }
 
     SECTION(
-        "move_cursor(remotemo::Point&), with valid parameters, should work")
+        "move_cursor(remotemo::Size&), with valid parameters, should work")
     {
       t->set_cursor(10, 10);
 
@@ -207,7 +214,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 
   SECTION("move_cursor(), with invalid parameters, should fail")
   {
-    const std::vector<Cursor_param> invalid_moves {{
+    const std::vector<Cursor_move> invalid_moves {{
         {{400, 5}, -1, {a_size.width - 1, 10}},            // right
         {{6, 400}, -2, {16, a_size.height}},               // bottom
         {{-13, 6}, -4, {0, 11}},                           // left
@@ -220,25 +227,27 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 
     auto move = GENERATE_REF(from_range(invalid_moves));
     INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
-                       << "Start pos (10, 5). Move (" << move.param.x << ", "
-                       << move.param.y << ") Expected: (" << move.pos.x
-                       << ", " << move.pos.y << ")\n");
+                       << "Start pos (10, 5). Move (" << move.param.width
+                       << ", " << move.param.height << ") Expected: ("
+                       << move.pos.x << ", " << move.pos.y << ")\n");
 
     SECTION("move_cursor(int, int), with invalid parameters, should fail")
     {
       t->set_cursor(10, 5);
 
-      REQUIRE(t->move_cursor(move.param.x, move.param.y) == move.result);
+      REQUIRE(
+          t->move_cursor(move.param.width, move.param.height) == move.result);
       auto pos = t->get_cursor_position();
       REQUIRE(pos.x == move.pos.x);
       REQUIRE(pos.y == move.pos.y);
     }
     SECTION(
-        "move_cursor(remotemo::Point&), with invalid parameters, should fail")
+        "move_cursor(remotemo::Size&), with invalid parameters, should fail")
     {
       t->set_cursor(10, 5);
 
-      REQUIRE(t->move_cursor(move.param.x, move.param.y) == move.result);
+      REQUIRE(
+          t->move_cursor(move.param.width, move.param.height) == move.result);
       auto pos = t->get_cursor_position();
       REQUIRE(pos.x == move.pos.x);
       REQUIRE(pos.y == move.pos.y);
@@ -247,7 +256,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 
   SECTION("set_cursor(), with valid parameters, should work")
   {
-    const std::vector<Cursor_param> positions {{
+    const std::vector<Cursor_set> positions {{
         {{4, 8}, 0, {4, 8}},                               //
         {{2, 6}, 0, {2, 6}},                               //
         {{a_size.width - 1, 5}, 0, {a_size.width - 1, 5}}, //
@@ -278,7 +287,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
   }
   SECTION("set_cursor(), with invalid parameters, should fail")
   {
-    const std::vector<Cursor_param> positions {{
+    const std::vector<Cursor_set> positions {{
         {{-4, 8}, -1, {15, 10}},                 //
         {{8, -7}, -1, {15, 10}},                 //
         {{a_size.width, 10}, -1, {15, 10}},      //
@@ -313,7 +322,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 
   SECTION("set_cursor_column(int), with a valid parameter, should work")
   {
-    const std::vector<Cursor_param> positions {{
+    const std::vector<Cursor_set> positions {{
         {{4, 0}, 0, {4, 5}},                               //
         {{0, 0}, 0, {0, 5}},                               //
         {{a_size.width - 7, 0}, 0, {a_size.width - 7, 5}}, //
@@ -334,7 +343,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 
   SECTION("set_cursor_column(int), with invalid parameters, should fail")
   {
-    const std::vector<Cursor_param> positions {{
+    const std::vector<Cursor_set> positions {{
         {{-4, 0}, -1, {10, 10}},               //
         {{a_size.width, 0}, -1, {10, 10}},     //
         {{a_size.width + 4, 0}, -1, {10, 10}}, //
@@ -354,7 +363,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 
   SECTION("set_cursor_line(int), with a valid parameter, should work")
   {
-    const std::vector<Cursor_param> positions {{
+    const std::vector<Cursor_set> positions {{
         {{0, 0}, 0, {5, 0}},                        //
         {{0, 6}, 0, {5, 6}},                        //
         {{0, 5}, 0, {5, 5}},                        //
@@ -375,7 +384,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 
   SECTION("set_cursor_line(int), with invalid parameters, should fail")
   {
-    const std::vector<Cursor_param> positions {{
+    const std::vector<Cursor_set> positions {{
         {{0, -8}, -1, {5, 10}},                //
         {{0, a_size.height + 1}, -1, {5, 10}}, //
         {{0, 50}, -1, {5, 10}},                //
