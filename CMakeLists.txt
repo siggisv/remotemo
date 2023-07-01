@@ -4,7 +4,7 @@ project(remotemo
     VERSION 0.1.0
     LANGUAGES CXX
 )
-set(remotemo_PRE_RELEASE_LABEL alpha.0)
+set(remotemo_PRE_RELEASE_LABEL beta.0)
 
 if(NOT remotemo_PRE_RELEASE_LABEL STREQUAL "")
     set(remotemo_VERSION
