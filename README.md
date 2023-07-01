@@ -25,7 +25,7 @@ The easiest way to start using remoTemo is to simply call
 `remotemo::create()`, check its return status and then you can start
 calling the text-input/output methods of the object created.
 
-```C++
+```cpp
 #include <remotemo/remotemo.hpp>
 
 int main(int argc, char* argv[])
