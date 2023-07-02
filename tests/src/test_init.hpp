@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "mock_sdl.hpp"
+#include <remotemo/config.hpp>
 
 ///////////////////////////////////
 // Helper structures and objects:
@@ -72,8 +73,8 @@ extern const std::array<Conf_resources, 6> valid_conf_res;
 
 struct Win_conf {
   std::optional<std::string> title {};
-  std::optional<SDL_Point> size {};
-  std::optional<SDL_Point> pos {};
+  std::optional<remotemo::Size> size {};
+  std::optional<remotemo::Point> pos {};
   std::optional<bool> is_resizable {};
   std::optional<bool> is_fullscreen {};
 
@@ -83,8 +84,8 @@ struct Win_conf {
 struct Texture_conf {
   std::optional<std::string> backgr_file_path {};
   std::optional<std::string> font_bitmap_file_path {};
-  std::optional<SDL_Point> font_size {};
-  std::optional<SDL_Point> text_area_size {};
+  std::optional<remotemo::Size> font_size {};
+  std::optional<remotemo::Size> text_area_size {};
   std::optional<SDL_BlendMode> text_blend_mode {};
   std::optional<remotemo::Color> text_color {};
 

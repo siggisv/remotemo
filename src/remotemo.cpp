@@ -68,23 +68,23 @@ bool version_is_pre_release()
 }
 
 
-int Remotemo::move_cursor(const SDL_Point& move)
+int Remotemo::move_cursor(const Size& move)
 {
   auto new_pos = m_engine->cursor_pos();
   auto area_size = m_engine->text_area_size();
   int return_code = 0;
-  new_pos.x += move.x;
-  if (new_pos.x >= area_size.x) {
-    new_pos.x = area_size.x - 1;
+  new_pos.x += move.width;
+  if (new_pos.x >= area_size.width) {
+    new_pos.x = area_size.width - 1;
     return_code -= 1;
   } else if (new_pos.x < 0) {
     new_pos.x = 0;
     return_code -= 4;
   }
-  new_pos.y += move.y;
+  new_pos.y += move.height;
   // NOTE Cursor is allowed to be one line below visible area:
-  if (new_pos.y > area_size.y) {
-    new_pos.y = area_size.y;
+  if (new_pos.y > area_size.height) {
+    new_pos.y = area_size.height;
     return_code -= 2;
   } else if (new_pos.y < 0) {
     new_pos.y = 0;
@@ -94,12 +94,12 @@ int Remotemo::move_cursor(const SDL_Point& move)
   return return_code;
 }
 
-int Remotemo::set_cursor(const SDL_Point& pos)
+int Remotemo::set_cursor(const Point& pos)
 {
   auto area_size = m_engine->text_area_size();
-  if (pos.x < 0 || pos.x >= area_size.x ||
+  if (pos.x < 0 || pos.x >= area_size.width ||
       // NOTE Cursor is allowed to be one line below visible area:
-      pos.y < 0 || pos.y > area_size.y) {
+      pos.y < 0 || pos.y > area_size.height) {
     m_engine->main_loop_once();
     return -1;
   }
@@ -121,7 +121,7 @@ int Remotemo::set_cursor_line(int line)
   return set_cursor(pos);
 }
 
-SDL_Point Remotemo::get_cursor_position() const
+Point Remotemo::get_cursor_position() const
 {
   return m_engine->cursor_pos();
 }
@@ -171,7 +171,7 @@ int Remotemo::print(const std::string& text)
   return 0;
 }
 
-int Remotemo::print_at(const SDL_Point& pos, const std::string& text)
+int Remotemo::print_at(const Point& pos, const std::string& text)
 {
   auto result = set_cursor(pos);
   if (result != 0) {
@@ -180,25 +180,25 @@ int Remotemo::print_at(const SDL_Point& pos, const std::string& text)
   return print(text);
 }
 
-char Remotemo::get_char_at(const SDL_Point& pos) const
+char Remotemo::get_char_at(const Point& pos) const
 {
   auto area_size = m_engine->text_area_size();
-  if (pos.x < 0 || pos.x >= area_size.x ||
+  if (pos.x < 0 || pos.x >= area_size.width ||
       // NOTE Although the cursor is allowed to be one line below the screen,
       // there is no content there.
-      pos.y < 0 || pos.y > area_size.y) {
+      pos.y < 0 || pos.y > area_size.height) {
     return 0;
   }
   return m_engine->char_at(pos);
 }
 
-bool Remotemo::is_inverse_at(const SDL_Point& pos) const
+bool Remotemo::is_inverse_at(const Point& pos) const
 {
   auto area_size = m_engine->text_area_size();
-  if (pos.x < 0 || pos.x >= area_size.x ||
+  if (pos.x < 0 || pos.x >= area_size.width ||
       // NOTE Although the cursor is allowed to be one line below the screen,
       // there is no content there.
-      pos.y < 0 || pos.y > area_size.y) {
+      pos.y < 0 || pos.y > area_size.height) {
     return false;
   }
   return m_engine->is_inverse_at(pos);

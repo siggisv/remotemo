@@ -1,5 +1,5 @@
 # remoTemo API design
-_8th draft_
+_9th draft_
 
 > **Warning**
 >
@@ -45,7 +45,7 @@ In short:
 
 The library provides a few functions that returns its name and its version:
 
-```C++
+```cpp
 std::string remotemo::full_name();
 std::string remotemo::version_full();
 int remotemo::version_major();
@@ -79,7 +79,7 @@ Assuming the version to be `1.1.0-beta.2`, they would return the following:
 ## Initialization, cleanup and config
 ### Initialization
 
-```C++
+```cpp
 std::optional<remotemo::Remotemo> remotemo::create();
 std::optional<remotemo::Remotemo> remotemo::create(
         const remotemo::Config& config);
@@ -128,7 +128,7 @@ Idiom](https://isocpp.org/wiki/faq/ctors#named-parameter-idiom) is followed,
 providing you with a "config" object that when created, will contains the
 default initialization settings:
 
-```C++
+```cpp
 remotemo::Config::Config();
 ```
 
@@ -141,7 +141,7 @@ everything with the settings you wanted.
 - You can store that `remotemo::Config` object in a variable, work on it and
   then pass it to `remotemo::create()`:
 
-  ```C++
+  ```cpp
   remotemo::Config my_config;
   if (some_condition) {
       my_config.window_size(1920, 1080);
@@ -154,7 +154,7 @@ everything with the settings you wanted.
 - Or you could simply call `remotemo::create()` directly with a temporary
   `remotemo::Config` object:
   
-  ```C++
+  ```cpp
   auto text_monitor = remotemo::create(
           remotemo::Config()
                   .window_size(1920, 1080)
@@ -165,7 +165,7 @@ everything with the settings you wanted.
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Cleanup
 
-```C++
+```cpp
 remotemo::Remotemo::~Remotemo();
 ```
 
@@ -190,7 +190,7 @@ renderer, the window and quitting SDL._
 
 If, for some reason, you want to clean up sooner, you could call:
 
-```C++
+```cpp
 void remotemo::Remotemo::quit();
 ```
 This will just close the window and clean up its resources.
@@ -209,7 +209,7 @@ Unless noted, the settings can not be changed after the `remotemo::Remotemo`
 object has been created:
 
 - Cleanup all: `true`
-  ```C++
+  ```cpp
   remotemo::Config& remotemo::Config::cleanup_all(bool cleanup_all);
   ```
   - If `true`, then the destructor of the `remotemo::Remotemo` object will
@@ -226,7 +226,7 @@ object has been created:
     and quit SDL afterwards yourself.
 
 - Window: `nullptr`
-  ```C++
+  ```cpp
   remotemo::Config& remotemo::Config::window(SDL_Window* window);
   ```
   - If set to `nullptr` then `remotemo::create()` will create the window with
@@ -240,12 +240,14 @@ object has been created:
     - resizable: `true` _(can be changed later)_
     - fullscreen: `false` _(can be changed later)_
 
-    ```C++
+    ```cpp
     remotemo::Config& remotemo::Config::window_title(const std::string& title);
     remotemo::Config& remotemo::Config::window_size(int width, int height);
-    remotemo::Config& remotemo::Config::window_size(const SDL_Point& size);
+    remotemo::Config& remotemo::Config::window_size(
+            const remotemo::Size& size);
     remotemo::Config& remotemo::Config::window_position(int x, int y);
-    remotemo::Config& remotemo::Config::window_position(const SDL_Point& pos);
+    remotemo::Config& remotemo::Config::window_position(
+            const remotemo::Point& pos);
     remotemo::Config& remotemo::Config::window_resizable(bool is_resizable);
     remotemo::Config& remotemo::Config::window_fullscreen(bool is_fullscreen);
     ```
@@ -271,7 +273,7 @@ object has been created:
   default):
   - Key to switch between fullscreen and windowed mode: `F11` _(can be changed
     later)_
-    ```C++
+    ```cpp
     remotemo::Config& remotemo::Config::key_fullscreen(); // Set to none
     remotemo::Config& remotemo::Config::key_fullscreen(
             remotemo::Mod_keys modifier_keys, remotemo::F_key key);
@@ -279,7 +281,7 @@ object has been created:
             remotemo::Mod_keys_strict modifier_keys, remotemo::Key key);
     ```
   - Key combination to close the window: `Ctrl-w` _(can be changed later)_
-    ```C++
+    ```cpp
     remotemo::Config& remotemo::Config::key_close_window(); // Set to none
     remotemo::Config& remotemo::Config::key_close_window(
             remotemo::Mod_keys modifier_keys, remotemo::F_key key);
@@ -297,7 +299,7 @@ object has been created:
     after the window has been closed.
 
   - Key combination to quit the application: `Ctrl-q` _(can be changed later)_
-    ```C++
+    ```cpp
     remotemo::Config& remotemo::Config::key_quit(); // Set to none
     remotemo::Config& remotemo::Config::key_quit(
             remotemo::Mod_keys modifier_keys, remotemo::F_key key);
@@ -315,7 +317,7 @@ object has been created:
     > **without** making sure all resources are cleaned up.
 
   - Closing window is the same as quitting: `false` _(can be changed later)_
-    ```C++
+    ```cpp
     remotemo::Config& remotemo::Config::closing_same_as_quit(
             bool is_closing_same_as_quit);
     ```
@@ -332,7 +334,7 @@ object has been created:
       the function-to-call-before-quitting.
   - Function to call before closing window: `[]() -> bool { return true; }`
     _(can be changed later)_
-    ```C++
+    ```cpp
     remotemo::Config& remotemo::Config::function_pre_close(
             const std::function<bool()>& func);
     ```
@@ -345,7 +347,7 @@ object has been created:
     > the default value instead.
   - Function to call before quitting: `[]() -> bool { return true; }`
     _(can be changed later)_
-    ```C++
+    ```cpp
     remotemo::Config& remotemo::Config::function_pre_quit(
             const std::function<bool()>& func);
     ```
@@ -364,7 +366,7 @@ object has been created:
   will be in charge of destroying it).
 
 - Background: `nullptr`
-  ```C++
+  ```cpp
   remotemo::Config& remotemo::Config::background(SDL_Texture* background);
   ```
 
@@ -374,7 +376,7 @@ object has been created:
     - Background file path: `"res/img/terminal_screen.png"` (which will be
       converted to `"res\\img\\terminal_screen.png"` on operating systems that
       have `\` as a path separator).
-      ```C++
+      ```cpp
       remotemo::Config& remotemo::Config::background_file_path(
               const std::string& file_path);
       ```
@@ -431,19 +433,21 @@ object has been created:
   - the area of the background where the text is to be drawn:
     `x: 188.25f, y: 149.25f, w: 560.0f, h: 432.0f`
 
-  ```C++
+  ```cpp
   remotemo::Config& remotemo::Config::background_min_area(int x, int y,
           int w, int h);
-  remotemo::Config& remotemo::Config::background_min_area(SDL_Rect area);
+  remotemo::Config& remotemo::Config::background_min_area(
+          remotemo::Rect<int> area);
   remotemo::Config& remotemo::Config::background_text_area(float x, float y,
           float width, float height);
-  remotemo::Config& remotemo::Config::background_text_area(SDL_FRect area);
+  remotemo::Config& remotemo::Config::background_text_area(
+          remotemo::Rect<float> area);
   ```
   > **Note** x and y are counted from the top-left corner, both starting at
   > zero.
 
 - Font-bitmap: `nullptr`
-  ```C++
+  ```cpp
   remotemo::Config& remotemo::Config::font_bitmap(SDL_Texture* font_bitmap);
   ```
   - If set to `nullptr` then the font-bitmap texture will be loaded from the
@@ -452,7 +456,7 @@ object has been created:
     - Font-bitmap file path: `"res/img/font_bitmap.png"` (which will be
       converted to `"res\\img\\font_bitmap.png"` on operating systems that
       have `\` as a path separator).
-      ```C++
+      ```cpp
       remotemo::Config& remotemo::Config::font_bitmap_file_path(
               const std::string& file_path);
       ```
@@ -487,9 +491,9 @@ object has been created:
     \
     This is the size, in pixels, of each character as they are drawn in the
     font-bitmap file.
-    ```C++
+    ```cpp
     remotemo::Config& remotemo::Config::font_size(int width, int height);
-    remotemo::Config& remotemo::Config::font_size(const SDL_Point& size);
+    remotemo::Config& remotemo::Config::font_size(const remotemo::Size& size);
     ```
 
 - The following are the default setting used to create a texture buffer where
@@ -507,9 +511,10 @@ object has been created:
     > **Note** This setting controls the color of **all** the text, both the
     > text that has already been printed to the screen and the text that is
     > going to be printed to the screen.
-  ```C++
+  ```cpp
   remotemo::Config& remotemo::Config::text_area_size(int columns, int lines);
-  remotemo::Config& remotemo::Config::text_area_size(const SDL_Point& size);
+  remotemo::Config& remotemo::Config::text_area_size(
+          const remotemo::Size& size);
   remotemo::Config& remotemo::Config::text_blend_mode(SDL_BlendMode mode);
   remotemo::Config& remotemo::Config::text_color(Uint8 red, Uint8 green,
           Uint8 blue);
@@ -574,9 +579,19 @@ before or while being called.
 
 ### Structs and enums
 
-```C++
+```cpp
 enum class remotemo::Wrapping {
   off, character, word
+};
+
+struct remotemo::Size {
+  int width;
+  int height;
+};
+
+struct remotemo::Point {
+  int x;
+  int y;
 };
 
 struct remotemo::Color {
@@ -621,9 +636,9 @@ update the window while running.
 > (depending on the scrolling settings) either all lines scroll up or the
 > output gets lost.
 
-```C++
+```cpp
 int remotemo::Remotemo::move_cursor(int x, int y);
-int remotemo::Remotemo::move_cursor(const SDL_Point& move);
+int remotemo::Remotemo::move_cursor(const remotemo::Size& move);
 ```
 
 Moves the cursor `x` columns to the right (negative `x` moves it to the left)
@@ -641,9 +656,9 @@ and `y` lines down (negative `y` moves it up).
   - `-6` (-4 + -2) if trying to go past left and bottom edges.
   - `-12` (-4 + -8) if trying to go past left and top edges.
 
-```C++
+```cpp
 int remotemo::Remotemo::set_cursor(int column, int line);
-int remotemo::Remotemo::set_cursor(const SDL_Point& position);
+int remotemo::Remotemo::set_cursor(const remotemo::Point& position);
 int remotemo::Remotemo::set_cursor_column(int column);
 int remotemo::Remotemo::set_cursor_line(int line);
 ```
@@ -654,14 +669,14 @@ Moves the cursor to the given position.
 - If trying to move the cursor past the edges of the text area, it stay where
   it was and the function will return `-1`.
 
-```C++
-SDL_Point remotemo::Remotemo::get_cursor_position();
+```cpp
+remotemo::Point remotemo::Remotemo::get_cursor_position();
 ```
 
 (Obviously) returns the current position of the cursor. As stated elsewhere,
 does not update the window.
 
-```C++
+```cpp
 int remotemo::Remotemo::pause(int pause_in_ms);
 ```
 
@@ -671,7 +686,7 @@ the window as needed, before returning:
 - `0` on success.
 - `-1` on error (e.g. the given time is negative).
 
-```C++
+```cpp
 void remotemo::Remotemo::clear(
   remotemo::Do_reset do_reset = remotemo::Do_reset::all);
 ```
@@ -685,7 +700,7 @@ Clears all the text area at once.
 No matter how 'inverse' is set, clearing the text area fills it all with the
 background color.
 
-```C++
+```cpp
 remotemo::Key remotemo::Remotemo::get_key();
 ```
 
@@ -693,7 +708,7 @@ Waits for a key being pressed and returns it (without displaying it on the
 screen). As noted regarding the enum class `remotemo::Key`, F-keys (e.g.
 `F1`), the keypad and modifier keys are not included.
 
-```C++
+```cpp
 std::string remotemo::Remotemo::get_input(int max_length);
 ```
 
@@ -719,7 +734,7 @@ also restrict the lenght of the text being entered on the screen.
 > **Note** No matter what keyboard layout the user has, this function will
 > behave as if it was an `US-ANSI` layout.
 
-```C++
+```cpp
 int remotemo::Remotemo::print(const std::string& text);
 ```
 
@@ -770,10 +785,10 @@ Then when trying to print any text to the hidden line, depending on the
   continuing printing the rest of the text.
 - If set to `false` then the rest of the string is lost.
 
-```C++
+```cpp
 int remotemo::Remotemo::print_at(int column, int line,
         const std::string& text);
-int remotemo::Remotemo::print_at(const SDL_Point& position,
+int remotemo::Remotemo::print_at(const remotemo::Point& position,
         const std::string& text);
 ```
 
@@ -785,9 +800,9 @@ Does the same thing as calling first `set_cursor()` and then `print()`.
 - Returns `-2` if some of the text could not get displayed (e.g. reached end
   of line while wrapping was set to `off`).
 
-```C++
+```cpp
 char remotemo::Remotemo::get_char_at(int column, int line);
-char remotemo::Remotemo::get_char_at(const SDL_Point& pos);
+char remotemo::Remotemo::get_char_at(const remotemo::Point& pos);
 ```
 
 - Returns the character that is at the given position (no matter if it was
@@ -795,9 +810,9 @@ char remotemo::Remotemo::get_char_at(const SDL_Point& pos);
   and then was moved up by scrolling).
 - If the given position is outside the text area, it returns `'\0'`.
 
-```C++
+```cpp
 bool remotemo::Remotemo::is_inverse_at(int column, int line);
-bool remotemo::Remotemo::is_inverse_at(const SDL_Point& pos);
+bool remotemo::Remotemo::is_inverse_at(const remotemo::Point& pos);
 ```
 - If the character at the given position was printed with the foreground and
   background colors inversed, it returns `true`.
@@ -808,7 +823,7 @@ bool remotemo::Remotemo::is_inverse_at(const SDL_Point& pos);
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Text output behaviour
 
-```C++
+```cpp
 bool remotemo::Remotemo::set_text_delay(int delay_in_ms);
 bool remotemo::Remotemo::set_text_speed(double char_per_second);
 int remotemo::Remotemo::get_text_delay();
@@ -829,7 +844,7 @@ Also note that when converting from `char per seconds` to `delay`, then some
 rounding might happen (e.g. any speed above 1000 char per second will probably
 be rounded down to a delay of 0 ms).
 
-```C++
+```cpp
 void remotemo::Remotemo::set_scrolling(bool scrolling);
 bool remotemo::Remotemo::get_scrolling();
 ```
@@ -837,7 +852,7 @@ bool remotemo::Remotemo::get_scrolling();
 Sets and gets the 'scrolling' property. See [Scrolling](#scrolling) above for
 more.
 
-```C++
+```cpp
 void remotemo::Remotemo::set_wrapping(remotemo::Wrapping wrapping);
 remotemo::Wrapping remotemo::Remotemo::get_wrapping();
 ```
@@ -845,7 +860,7 @@ remotemo::Wrapping remotemo::Remotemo::get_wrapping();
 Sets and gets the 'wrapping' property. See [Wrapping](#wrapping) above for
 more.
 
-```C++
+```cpp
 void remotemo::Remotemo::set_inverse(bool inverse);
 bool remotemo::Remotemo::get_inverse();
 ```
@@ -859,12 +874,12 @@ had already been printed to the screen.
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Text area settings
 
-```C++
+```cpp
 int remotemo::Remotemo::set_text_area_size(int columns, int lines);
-int remotemo::Remotemo::set_text_area_size(const SDL_Point& size);
+int remotemo::Remotemo::set_text_area_size(const remotemo::Size& size);
 int remotemo::Remotemo::get_text_area_columns();
 int remotemo::Remotemo::get_text_area_lines();
-SDL_Point remotemo::Remotemo::get_text_area_size();
+remotemo::Size remotemo::Remotemo::get_text_area_size();
 
 int remotemo::Remotemo::set_text_blend_mode(SDL_BlendMode mode);
 SDL_BlendMode remotemo::Remotemo::get_text_blend_mode();
@@ -877,15 +892,15 @@ remotemo::Color remotemo::Remotemo::get_text_color();
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Window settings
 
-```C++
+```cpp
 int remotemo::Remotemo::set_window_title(const std::string& title);
 std::string remotemo::Remotemo::get_window_title();
 int remotemo::Remotemo::set_window_size(int width, int height);
-int remotemo::Remotemo::set_window_size(const SDL_Point& size);
-SDL_Point remotemo::Remotemo::get_window_size();
+int remotemo::Remotemo::set_window_size(const remotemo::Size& size);
+remotemo::Size remotemo::Remotemo::get_window_size();
 int remotemo::Remotemo::set_window_position(int x, int y);
-int remotemo::Remotemo::set_window_position(const SDL_Point& position);
-SDL_Point remotemo::Remotemo::get_window_position();
+int remotemo::Remotemo::set_window_position(const remotemo::Point& position);
+remotemo::Point remotemo::Remotemo::get_window_position();
 int remotemo::Remotemo::set_window_resizable(bool is_resizable);
 bool remotemo::Remotemo::get_window_resizable();
 int remotemo::Remotemo::set_window_fullscreen(bool is_fullscreen);

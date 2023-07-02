@@ -8,6 +8,23 @@ namespace remotemo {
 enum class Wrapping { off, character, word };
 enum class Do_reset { none, cursor, inverse, all };
 
+struct Size {
+  int width;
+  int height;
+};
+
+struct Point {
+  int x;
+  int y;
+};
+
+template<class T> struct Rect {
+  T x;
+  T y;
+  T width;
+  T height;
+};
+
 struct Color {
   Uint8 red {}, green {}, blue {};
 };

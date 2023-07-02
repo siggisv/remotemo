@@ -34,10 +34,10 @@ public:
   [[nodiscard]] const Font& font() const { return m_font; }
   [[nodiscard]] int columns() const { return m_columns; }
   [[nodiscard]] int lines() const { return m_lines; }
-  [[nodiscard]] SDL_Point cursor_pos() const { return m_cursor_pos; }
-  [[nodiscard]] char char_at(const SDL_Point& pos) const;
-  [[nodiscard]] bool is_inverse_at(const SDL_Point& pos) const;
-  void cursor_pos(const SDL_Point& pos);
+  [[nodiscard]] Point cursor_pos() const { return m_cursor_pos; }
+  [[nodiscard]] char char_at(const Point& pos) const;
+  [[nodiscard]] bool is_inverse_at(const Point& pos) const;
+  void cursor_pos(const Point& pos);
   void update_cursor();
   void show_char_hidden_by_cursor();
   void is_output_inversed(bool inverse) { m_is_output_inversed = inverse; }
@@ -51,7 +51,7 @@ public:
 
 private:
   void display_char_at(
-      int character, bool is_output_inverse, const SDL_Point& pos);
+      int character, bool is_output_inverse, const Point& pos);
 
   SDL_Renderer* m_renderer;
   Font m_font;
@@ -61,7 +61,7 @@ private:
   Color m_text_to_screen_color;
   std::vector<Display_square> m_empty_line;
   std::deque<std::vector<Display_square>> m_display_content;
-  SDL_Point m_cursor_pos {0, 0};
+  Point m_cursor_pos {0, 0};
   bool m_is_cursor_visible {true};
   bool m_is_cursor_updated {false};
   bool m_is_output_inversed {false};
