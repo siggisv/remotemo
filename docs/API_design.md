@@ -1,5 +1,5 @@
 # remoTemo API design
-_8th draft_
+_9th draft_
 
 > **Warning**
 >
@@ -436,10 +436,12 @@ object has been created:
   ```cpp
   remotemo::Config& remotemo::Config::background_min_area(int x, int y,
           int w, int h);
-  remotemo::Config& remotemo::Config::background_min_area(SDL_Rect area);
+  remotemo::Config& remotemo::Config::background_min_area(
+          remotemo::Rect<int> area);
   remotemo::Config& remotemo::Config::background_text_area(float x, float y,
           float width, float height);
-  remotemo::Config& remotemo::Config::background_text_area(SDL_FRect area);
+  remotemo::Config& remotemo::Config::background_text_area(
+          remotemo::Rect<float> area);
   ```
   > **Note** x and y are counted from the top-left corner, both starting at
   > zero.

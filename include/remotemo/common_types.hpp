@@ -18,6 +18,14 @@ struct Point {
   int y;
 };
 
+template<class T>
+struct Rect {
+  T x;
+  T y;
+  T width;
+  T height;
+};
+
 struct Color {
   Uint8 red {}, green {}, blue {};
 };

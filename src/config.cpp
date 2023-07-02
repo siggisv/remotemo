@@ -156,18 +156,18 @@ Config& Config::background_file_path(const std::string& file_path)
 }
 Config& Config::background_min_area(int x, int y, int w, int h)
 {
-  return background_min_area(SDL_Rect {x, y, w, h});
+  return background_min_area(Rect<int> {x, y, w, h});
 }
-Config& Config::background_min_area(const SDL_Rect& area)
+Config& Config::background_min_area(const Rect<int>& area)
 {
   m_background.min_area = area;
   return *this;
 }
 Config& Config::background_text_area(float x, float y, float w, float h)
 {
-  return background_text_area(SDL_FRect {x, y, w, h});
+  return background_text_area(Rect<float> {x, y, w, h});
 }
-Config& Config::background_text_area(const SDL_FRect& area)
+Config& Config::background_text_area(const Rect<float>& area)
 {
   m_background.text_area = area;
   return *this;

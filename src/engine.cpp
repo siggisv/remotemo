@@ -94,8 +94,8 @@ void Engine::set_screen_display_settings()
   m_background_target.w = backgr_texture_size.width;
   m_background_target.h = backgr_texture_size.height;
   auto backgr_text_area = m_background->text_area();
-  m_text_target.w = backgr_text_area.w;
-  m_text_target.h = backgr_text_area.h;
+  m_text_target.w = backgr_text_area.width;
+  m_text_target.h = backgr_text_area.height;
   refresh_screen_display_settings();
 }
 
@@ -104,20 +104,20 @@ void Engine::refresh_screen_display_settings()
   auto window_size = m_window->size();
   auto backgr_min_area = m_background->min_area();
   float scale_w = static_cast<float>(window_size.width) /
-                  static_cast<float>(backgr_min_area.w);
+                  static_cast<float>(backgr_min_area.width);
   float scale_h = static_cast<float>(window_size.height) /
-                  static_cast<float>(backgr_min_area.h);
+                  static_cast<float>(backgr_min_area.height);
   m_screen_scale = std::min(scale_w, scale_h);
   m_background_target.x =
       ((static_cast<int>(
             static_cast<float>(window_size.width) / m_screen_scale) -
-           backgr_min_area.w + 1) /
+           backgr_min_area.width + 1) /
           2) -
       backgr_min_area.x;
   m_background_target.y =
       ((static_cast<int>(
             static_cast<float>(window_size.height) / m_screen_scale) -
-           backgr_min_area.h + 1) /
+           backgr_min_area.height + 1) /
           2) -
       backgr_min_area.y;
   auto backgr_text_area = m_background->text_area();

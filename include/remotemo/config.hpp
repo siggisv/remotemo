@@ -20,8 +20,8 @@ struct Texture_config {
 };
 
 struct Backgr_config : Texture_config {
-  SDL_Rect min_area;
-  SDL_FRect text_area;
+  Rect<int> min_area;
+  Rect<float> text_area;
 };
 
 struct Font_config : Texture_config {
@@ -85,9 +85,9 @@ public:
   Config& background(SDL_Texture* background);
   Config& background_file_path(const std::string& file_path);
   Config& background_min_area(int x, int y, int w, int h);
-  Config& background_min_area(const SDL_Rect& area);
+  Config& background_min_area(const Rect<int>& area);
   Config& background_text_area(float x, float y, float w, float h);
-  Config& background_text_area(const SDL_FRect& area);
+  Config& background_text_area(const Rect<float>& area);
   [[nodiscard]] const Backgr_config& background() const
   {
     return m_background;
@@ -130,9 +130,9 @@ private:
   std::function<bool()> m_pre_quit_function {[]() -> bool { return true; }};
   Backgr_config m_background {{nullptr, "res/img/terminal_screen.png"s},
       // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-      SDL_Rect {118, 95, 700, 540},
+      Rect<int> {118, 95, 700, 540},
       // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-      SDL_FRect {188.25f, 149.25f, 560.0f, 432.0f}};
+      Rect<float> {188.25f, 149.25f, 560.0f, 432.0f}};
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
   Font_config m_font {{nullptr, "res/img/font_bitmap.png"s}, 7, 18};
   Text_area_config m_text_area {
