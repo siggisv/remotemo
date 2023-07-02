@@ -18,8 +18,7 @@ struct Point {
   int y;
 };
 
-template<class T>
-struct Rect {
+template<class T> struct Rect {
   T x;
   T y;
   T width;
