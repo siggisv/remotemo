@@ -552,7 +552,7 @@ will have the initial values shown here _(those can all be changed later)_:
   This can be set to `off` (text printed beyond the right border gets lost),
   `character` (text wraps to next line. This might happen in the middle of a
   word) or `word` (
-  ** (NOT IMPLEMENTED YET) **
+  **(NOT IMPLEMENTED YET)**
   text wraps to the next line, if possible at the last
   whitespace before getting to the right border).
 
@@ -784,7 +784,7 @@ settings. If wrapping is set to `word` it might wrap even sooner).
 - If set to `character` then text wraps to the beginning of the next line when
   reaching the right border, possibly splitting a word in the process.
 - If set to `word`
-  ** (NOT IMPLEMENTED YET) **
+  **(NOT IMPLEMENTED YET)**
   then text wraps to the beginning of the next line, at the
   last whitespace before getting to the right border. Except if there is no
   whitespace in the current line, in which case this line wraps at the right
