@@ -1,5 +1,5 @@
 # remoTemo API design
-_9th draft_
+_10th draft_
 
 > **Warning**
 >
@@ -191,9 +191,13 @@ renderer, the window and quitting SDL._
 If, for some reason, you want to clean up sooner, you could call:
 
 ```cpp
+// (NOT IMPLEMENTED YET)
 void remotemo::Remotemo::quit();
 ```
 This will just close the window and clean up its resources.
+
+**TODO** Decide if this will do just that or if it should behave as if the
+end-user pressed the `quit`-key-combo.
 
 Almost all functions will throw an `remotemo::Window_is_closed_exception` if
 you try calling them after the window has been closed.
@@ -321,8 +325,9 @@ object has been created:
     remotemo::Config& remotemo::Config::closing_same_as_quit(
             bool is_closing_same_as_quit);
     ```
-    Setting this to `true` will change the behaviour of both choosing to close
-    the window and of choosing to quit so that doing any one of them will:
+    Setting this to `true` will change the behaviour of both the end-user
+    closing the window and of pressing the quit-key-combo, so that doing any
+    one of them will:
     - Close the window (and clean up its resources).
     - Then throw an `remotemo::User_quit_exception`.
 
@@ -332,6 +337,7 @@ object has been created:
     - choosing to close the window will still call the
       function-to-call-before-closing-window while choosing to quit will call
       the function-to-call-before-quitting.
+
   - Function to call before closing window: `[]() -> bool { return true; }`
     _(can be changed later)_
     ```cpp
@@ -545,7 +551,9 @@ will have the initial values shown here _(those can all be changed later)_:
   \
   This can be set to `off` (text printed beyond the right border gets lost),
   `character` (text wraps to next line. This might happen in the middle of a
-  word) or `word` (text wraps to the next line, if possible at the last
+  word) or `word` (
+  ** (NOT IMPLEMENTED YET) **
+  text wraps to the next line, if possible at the last
   whitespace before getting to the right border).
 
 <sup>[Back to top](#remotemo-api-design)</sup>
@@ -594,6 +602,13 @@ struct remotemo::Point {
   int y;
 };
 
+template<class T> struct remotemo::Rect {
+  T x;
+  T y;
+  T width;
+  T height;
+};
+
 struct remotemo::Color {
   Uint8 red, green, blue;
 };
@@ -637,12 +652,12 @@ update the window while running.
 > output gets lost.
 
 ```cpp
-int remotemo::Remotemo::move_cursor(int x, int y);
+int remotemo::Remotemo::move_cursor(int width, int height);
 int remotemo::Remotemo::move_cursor(const remotemo::Size& move);
 ```
 
-Moves the cursor `x` columns to the right (negative `x` moves it to the left)
-and `y` lines down (negative `y` moves it up).
+Moves the cursor `width` columns to the right (negative `width` moves it to
+the left) and `height` lines down (negative `height` moves it up).
 
 - If successful, returns `0`.
 - If trying to move the cursor past the edges of the text area, it will stop
@@ -709,6 +724,7 @@ screen). As noted regarding the enum class `remotemo::Key`, F-keys (e.g.
 `F1`), the keypad and modifier keys are not included.
 
 ```cpp
+// (NOT IMPLEMENTED YET)
 std::string remotemo::Remotemo::get_input(int max_length);
 ```
 
@@ -767,7 +783,9 @@ settings. If wrapping is set to `word` it might wrap even sooner).
   cursor stops just inside the border.
 - If set to `character` then text wraps to the beginning of the next line when
   reaching the right border, possibly splitting a word in the process.
-- If set to `word` then text wraps to the beginning of the next line, at the
+- If set to `word`
+  ** (NOT IMPLEMENTED YET) **
+  then text wraps to the beginning of the next line, at the
   last whitespace before getting to the right border. Except if there is no
   whitespace in the current line, in which case this line wraps at the right
   border.
@@ -871,21 +889,37 @@ While set to `true`, printing to the screen is done with the foreground and
 background color switched. Changing this property does not affect text that
 had already been printed to the screen.
 
+> **Note** Printing the `newline` character just moves the cursor to the next
+> line, without changing the rest of the current line. If you want the whole
+> line to become inversed, then you need to fill it with the `space` character
+> (or repeatly get the current character with `get_char_at()` and reprint it
+> with the new setting) after setting the 'inverse' property.
+
 <sup>[Back to top](#remotemo-api-design)</sup>
 ### Text area settings
 
 ```cpp
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_text_area_size(int columns, int lines);
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_text_area_size(const remotemo::Size& size);
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::get_text_area_columns();
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::get_text_area_lines();
+// (NOT IMPLEMENTED YET)
 remotemo::Size remotemo::Remotemo::get_text_area_size();
 
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_text_blend_mode(SDL_BlendMode mode);
+// (NOT IMPLEMENTED YET)
 SDL_BlendMode remotemo::Remotemo::get_text_blend_mode();
 
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_text_color(Uint8 red, Uint8 green, Uint8 blue);
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_text_color(const remotemo::Color& color);
+// (NOT IMPLEMENTED YET)
 remotemo::Color remotemo::Remotemo::get_text_color();
 ```
 
@@ -893,43 +927,71 @@ remotemo::Color remotemo::Remotemo::get_text_color();
 ### Window settings
 
 ```cpp
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_window_title(const std::string& title);
+// (NOT IMPLEMENTED YET)
 std::string remotemo::Remotemo::get_window_title();
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_window_size(int width, int height);
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_window_size(const remotemo::Size& size);
+// (NOT IMPLEMENTED YET)
 remotemo::Size remotemo::Remotemo::get_window_size();
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_window_position(int x, int y);
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_window_position(const remotemo::Point& position);
+// (NOT IMPLEMENTED YET)
 remotemo::Point remotemo::Remotemo::get_window_position();
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_window_resizable(bool is_resizable);
+// (NOT IMPLEMENTED YET)
 bool remotemo::Remotemo::get_window_resizable();
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_window_fullscreen(bool is_fullscreen);
+// (NOT IMPLEMENTED YET)
 bool remotemo::Remotemo::get_window_fullscreen();
 
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_key_fullscreen(); // Set to none
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_key_fullscreen(remotemo::Mod_keys modifier_keys,
         remotemo::F_key key);
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_key_fullscreen(
         remotemo::Mod_keys_strict modifier_keys, remotemo::Key key);
+// (NOT IMPLEMENTED YET)
 std::optional<remotemo::Key_combo> remotemo::Remotemo::get_key_fullscreen();
 
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_key_close_window(); // Set to none
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_key_close_window(remotemo::Mod_keys modifier_keys,
         remotemo::F_key key);
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_key_close_window(
         remotemo::Mod_keys_strict modifier_keys, remotemo::Key key);
+// (NOT IMPLEMENTED YET)
 std::optional<remotemo::Key_combo> remotemo::Remotemo::get_key_close_window();
 
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_key_quit(); // Set to none
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_key_quit(remotemo::Mod_keys modifier_keys,
         remotemo::F_key key);
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_key_quit(remotemo::Mod_keys_strict modifier_keys,
         remotemo::Key key);
+// (NOT IMPLEMENTED YET)
 std::optional<remotemo::Key_combo> remotemo::Remotemo::get_key_quit();
 
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_closing_same_as_quit(bool is_closing_same_as_quit);
+// (NOT IMPLEMENTED YET)
 bool remotemo::Remotemo::get_closing_same_as_quit();
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_function_pre_close(std::function<bool()> func);
+// (NOT IMPLEMENTED YET)
 int remotemo::Remotemo::set_function_pre_quit(std::function<bool()> func);
 ```
 
