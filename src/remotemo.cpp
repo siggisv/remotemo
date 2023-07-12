@@ -76,19 +76,19 @@ int Remotemo::move_cursor(const Size& move)
   new_pos.x += move.width;
   if (new_pos.x >= area_size.width) {
     new_pos.x = area_size.width - 1;
-    return_code -= 1;
+    return_code += static_cast<int>(Move_cursor_error::past_right_edge);
   } else if (new_pos.x < 0) {
     new_pos.x = 0;
-    return_code -= 4;
+    return_code += static_cast<int>(Move_cursor_error::past_left_edge);
   }
   new_pos.y += move.height;
   // NOTE Cursor is allowed to be one line below visible area:
   if (new_pos.y > area_size.height) {
     new_pos.y = area_size.height;
-    return_code -= 2;
+    return_code += static_cast<int>(Move_cursor_error::past_bottom_edge);
   } else if (new_pos.y < 0) {
     new_pos.y = 0;
-    return_code -= 8;
+    return_code += static_cast<int>(Move_cursor_error::past_top_edge);
   }
   m_engine->cursor_pos(new_pos);
   return return_code;

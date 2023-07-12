@@ -7,6 +7,12 @@ namespace remotemo {
 
 enum class Wrapping { off, character, word };
 enum class Do_reset { none, cursor, inverse, all };
+enum class Move_cursor_error {
+  past_right_edge = -1,
+  past_bottom_edge = -2,
+  past_left_edge = -4,
+  past_top_edge = -8
+};
 
 struct Size {
   int width;

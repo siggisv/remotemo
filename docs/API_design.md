@@ -584,6 +584,13 @@ enum class remotemo::Wrapping {
   off, character, word
 };
 
+enum class Move_cursor_error {
+  past_right_edge = -1,
+  past_bottom_edge = -2,
+  past_left_edge = -4,
+  past_top_edge = -8
+};
+
 struct remotemo::Size {
   int width;
   int height;
