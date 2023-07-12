@@ -66,8 +66,8 @@ struct Conf_resources {
   void expected_cleanup(std::list<tr_exp>* exps, Test_seqs* seqs) const;
   void check_win_has_renderer(std::list<tr_exp>* exps, Test_seqs* seqs) const;
   void all_checks_succeeds(std::list<tr_exp>* exps, Test_seqs* seqs) const;
-  std::string list_textures() const;
-  std::string describe() const;
+  [[nodiscard]] std::string list_textures() const;
+  [[nodiscard]] std::string describe() const;
 };
 extern const std::array<Conf_resources, 6> valid_conf_res;
 
@@ -78,7 +78,7 @@ struct Win_conf {
   std::optional<bool> is_resizable {};
   std::optional<bool> is_fullscreen {};
 
-  std::string describe() const;
+  [[nodiscard]] std::string describe() const;
 };
 
 struct Texture_conf {
@@ -89,7 +89,7 @@ struct Texture_conf {
   std::optional<SDL_BlendMode> text_blend_mode {};
   std::optional<remotemo::Color> text_color {};
 
-  std::string describe() const;
+  [[nodiscard]] std::string describe() const;
 };
 
 struct Texture_results {
@@ -98,7 +98,7 @@ struct Texture_results {
   SDL_Texture* font {nullptr};
   SDL_Texture* t_area {nullptr};
 
-  std::string describe() const;
+  [[nodiscard]] std::string describe() const;
 };
 extern const std::array<Texture_results, 10> all_texture_results;
 
@@ -134,7 +134,7 @@ struct Init_status {
   void attempt_setup_textures(Texture_results expected_results,
       const Texture_conf& texture_conf = {});
   void expected_cleanup();
-  bool check_a_texture_failed() const;
+  [[nodiscard]] bool check_a_texture_failed() const;
   void check_texture_cleanup() const;
 };
 
