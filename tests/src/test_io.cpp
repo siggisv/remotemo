@@ -21,6 +21,13 @@ constexpr int default_columns = 40;
 constexpr int default_lines = 24;
 
 // ----- Helper functions and struct ------
+namespace remotemo {
+Remotemo create_remotemo(std::unique_ptr<Engine> engine, const Config& config)
+{
+  return Remotemo(std::move(engine), config);
+}
+} // namespace remotemo
+
 struct Console_content {
   Console_content() = default;
   Console_content(int lines, const std::string def_line,
@@ -442,7 +449,7 @@ TEST_CASE("print() and print_at() functions", "[print]")
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   Console_content expected_content {lines, empty_line, normal_line};
   remotemo::Point expected_cursor_pos {0, 0};
@@ -552,7 +559,7 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   REQUIRE(t.get_scrolling() == true);
   Console_content expected_content {lines, empty_line, normal_line};
@@ -621,7 +628,7 @@ TEST_CASE("print() - wrap set to character", "[print][wrap]")
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
   Console_content expected_content {lines, empty_line, normal_line};
@@ -685,7 +692,7 @@ TEST_CASE("print() - scroll is on and wrap set to character",
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
   Console_content expected_content {lines, empty_line, normal_line};
@@ -750,7 +757,7 @@ TEST_CASE("The 'inverse' setting should affect printing", "[print][inverse]")
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   Console_content expected_content {lines, empty_line, normal_line};
   remotemo::Point expected_cursor_pos {0, 0};
@@ -853,7 +860,7 @@ TEST_CASE("Inversed content should scroll the same way as the text",
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   Console_content expected_content {lines, empty_line, normal_line};
   remotemo::Point expected_cursor_pos {0, 0};
