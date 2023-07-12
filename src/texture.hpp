@@ -30,6 +30,10 @@ protected:
   void texture_size(const Size& size) { m_texture_size = size; }
 
 private:
+  // This is a private static member variable. That makes it **NOT** globally
+  // accessible but clang-tidy has a bug that makes it report it anyway
+  // See https://github.com/llvm/llvm-project/issues/47384
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static std::optional<std::filesystem::path> m_base_path;
   Size m_texture_size {0, 0};
 };
