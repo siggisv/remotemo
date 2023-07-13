@@ -52,11 +52,11 @@ void run_test(remotemo::Remotemo* text_monitor)
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
   std::cout << "Name: " << remotemo::full_name() << '\n';
-  std::cout << "Version: " << remotemo::version_full() << '\n';
-  std::cout << "Major: " << remotemo::version_major() << '\n';
-  std::cout << "Minor: " << remotemo::version_minor() << '\n';
-  std::cout << "Patch: " << remotemo::version_patch() << '\n';
-  std::cout << "Pre-release label: " << remotemo::version_pre_release_label()
+  std::cout << "Version: " << remotemo::version().full << '\n';
+  std::cout << "Major: " << remotemo::version().major << '\n';
+  std::cout << "Minor: " << remotemo::version().minor << '\n';
+  std::cout << "Patch: " << remotemo::version().patch << '\n';
+  std::cout << "Pre-release label: " << remotemo::version().pre_release_label
             << '\n';
   std::cout << "Is pre-release? " << std::boolalpha
             << remotemo::version_is_pre_release() << std::noboolalpha << '\n';

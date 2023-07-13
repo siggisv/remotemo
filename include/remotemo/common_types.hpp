@@ -1,9 +1,18 @@
 #ifndef REMOTEMO_COMMON_TYPES_HPP
 #define REMOTEMO_COMMON_TYPES_HPP
 
+#include <string>
 #include <SDL.h>
 
 namespace remotemo {
+
+struct Version {
+  int major;
+  int minor;
+  int patch;
+  std::string pre_release_label;
+  std::string full;
+};
 
 enum class Wrapping { off, character, word };
 enum class Do_reset { none, cursor, inverse, all };
