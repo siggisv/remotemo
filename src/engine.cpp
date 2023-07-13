@@ -1,6 +1,7 @@
 #include "engine.hpp"
 
 #include <algorithm>
+#include <vector>
 
 #include "font.hpp"
 #include "keyboard.hpp"
@@ -60,13 +61,11 @@ bool Key_combo_handler::is_in_event(const SDL_Event& event) const
     return false;
   }
   auto required_mod_keys = m_key_combo->modifier_keys();
-  for (auto mod_key : {KMOD_SHIFT, KMOD_CTRL, KMOD_ALT}) {
-    if (((required_mod_keys & mod_key) == 0) !=
-        ((event.key.keysym.mod & mod_key) == 0)) {
-      return false;
-    }
-  }
-  return true;
+  const std::vector<int> mod_keys = {KMOD_SHIFT, KMOD_CTRL, KMOD_ALT};
+  return std::all_of(mod_keys.cbegin(), mod_keys.cend(), [&](int mod_key) {
+    return (((required_mod_keys & mod_key) == 0) ==
+            ((event.key.keysym.mod & mod_key) == 0));
+  });
 }
 
 

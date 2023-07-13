@@ -40,7 +40,7 @@ SDL_Window* SDL_CreateWindow(
 {
   return mock_SDL.mock_CreateWindow(title, x, y, w, h, flags);
 }
-void SDL_GetWindowSize(SDL_Window* window, int* w, int* h)
+void SDL_GetWindowSize([[maybe_unused]] SDL_Window* window, int* w, int* h)
 { // Stub, not mock
   *w = 1000;
   *h = 1000;
@@ -84,7 +84,8 @@ SDL_Texture* IMG_LoadTexture(SDL_Renderer* renderer, const char* file_path)
   return mock_SDL.mock_LoadTexture(renderer, file_path);
 }
 int SDL_QueryTexture( // Stub, not mock
-    SDL_Texture* texture, Uint32* format, int* access, int* w, int* h)
+    [[maybe_unused]] SDL_Texture* texture, [[maybe_unused]] Uint32* format,
+    [[maybe_unused]] int* access, int* w, int* h)
 {
   *w = 1000;
   *h = 1000;

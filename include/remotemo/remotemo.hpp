@@ -12,8 +12,12 @@
 namespace remotemo {
 class Engine;
 class Remotemo {
+  friend std::optional<Remotemo> create(const Config& config);
+  // To allow unit tests to access private ctor:
+  friend Remotemo create_remotemo(
+      std::unique_ptr<Engine> engine, const Config& config);
+
 public:
-  Remotemo(std::unique_ptr<Engine> engine, const Config& config) noexcept;
   ~Remotemo() noexcept;
   Remotemo(Remotemo&& other) noexcept;
   Remotemo& operator=(Remotemo&& other) noexcept;
@@ -68,6 +72,7 @@ public:
   [[nodiscard]] bool get_inverse() const;
 
 private:
+  Remotemo(std::unique_ptr<Engine> engine, const Config& config) noexcept;
   std::unique_ptr<Engine> m_engine {};
   Wrapping m_text_wrapping {Wrapping::character};
 };
@@ -76,11 +81,7 @@ std::optional<Remotemo> create();
 std::optional<Remotemo> create(const Config& config);
 
 std::string full_name();
-std::string version_full();
-int version_major();
-int version_minor();
-int version_patch();
-std::string version_pre_release_label();
+Version version();
 bool version_is_pre_release();
 } // namespace remotemo
 #endif // REMOTEMO_REMOTEMO_HPP

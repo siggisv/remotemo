@@ -1,5 +1,5 @@
 # remoTemo API design
-_10th draft_
+_12th draft_
 
 > **Warning**
 >
@@ -43,36 +43,51 @@ In short:
 - The `Major.Minor.Patch`-part of pre-release versions denotes the release
   version that will be released, not the one that is built on.
 
-The library provides a few functions that returns its name and its version:
+The library provides a struct and a few functions to provide you with its name
+and its version:
 
 ```cpp
+struct remotemo::Version {
+  int major;
+  int minor;
+  int patch;
+  std::string pre_release_label;
+  std::string full;
+};
+
 std::string remotemo::full_name();
-std::string remotemo::version_full();
-int remotemo::version_major();
-int remotemo::version_minor();
-int remotemo::version_patch();
-std::string remotemo::version_pre_release_label();
+remotemo::Version remotemo::version();
 bool remotemo::version_is_pre_release();
 ```
 
 Assuming the version to be `1.0.3`, they would return the following:
 
 - `remotemo::full_name()` will return the string `"remoTemo v1.0.3"`.
-- `remotemo::version_full()` will return the string `"1.0.3"`.
-- `remotemo::version_major()` will return the int `1`.
-- `remotemo::version_minor()` will return the int `0`.
-- `remotemo::version_patch()` will return the int `3`.
-- `remotemo::version_pre_release_label()` will return the string `""`.
+- `remotemo::version()` will return a `remotemo::Version` struct containing:
+  ```cpp
+  {
+    major = 1,
+    minor = 0,
+    patch = 3,
+    pre_release_label = "",
+    full = "1.0.3"
+  }
+  ```
 - `remotemo::version_is_pre_release()` will return the bool `false`.
 
 Assuming the version to be `1.1.0-beta.2`, they would return the following:
 
 - `remotemo::full_name()` will return the string `"remoTemo v1.1.0-beta.2"`.
-- `remotemo::version_full()` will return the string `"1.1.0-beta.2"`.
-- `remotemo::version_major()` will return the int `1`.
-- `remotemo::version_minor()` will return the int `1`.
-- `remotemo::version_patch()` will return the int `0`.
-- `remotemo::version_pre_release_label()` will return the string `"beta.2"`.
+- `remotemo::version()` will return a `remotemo::Version` struct containing:
+  ```cpp
+  {
+    major = 1,
+    minor = 1,
+    patch = 0,
+    pre_release_label = "beta.2",
+    full = "1.1.0-beta.2"
+  }
+  ```
 - `remotemo::version_is_pre_release()` will return the bool `true`.
 
 <sup>[Back to top](#remotemo-api-design)</sup>
@@ -590,6 +605,13 @@ before or while being called.
 ```cpp
 enum class remotemo::Wrapping {
   off, character, word
+};
+
+enum class Move_cursor_error {
+  past_right_edge = -1,
+  past_bottom_edge = -2,
+  past_left_edge = -4,
+  past_top_edge = -8
 };
 
 struct remotemo::Size {

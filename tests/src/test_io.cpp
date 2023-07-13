@@ -21,10 +21,17 @@ constexpr int default_columns = 40;
 constexpr int default_lines = 24;
 
 // ----- Helper functions and struct ------
+namespace remotemo {
+Remotemo create_remotemo(std::unique_ptr<Engine> engine, const Config& config)
+{
+  return Remotemo(std::move(engine), config);
+}
+} // namespace remotemo
+
 struct Console_content {
   Console_content() = default;
-  Console_content(int lines, const std::string def_line,
-      const std::deque<bool> def_is_line_inv)
+  Console_content(int lines, const std::string& def_line,
+      const std::deque<bool>& def_is_line_inv)
       : text(std::deque<std::string>(lines, def_line)),
         is_inv(std::deque<std::deque<bool>>(lines, def_is_line_inv))
   {}
@@ -46,7 +53,7 @@ std::string get_line_str(int line_num, const remotemo::Engine* engine)
 void compare_to_content(const std::deque<std::string>& expected_text_content,
     const remotemo::Engine* engine)
 {
-  int max_line = expected_text_content.size();
+  auto max_line = expected_text_content.size();
   for (int i = 0; i < max_line; i++) {
     INFO("Checking line " << i);
     std::string line_content = get_line_str(i, engine);
@@ -69,7 +76,7 @@ void compare_to_content(
     const std::deque<std::deque<bool>>& expected_is_content_inv,
     const remotemo::Engine* engine)
 {
-  int max_line = expected_is_content_inv.size();
+  auto max_line = expected_is_content_inv.size();
   for (int i = 0; i < max_line; i++) {
     INFO("Checking line " << i);
     std::deque<bool> line_inverse = get_line_is_inverse(i, engine);
@@ -442,7 +449,7 @@ TEST_CASE("print() and print_at() functions", "[print]")
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   Console_content expected_content {lines, empty_line, normal_line};
   remotemo::Point expected_cursor_pos {0, 0};
@@ -461,7 +468,7 @@ TEST_CASE("print() and print_at() functions", "[print]")
       REQUIRE(t.print(text) == 0);
       expected_content.text[expected_cursor_pos.y].replace(
           expected_cursor_pos.x, text.size(), text);
-      expected_cursor_pos.x += text.size();
+      expected_cursor_pos.x += static_cast<int>(text.size());
       check_status(expected_content, expected_cursor_pos, engine);
     }
     SECTION("Printing \"\\n\" should move cursor to beginning of next line")
@@ -494,7 +501,7 @@ TEST_CASE("print() and print_at() functions", "[print]")
     for (const auto& text : {"Foo!!!"s, "_bar_"s, "spam"s}) {
       REQUIRE(t.print_at(5, 2, text) == 0);
       expected_content.text[2].replace(5, text.size(), text);
-      expected_cursor_pos.x = 5 + text.size();
+      expected_cursor_pos.x = 5 + static_cast<int>(text.size());
       expected_cursor_pos.y = 2;
       check_status(expected_content, expected_cursor_pos, engine);
     }
@@ -527,7 +534,7 @@ TEST_CASE("print() with delay", "[print][pause]")
     t->set_cursor(0, 0);
     t->set_text_delay(delay_ms);
     for (const auto& text : {"Foo!"s, "_bar_"s, "<spam>"s}) {
-      int expected_duration = delay_ms * text.size();
+      int expected_duration = delay_ms * static_cast<int>(text.size());
       auto start = std::chrono::high_resolution_clock::now();
       t->print(text);
       auto end = std::chrono::high_resolution_clock::now();
@@ -552,7 +559,7 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   REQUIRE(t.get_scrolling() == true);
   Console_content expected_content {lines, empty_line, normal_line};
@@ -596,7 +603,7 @@ TEST_CASE("print() - scroll set to true", "[print][scroll]")
       expected_content.text.push_back(empty_line);
       expected_content.text[lines - 1].replace(
           print_to_pos.x, text.size(), text);
-      expected_cursor_pos.x = print_to_pos.x + text.size();
+      expected_cursor_pos.x = print_to_pos.x + static_cast<int>(text.size());
       expected_cursor_pos.y = lines - 1;
       check_status(expected_content, expected_cursor_pos, engine);
     }
@@ -621,7 +628,7 @@ TEST_CASE("print() - wrap set to character", "[print][wrap]")
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
   Console_content expected_content {lines, empty_line, normal_line};
@@ -660,7 +667,7 @@ TEST_CASE("print() - wrap set to character", "[print][wrap]")
       REQUIRE(t.print(text) == 0);
       expected_content.text[expected_cursor_pos.y].replace(
           expected_cursor_pos.x, text.size(), text);
-      expected_cursor_pos.x += text.size();
+      expected_cursor_pos.x += static_cast<int>(text.size());
       check_status(expected_content, expected_cursor_pos, engine);
       REQUIRE(t.print(std::string(text.size() + count, '\b') +
                       "this should be ignored") == -2);
@@ -685,7 +692,7 @@ TEST_CASE("print() - scroll is on and wrap set to character",
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   REQUIRE(t.get_wrapping() == remotemo::Wrapping::character);
   Console_content expected_content {lines, empty_line, normal_line};
@@ -750,7 +757,7 @@ TEST_CASE("The 'inverse' setting should affect printing", "[print][inverse]")
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   Console_content expected_content {lines, empty_line, normal_line};
   remotemo::Point expected_cursor_pos {0, 0};
@@ -768,7 +775,7 @@ TEST_CASE("The 'inverse' setting should affect printing", "[print][inverse]")
     t.set_inverse(true);
 
     for (const auto& text : {"   "s, "Hello"s, "- there -"s}) {
-      int col = (columns - text.size()) / 2;
+      int col = (columns - static_cast<int>(text.size())) / 2;
       int& line = expected_cursor_pos.y;
       t.set_cursor_column(col);
       t.print(text + "\n");
@@ -786,7 +793,7 @@ TEST_CASE("The 'inverse' setting should affect printing", "[print][inverse]")
         t.set_cursor(0, 0);
         t.print(text);
         expected_cursor_pos.x = 0;
-        expected_cursor_pos.y = text.size();
+        expected_cursor_pos.y = static_cast<int>(text.size());
         check_status(expected_content, expected_cursor_pos, engine);
       }
     }
@@ -798,7 +805,7 @@ TEST_CASE("The 'inverse' setting should affect printing", "[print][inverse]")
       expected_cursor_pos.y = 0;
       t.set_inverse(false);
       for (const auto& text : {" "s, "Allo"s, "====="s}) {
-        int col = (columns - text.size()) / 2;
+        int col = (columns - static_cast<int>(text.size())) / 2;
         int& line = expected_cursor_pos.y;
         t.set_cursor_column(col);
         t.print(text + "\n");
@@ -853,7 +860,7 @@ TEST_CASE("Inversed content should scroll the same way as the text",
   auto config = setup(columns, lines);
   auto eng = remotemo::Engine::create(config);
   auto* engine = eng.get();
-  remotemo::Remotemo t {std::move(eng), config};
+  remotemo::Remotemo t = remotemo::create_remotemo(std::move(eng), config);
   t.set_text_delay(0);
   Console_content expected_content {lines, empty_line, normal_line};
   remotemo::Point expected_cursor_pos {0, 0};
@@ -862,7 +869,7 @@ TEST_CASE("Inversed content should scroll the same way as the text",
 
   for (const auto& text : {"   "s, "Hello"s, "- there -"s, "          "s,
            "start"s, "....scrolling!"s, ""s, ""s, "ok"s}) {
-    int col = (columns - text.size()) / 2;
+    int col = (columns - static_cast<int>(text.size())) / 2;
     int& line = expected_cursor_pos.y;
     t.set_cursor_column(col);
     t.print(text + "\n");
