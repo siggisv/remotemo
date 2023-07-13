@@ -46,7 +46,7 @@ public:
       const std::optional<Key_combo>& combo) noexcept
       : m_key_combo(combo)
   {}
-  bool is_in_event(const SDL_Event& event) const;
+  [[nodiscard]] bool is_in_event(const SDL_Event& event) const;
 
 private:
   std::optional<Key_combo> m_key_combo {};
