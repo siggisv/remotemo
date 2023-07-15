@@ -2,5 +2,7 @@
 [._]*.s[a-v][a-z]
 [._]*.sw[a-p]
 
+docs/html
+docs/Doxyfile
 Debug/
 Release/

@@ -20,6 +20,17 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL
     "Enable generation of 'compile_commands.json'"
 )
 
+set(REMOTEMO_DOXYGEN_EXTRACT_ALL YES CACHE STRING
+    "Treat undocumented members as being documented (Note: disables warnings)"
+)
+set_property(CACHE REMOTEMO_DOXYGEN_EXTRACT_ALL PROPERTY STRINGS YES NO)
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/src/docs/Doxyfile.in"
+    "${PROJECT_SOURCE_DIR}/docs/Doxyfile"
+    @ONLY
+)
+
 configure_file(
     "${PROJECT_SOURCE_DIR}/src/version.hpp.in"
     "${PROJECT_BINARY_DIR}/src/version.hpp"
