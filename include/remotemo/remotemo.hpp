@@ -1,3 +1,11 @@
+/**
+ * \file
+ * \brief Main header file of the remoTemo library
+ *
+ * remoTemo, the retro monochrome text monitor - a library for building
+ * applications with a late 70s looking, monochrome, text-only user interface.
+ */
+
 #ifndef REMOTEMO_REMOTEMO_HPP
 #define REMOTEMO_REMOTEMO_HPP
 
@@ -9,8 +17,18 @@
 #include "remotemo/common_types.hpp"
 #include "remotemo/config.hpp"
 
+/// \brief Main namespace of the remoTemo library
 namespace remotemo {
 class Engine;
+
+/**
+ * Main class of remoTemo, the retro monochrome text monitor.
+ *
+ * An object of this class will represent the monitor and contain the window
+ * showing it (along with the needed textures and properties). That object
+ * will also contain all the needed member functions to change its settings
+ * and for I/O (i.e. keyboard input from user and output to the monitor).
+ */
 class Remotemo {
   friend std::optional<Remotemo> create(const Config& config);
   // To allow unit tests to access private ctor:
@@ -18,11 +36,16 @@ class Remotemo {
       std::unique_ptr<Engine> engine, const Config& config);
 
 public:
+  /// Destructor
   ~Remotemo() noexcept;
+  /// Move-constructor
   Remotemo(Remotemo&& other) noexcept;
+  /// Move assignment operator
   Remotemo& operator=(Remotemo&& other) noexcept;
 
+  /// Copy-constructor (DELETED)
   Remotemo(const Remotemo&) = delete;
+  /// Copy assignment operator (DELETED)
   Remotemo& operator=(const Remotemo&) = delete;
 
   int move_cursor(int width, int height)
@@ -77,7 +100,25 @@ private:
   Wrapping m_text_wrapping {Wrapping::character};
 };
 
+/**
+ * Create and initialize the monitor using the default configuration.
+ *
+ * Create and initialize an object representing an ASCII-only text
+ * monitor. That object will also contain the window showing the monitor.
+ *
+ * \return \p std::optional containing the created object unless setup failed.
+ */
 std::optional<Remotemo> create();
+
+/**
+ * Create and initialize the monitor using the given configuration.
+ *
+ * Create and initialize an object representing an ASCII-only text
+ * monitor. That object will also contain the window showing the monitor.
+ *
+ * \param config The configuration to be used
+ * \return \p std::optional containing the created object unless setup failed.
+ */
 std::optional<Remotemo> create(const Config& config);
 
 std::string full_name();
