@@ -313,10 +313,25 @@ enum class Key {
  *
  * even though internally the combo is stored using less strict enums.
  *
+ * \note
+ * Yes. We know that \p static_cast can easily be used to get past those
+ * restrictions.
+ * \note
+ * But absolutly no promisses are made regarding what happens if you do. It
+ * might be fine in one version, it might crash your application (right away
+ * or later, who knows?) in another version, it might cast an exception in yet
+ * another version or it might silently filter out invalid input.
+ *
  * \todo
- * Change this class, the enums it uses and any code that handless the
- * keyboard so that it can store (and return) \p remotemo::Mod_keys and \p
- * remotemo::Key.
+ * Change the \p Key_combo class, the enums it uses and any code that handless
+ * the keyboard so that it can return (and store?) \p remotemo::Mod_keys and
+ * \p remotemo::Key.
+ *
+ * \todo
+ * Add some method for the user of the library to check if a key really is
+ * part of the enums (to be used in case the library user needs to take some
+ * input from the end user and doesn't want to just blindly cast that to one
+ * of those enums).
  */
 class Key_combo {
 public:
