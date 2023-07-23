@@ -703,7 +703,7 @@ int remotemo::Remotemo::set_cursor_line(int line);
 Moves the cursor to the given position.
 
 - If successful, returns `0`.
-- If trying to move the cursor past the edges of the text area, it stay where
+- If trying to move the cursor past the edges of the text area, it stays where
   it was and the function will return `-1`.
 
 ```cpp

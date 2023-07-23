@@ -16,6 +16,8 @@ namespace remotemo {
  * \struct Version
  * \brief Used for representing the version number of the library.
  *
+ * \sa version()
+ *
  * \var Version::major
  * \brief Increased when incompatible changes are made to the public API.
  *
@@ -45,6 +47,8 @@ struct Version {
  * \enum Wrapping
  * \brief Used to set/get how wrapping of text behaves.
  *
+ * \sa Remotemo::set_wrapping()
+ *
  * \var off
  * text printed beyond the right border gets lost.
  *
@@ -64,6 +68,8 @@ enum class Wrapping { off, character, word };
  * \enum Do_reset
  * \brief Used to control behaviour of Remotemo::clear()
  *
+ * \sa Remotemo::clear()
+ *
  * \var none
  * Clear screen without resetting either cursor nor inverse setting.
  *
@@ -82,6 +88,8 @@ enum class Do_reset { none, cursor, inverse, all };
  * \brief Error codes for when move_cursor() tries to go past any border.
  *
  * When trying to go past more than one border, the values are added together
+ *
+ * \sa Remotemo::move_cursor()
  */
 enum class Move_cursor_error {
   past_right_edge = -1,  ///< Trying to move cursor past the right edge.
@@ -214,13 +222,14 @@ enum class F_key {
  *
  * \note Those values represent the physical location of the keys on the
  * keyboard and are not connected in any way to the current keyboard layout.
- * \note
- * E.g. `K_q` always represent the key just right of the `Tab`-key, even when
- * using an "azerty"- or "Dworak"-layout.
  *
  * \note
  * The names of the values are based on the "US-ANSI"-layout.
+ * \note
+ * E.g. `K_q` always represent the key just right of the `Tab`-key, even when
+ * using a different layout, like an "Azerty"- or "Dworak"-layout.
  *
+ * \sa Remotemo::get_key()
  */
 enum class Key {
   K_esc = SDL_SCANCODE_ESCAPE, ///< \c ESC
