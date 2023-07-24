@@ -87,7 +87,7 @@ public:
   /**
    * \overload
    * \param move \c remotemo::Size containing the \c width and \c height of
-   *             how far to move the cursor. 
+   *             how far to move the cursor.
    */
   int move_cursor(const Size& move);
 
