@@ -70,6 +70,11 @@ public:
    * move to that row but the column would be the rightmost one within the
    * area.
    *
+   * \note
+   * When it comes to the cursor position, the text area is considered to have
+   * one extra, empty, hidden row below the bottom one shown on screen. The
+   * cursor can be moved there.
+   *
    * \param width  Number of columns to move to the right (negative value to
    *               move left)
    * \param height Number of rows to move down (negative value to move up)
@@ -97,6 +102,11 @@ public:
    * If trying to set the cursor to a position outside of the text area, the
    * cursor stays where it was and the function returns \c -1
    *
+   * \note
+   * When it comes to the cursor position, the text area is considered to have
+   * one extra, empty, hidden row below the bottom one shown on screen. The
+   * cursor can be moved there.
+   *
    * \todo Replace \p line with the more correct term: \c row
    *
    * \param column Desired column
@@ -119,6 +129,8 @@ public:
    * \brief Moves the cursor to the given column (without changing its row)
    * \param column Desired column
    * \return \c 0 on success. \c -1 on error
+   *
+   * \sa set_cursor()
    */
   int set_cursor_column(int column);
 
@@ -127,6 +139,8 @@ public:
    * \todo Replace \p line with the more correct term: \c row
    * \param line   Desired row
    * \return \c 0 on success. \c -1 on error
+   *
+   * \sa set_cursor()
    */
   int set_cursor_line(int line);
 
