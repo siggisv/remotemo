@@ -20,17 +20,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL
     "Enable generation of 'compile_commands.json'"
 )
 
-set(REMOTEMO_DOXYGEN_EXTRACT_ALL YES CACHE STRING
-    "Treat undocumented members as being documented (Note: disables warnings)"
-)
-set_property(CACHE REMOTEMO_DOXYGEN_EXTRACT_ALL PROPERTY STRINGS YES NO)
-
-configure_file(
-    "${PROJECT_SOURCE_DIR}/src/docs/Doxyfile.in"
-    "${PROJECT_SOURCE_DIR}/docs/Doxyfile"
-    @ONLY
-)
-
 configure_file(
     "${PROJECT_SOURCE_DIR}/src/version.hpp.in"
     "${PROJECT_BINARY_DIR}/src/version.hpp"
@@ -38,6 +27,41 @@ configure_file(
 
 option(REMOTEMO_BUILD_TESTS "Enable building the tests" OFF)
 option(REMOTEMO_BUILD_SAMPLES "Enable building the samples" OFF)
+option(REMOTEMO_BUILD_DOCS
+    "Enable generating html documentation (requires Doxygen installed)"
+    OFF
+)
+set(REMOTEMO_DOXYGEN_EXTRACT_ALL YES CACHE STRING
+    "Treat undocumented members as being documented (Note: disables warnings)"
+)
+set_property(CACHE REMOTEMO_DOXYGEN_EXTRACT_ALL PROPERTY STRINGS YES NO)
+
+if(REMOTEMO_BUILD_DOCS)
+    message("Trying to generate documentation")
+    find_package(Doxygen)
+    if(DOXYGEN_FOUND)
+        set(DOXYGEN_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/docs)
+        set(DOXYFILE_OUT ${DOXYGEN_OUTPUT_DIRECTORY}/Doxyfile)
+        configure_file(
+            "${PROJECT_SOURCE_DIR}/Doxyfile.in"
+            "${DOXYFILE_OUT}"
+            @ONLY
+        )
+        #doxygen_add_docs(docs
+        #    include
+        #    ALL
+        #    COMMENT "Generating documentation"
+        #    CONFIG_FILE ${DOXYFILE_OUT}
+        #)
+        add_custom_target(docs ALL
+            COMMAND Doxygen::doxygen ${DOXYFILE_OUT}
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/include
+            COMMENT "Generating docs"
+        )
+    else(DOXYGEN_FOUND)
+        message("Doxygen needs to be installed to generate the documentation")
+    endif(DOXYGEN_FOUND)
+endif(REMOTEMO_BUILD_DOCS)
 
 set(is_gcc $<CXX_COMPILER_ID:GNU>)
 set(is_clang $<CXX_COMPILER_ID:Clang,AppleClang>)
