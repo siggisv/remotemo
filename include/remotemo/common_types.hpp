@@ -103,8 +103,8 @@ enum class Move_cursor_error {
  *        (or a movement).
  */
 struct Size {
-  int width;
-  int height;
+  int width;  ///< &nbsp:
+  int height; ///< &nbsp:
 };
 
 /**
@@ -135,8 +135,8 @@ struct Point {
 template<class T> struct Rect {
   T x;
   T y;
-  T width;
-  T height;
+  T width;  ///< &nbsp:
+  T height; ///< &nbsp:
 };
 
 /**
@@ -145,7 +145,9 @@ template<class T> struct Rect {
  * Each value is an integer in the range 0 to 255 (0x00 to 0xff).
  */
 struct Color {
-  Uint8 red {}, green {}, blue {};
+  Uint8 red {};   ///< &nbsp:
+  Uint8 green {}; ///< &nbsp:
+  Uint8 blue {};  ///< &nbsp:
 };
 
 /**
@@ -165,12 +167,13 @@ struct Color {
  * \todo Should handle modifier keys being different on Mac.
  */
 enum class Mod_keys_strict {
-  Ctrl = KMOD_CTRL,                                    ///< .
-  Alt = KMOD_ALT,                                      ///< .
-  Alt_shift = (KMOD_ALT | KMOD_SHIFT),                 ///< .
-  Ctrl_shift = (KMOD_CTRL | KMOD_SHIFT),               ///< .
-  Ctrl_alt = (KMOD_CTRL | KMOD_ALT),                   ///< .
-  Ctrl_alt_shift = (KMOD_CTRL | KMOD_ALT | KMOD_SHIFT) ///< .
+  Ctrl = KMOD_CTRL,                      ///< &nbsp;
+  Alt = KMOD_ALT,                        ///< &nbsp;
+  Alt_shift = (KMOD_ALT | KMOD_SHIFT),   ///< \c Alt + \c Shift
+  Ctrl_shift = (KMOD_CTRL | KMOD_SHIFT), ///< \c Ctrl + \c Shift
+  Ctrl_alt = (KMOD_CTRL | KMOD_ALT),     ///< \c Ctrl + \c Alt
+  Ctrl_alt_shift =
+      (KMOD_CTRL | KMOD_ALT | KMOD_SHIFT) ///< \c Ctrl + \c Alt + \c Shift
 };
 
 /**
@@ -183,30 +186,31 @@ enum class Mod_keys_strict {
  * \todo Should handle modifier keys being different on Mac.
  */
 enum class Mod_keys {
-  None = KMOD_NONE,                                    ///< .
-  Shift = KMOD_SHIFT,                                  ///< .
-  Ctrl = KMOD_CTRL,                                    ///< .
-  Alt = KMOD_ALT,                                      ///< .
-  Alt_shift = (KMOD_ALT | KMOD_SHIFT),                 ///< .
-  Ctrl_shift = (KMOD_CTRL | KMOD_SHIFT),               ///< .
-  Ctrl_alt = (KMOD_CTRL | KMOD_ALT),                   ///< .
-  Ctrl_alt_shift = (KMOD_CTRL | KMOD_ALT | KMOD_SHIFT) ///< .
+  None = KMOD_NONE,                      ///< &nbsp;
+  Shift = KMOD_SHIFT,                    ///< &nbsp;
+  Ctrl = KMOD_CTRL,                      ///< &nbsp;
+  Alt = KMOD_ALT,                        ///< &nbsp;
+  Alt_shift = (KMOD_ALT | KMOD_SHIFT),   ///< \c Alt + \c Shift
+  Ctrl_shift = (KMOD_CTRL | KMOD_SHIFT), ///< \c Ctrl + \c Shift
+  Ctrl_alt = (KMOD_CTRL | KMOD_ALT),     ///< \c Ctrl + \c Alt
+  Ctrl_alt_shift =
+      (KMOD_CTRL | KMOD_ALT | KMOD_SHIFT) ///< \c Ctrl + \c Alt + \c Shift
 };
 
 /// \brief The 'F'-keys (i.e. F1 - F12).
 enum class F_key {
-  F1 = SDL_SCANCODE_F1,   ///< .
-  F2 = SDL_SCANCODE_F2,   ///< .
-  F3 = SDL_SCANCODE_F3,   ///< .
-  F4 = SDL_SCANCODE_F4,   ///< .
-  F5 = SDL_SCANCODE_F5,   ///< .
-  F6 = SDL_SCANCODE_F6,   ///< .
-  F7 = SDL_SCANCODE_F7,   ///< .
-  F8 = SDL_SCANCODE_F8,   ///< .
-  F9 = SDL_SCANCODE_F9,   ///< .
-  F10 = SDL_SCANCODE_F10, ///< .
-  F11 = SDL_SCANCODE_F11, ///< .
-  F12 = SDL_SCANCODE_F12  ///< .
+  F1 = SDL_SCANCODE_F1,   ///< &nbsp;
+  F2 = SDL_SCANCODE_F2,   ///< &nbsp;
+  F3 = SDL_SCANCODE_F3,   ///< &nbsp;
+  F4 = SDL_SCANCODE_F4,   ///< &nbsp;
+  F5 = SDL_SCANCODE_F5,   ///< &nbsp;
+  F6 = SDL_SCANCODE_F6,   ///< &nbsp;
+  F7 = SDL_SCANCODE_F7,   ///< &nbsp;
+  F8 = SDL_SCANCODE_F8,   ///< &nbsp;
+  F9 = SDL_SCANCODE_F9,   ///< &nbsp;
+  F10 = SDL_SCANCODE_F10, ///< &nbsp;
+  F11 = SDL_SCANCODE_F11, ///< &nbsp;
+  F12 = SDL_SCANCODE_F12  ///< &nbsp;
 };
 
 /**
@@ -235,16 +239,16 @@ enum class Key {
   K_esc = SDL_SCANCODE_ESCAPE, ///< \c ESC
   /// \c ` - The leftmost key of the number row.
   K_grave = SDL_SCANCODE_GRAVE,
-  K_1 = SDL_SCANCODE_1,           ///< .
-  K_2 = SDL_SCANCODE_2,           ///< .
-  K_3 = SDL_SCANCODE_3,           ///< .
-  K_4 = SDL_SCANCODE_4,           ///< .
-  K_5 = SDL_SCANCODE_5,           ///< .
-  K_6 = SDL_SCANCODE_6,           ///< .
-  K_7 = SDL_SCANCODE_7,           ///< .
-  K_8 = SDL_SCANCODE_8,           ///< .
-  K_9 = SDL_SCANCODE_9,           ///< .
-  K_0 = SDL_SCANCODE_0,           ///< .
+  K_1 = SDL_SCANCODE_1,           ///< &nbsp;
+  K_2 = SDL_SCANCODE_2,           ///< &nbsp;
+  K_3 = SDL_SCANCODE_3,           ///< &nbsp;
+  K_4 = SDL_SCANCODE_4,           ///< &nbsp;
+  K_5 = SDL_SCANCODE_5,           ///< &nbsp;
+  K_6 = SDL_SCANCODE_6,           ///< &nbsp;
+  K_7 = SDL_SCANCODE_7,           ///< &nbsp;
+  K_8 = SDL_SCANCODE_8,           ///< &nbsp;
+  K_9 = SDL_SCANCODE_9,           ///< &nbsp;
+  K_0 = SDL_SCANCODE_0,           ///< &nbsp;
   K_minus = SDL_SCANCODE_MINUS,   ///< \c -
   K_equals = SDL_SCANCODE_EQUALS, ///< \c =
   K_backspace = SDL_SCANCODE_BACKSPACE,
@@ -252,16 +256,16 @@ enum class Key {
 
   /// \c Tab - The leftmost key of the top row.
   K_tab = SDL_SCANCODE_TAB,
-  K_q = SDL_SCANCODE_Q,                        ///< .
-  K_w = SDL_SCANCODE_W,                        ///< .
-  K_e = SDL_SCANCODE_E,                        ///< .
-  K_r = SDL_SCANCODE_R,                        ///< .
-  K_t = SDL_SCANCODE_T,                        ///< .
-  K_y = SDL_SCANCODE_Y,                        ///< .
-  K_u = SDL_SCANCODE_U,                        ///< .
-  K_i = SDL_SCANCODE_I,                        ///< .
-  K_o = SDL_SCANCODE_O,                        ///< .
-  K_p = SDL_SCANCODE_P,                        ///< .
+  K_q = SDL_SCANCODE_Q,                        ///< &nbsp;
+  K_w = SDL_SCANCODE_W,                        ///< &nbsp;
+  K_e = SDL_SCANCODE_E,                        ///< &nbsp;
+  K_r = SDL_SCANCODE_R,                        ///< &nbsp;
+  K_t = SDL_SCANCODE_T,                        ///< &nbsp;
+  K_y = SDL_SCANCODE_Y,                        ///< &nbsp;
+  K_u = SDL_SCANCODE_U,                        ///< &nbsp;
+  K_i = SDL_SCANCODE_I,                        ///< &nbsp;
+  K_o = SDL_SCANCODE_O,                        ///< &nbsp;
+  K_p = SDL_SCANCODE_P,                        ///< &nbsp;
   K_left_bracket = SDL_SCANCODE_LEFTBRACKET,   ///< \c [
   K_right_bracket = SDL_SCANCODE_RIGHTBRACKET, ///< \c ]
   K_backslash = SDL_SCANCODE_BACKSLASH,
@@ -273,14 +277,14 @@ enum class Key {
 
   /// The leftmost key of the home row (not counting Caps Lock).
   K_a = SDL_SCANCODE_A,
-  K_s = SDL_SCANCODE_S,                   ///< .
-  K_d = SDL_SCANCODE_D,                   ///< .
-  K_f = SDL_SCANCODE_F,                   ///< .
-  K_g = SDL_SCANCODE_G,                   ///< .
-  K_h = SDL_SCANCODE_H,                   ///< .
-  K_j = SDL_SCANCODE_J,                   ///< .
-  K_k = SDL_SCANCODE_K,                   ///< .
-  K_l = SDL_SCANCODE_L,                   ///< .
+  K_s = SDL_SCANCODE_S,                   ///< &nbsp;
+  K_d = SDL_SCANCODE_D,                   ///< &nbsp;
+  K_f = SDL_SCANCODE_F,                   ///< &nbsp;
+  K_g = SDL_SCANCODE_G,                   ///< &nbsp;
+  K_h = SDL_SCANCODE_H,                   ///< &nbsp;
+  K_j = SDL_SCANCODE_J,                   ///< &nbsp;
+  K_k = SDL_SCANCODE_K,                   ///< &nbsp;
+  K_l = SDL_SCANCODE_L,                   ///< &nbsp;
   K_semicolon = SDL_SCANCODE_SEMICOLON,   ///< \c ;
   K_apostrophe = SDL_SCANCODE_APOSTROPHE, ///< \c '
   K_return = SDL_SCANCODE_RETURN,
@@ -292,12 +296,12 @@ enum class Key {
 
   /// The leftmost key of the bottom row (not counting Left Shift).
   K_z = SDL_SCANCODE_Z,
-  K_x = SDL_SCANCODE_X,           ///< .
-  K_c = SDL_SCANCODE_C,           ///< .
-  K_v = SDL_SCANCODE_V,           ///< .
-  K_b = SDL_SCANCODE_B,           ///< .
-  K_n = SDL_SCANCODE_N,           ///< .
-  K_m = SDL_SCANCODE_M,           ///< .
+  K_x = SDL_SCANCODE_X,           ///< &nbsp;
+  K_c = SDL_SCANCODE_C,           ///< &nbsp;
+  K_v = SDL_SCANCODE_V,           ///< &nbsp;
+  K_b = SDL_SCANCODE_B,           ///< &nbsp;
+  K_n = SDL_SCANCODE_N,           ///< &nbsp;
+  K_m = SDL_SCANCODE_M,           ///< &nbsp;
   K_comma = SDL_SCANCODE_COMMA,   ///< \c ,
   K_period = SDL_SCANCODE_PERIOD, ///< \c .
   K_slash = SDL_SCANCODE_SLASH,
