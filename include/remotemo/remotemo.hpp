@@ -43,6 +43,32 @@ public:
    * Takes care of cleaning up any resource owned by this object. That
    * includes not only freeing up memory, but also things like closing the
    * window, if owned.
+   *
+   * \warning
+   * If \c cleanup_all is set to \c true, it will call \c SDL_Quit(), which
+   * should delete \b ALL active SDL subsystems along with all its windows,
+   * renderer, etc.
+   * \warning
+   * If you have more than one \c remotemo::Remotemo object, then you probably
+   * do not want the destructor of one of them to bring down the resources and
+   * subsystems that the others are using.
+   * \warning
+   * Even if you only have one \c remotemo::Remotemo object, but for some
+   * reason want to replace it with a new one, e.g.:
+   * \code{.cpp}
+   *   ...
+   *   auto text_monitor = remotemo::create(config_1);
+   *   ... // some code that uses text_monitor, without closing it down
+   *   text_monitor = remotemo::create(config_2);
+   * \endcode
+   * then if you do it the way it is done in that example, then the new object
+   * is created before it replaces the old one. Meaning that the destructor
+   * of the old one gets called after the new one has been created, possibly
+   * (i.e. if it had \c cleanup_all set to \c true) closing down everything
+   * the new one was going to be using.
+   * Don't do that.
+   *
+   * \sa remotemo::Config::cleanup_all()
    */
   ~Remotemo() noexcept;
 
@@ -78,7 +104,8 @@ public:
    * \param width  Number of columns to move to the right (negative value to
    *               move left)
    * \param height Number of rows to move down (negative value to move up)
-   * \return \c 0 on success. On error, the total value of one or two \c
+   * \retval 0 on success.
+   * \return On error, the total value of one or two \c
    *         remotemo::Move_cursor_error, depending on which edge(s) it tried
    *         to get past.
    *
@@ -93,6 +120,12 @@ public:
    * \overload
    * \param move \c remotemo::Size containing the \c width and \c height of
    *             how far to move the cursor.
+   * \retval 0 on success.
+   * \return On error, the total value of one or two \c
+   *         remotemo::Move_cursor_error, depending on which edge(s) it tried
+   *         to get past.
+   *
+   * \sa Move_cursor_error
    */
   int move_cursor(const Size& move);
 
@@ -111,7 +144,8 @@ public:
    *
    * \param column Desired column
    * \param line   Desired row
-   * \return \c 0 on success. \c -1 on error
+   * \retval 0 on success.
+   * \retval -1 on error
    */
   int set_cursor(int column, int line)
   {
@@ -121,14 +155,17 @@ public:
   /**
    * \overload
    * \param position \c remotemo::Point containing the desired position, \c x
-   * for \c column and \c y for \c row.
+   *        for \c column and \c y for \c row.
+   * \retval 0 on success.
+   * \retval -1 on error
    */
   int set_cursor(const Point& position);
 
   /**
    * \brief Moves the cursor to the given column (without changing its row)
    * \param column Desired column
-   * \return \c 0 on success. \c -1 on error
+   * \retval 0 on success.
+   * \retval -1 on error
    *
    * \sa set_cursor()
    */
@@ -138,13 +175,17 @@ public:
    * \brief Moves the cursor to the given row (without changing its column)
    * \todo Replace \p line with the more correct term: \c row
    * \param line   Desired row
-   * \return \c 0 on success. \c -1 on error
+   * \retval 0 on success.
+   * \retval -1 on error
    *
    * \sa set_cursor()
    */
   int set_cursor_line(int line);
 
-  /// \brief Returns the current position of the cursor
+  /**
+   * \brief Returns the current position of the cursor
+   * \return struct containing the current cursor position
+   */
   [[nodiscard]] Point get_cursor_position() const;
 
   /**
@@ -153,7 +194,8 @@ public:
    * Checks for events and updates the window as needed while waiting.
    *
    * \param pause_in_ms Number of milliseconds to wait
-   * \return \c 0 on success. \c -1 on error
+   * \retval 0 on success.
+   * \retval -1 on error
    */
   int pause(int pause_in_ms);
 
@@ -189,6 +231,25 @@ public:
    * \brief Allows the user to enter some text (NOT IMPLEMENTED YET)
    *
    * \todo Implement this function
+   *
+   * \param max_length not only restrict the length of the string being
+   * returned. It also restrict the lenght of the text being entered on the
+   * screen.
+   *
+   * Note that the lenght can be restricted even further in the following
+   * situations:
+   * - If wrapping is set to \c off then the length is also restricted by the
+   *   distance from the current cursor position to the right border of the
+   *   screen.
+   * - If wrapping is set to \c character (or `word`), then:
+   *   - having scrolling set to \c false will restrict the length by what can
+   *     fit from the current cursor position, down to the bottom-right corner
+   *     of the screen.
+   *   - having scrolling set to \c true will only restrict the length by what
+   *     can fit on the screen (i.e. the text being entered can not scroll up
+   *     further than the top border).
+   *
+   * \return A string containing the input from the user.
    */
   std::string get_input(int max_length);
 
@@ -206,8 +267,9 @@ public:
    * be implemented: If wrapping is set to \c word it might wrap even sooner).
    *
    * \param text The string to be displayed
-   * \return \c 0 on success. \c -2 if some of the text could not get
-   * displayed (e.g. reached end of line while wrapping was set to off).
+   * \retval 0 on success.
+   * \retval -2 if some of the text could not get displayed (e.g. reached end
+   *         of line while wrapping was set to off).
    *
    * \warning Any non-ASCII character will be displayed as �. This will not
    * count as "text could not get displayed".
@@ -243,10 +305,11 @@ public:
    * \param column Column to move the cursor to before printing
    * \param line Row to move the cursor to before printing
    * \param text The string to be displayed
-   * \return \c 0 on success. \c -1 (without moving cursor nor printing
-   * anything) if the given position is outside the text area. \c -2 if some
-   * of the text could not get displayed (e.g. reached end of line while
-   * wrapping was set to off).
+   * \retval 0 on success.
+   * \retval -1 (without moving cursor nor printing anything) if the given
+   *         position is outside the text area.
+   * \retval -2 if some of the text could not get displayed (e.g. reached end
+   *         of line while wrapping was set to off).
    */
   int print_at(int column, int line, const std::string& text)
   {
@@ -257,6 +320,12 @@ public:
    * \overload
    * \param position \c remotemo::Point containing the position to move the
    * cursor to before printing, \c x for \c column and \c y for \c row.
+   * \param text The string to be displayed
+   * \retval 0 on success.
+   * \retval -1 (without moving cursor nor printing anything) if the given
+   *         position is outside the text area.
+   * \retval -2 if some of the text could not get displayed (e.g. reached end
+   *         of line while wrapping was set to off).
    */
   int print_at(const Point& position, const std::string& text);
 
@@ -266,8 +335,8 @@ public:
    * \param column Column of the given position
    * \param line Row of the given position
    *
-   * \return \c '\\0' if the given position is outside the text area.
-   * Otherwise returns the character that is displayed there.
+   * \retval 0 ('\\0') if the given position is outside the text area.
+   * \return The character that is displayed at the given position.
    */
   [[nodiscard]] char get_char_at(int column, int line) const
   {
@@ -278,6 +347,9 @@ public:
    * \overload
    * \param pos \c remotemo::Point containing the desired position, \c x
    * for \c column and \c y for \c row.
+   *
+   * \retval 0 ('\\0') if the given position is outside the text area.
+   * \return The character that is displayed at the given position.
    */
   [[nodiscard]] char get_char_at(const Point& pos) const;
 
@@ -288,8 +360,9 @@ public:
    * \param column Column of the given position
    * \param line Row of the given position
    *
-   * \return \c true if the colors are inversed at the given position. \c
-   * false if not inversed OR if the given position is outside the text area.
+   * \retval true if the colors are inversed at the given position.
+   * \retval false if not inversed OR if the given position is outside the
+   * text area.
    */
   [[nodiscard]] bool is_inverse_at(int column, int line) const
   {
@@ -300,6 +373,10 @@ public:
    * \overload
    * \param pos \c remotemo::Point containing the desired position, \c x
    * for \c column and \c y for \c row.
+   *
+   * \retval true if the colors are inversed at the given position.
+   * \retval false if not inversed OR if the given position is outside the
+   * text area.
    */
   [[nodiscard]] bool is_inverse_at(const Point& pos) const;
 
@@ -308,7 +385,8 @@ public:
    *
    * \param delay_in_ms The delay, in milliseconds, between each character
    * being displayed.
-   * \return \c true on success. \c false on failure (e.g. negative number)
+   * \retval true on success.
+   * \retval false on failure (e.g. negative number)
    */
   bool set_text_delay(int delay_in_ms);
 
@@ -317,7 +395,8 @@ public:
    *
    * \param char_per_second The number of characters that can get displayed
    * each second.
-   * \return \c true on success. \c false on failure (e.g. negative number)
+   * \retval true on success.
+   * \retval false on failure (e.g. negative number)
    *
    * \note \p char_per_second will be converted internally to \c delay_in_ms.
    * Some rounding might happen.
@@ -441,7 +520,7 @@ std::optional<Remotemo> create(const Config& config);
 std::optional<Remotemo> create();
 
 /**
- * \brief Returns name of the library and its version
+ * \brief Provides the name of the library and its version
  *
  * The returned string is of the format "remoTemo
  * vMajor.Minor.Patch[-PreReleaseLabel]
@@ -457,7 +536,7 @@ std::optional<Remotemo> create();
 std::string full_name();
 
 /**
- * \brief Return the version of the library
+ * \brief Provides the version of the library
  *
  * \return A struct (\c Version) containing the version of this library
  *
@@ -466,8 +545,10 @@ std::string full_name();
 Version version();
 
 /**
- * \brief Return \c true if current version is a pre-release version (alpha,
- *        beta or release-candidate)
+ * \brief Returns whether current version is pre-release or not.
+ *
+ * \return \c true if current version is a pre-release version (alpha,
+ *        beta or release-candidate), \c false otherwise.
  */
 bool version_is_pre_release();
 } // namespace remotemo
