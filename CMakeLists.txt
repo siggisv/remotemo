@@ -28,7 +28,7 @@ configure_file(
 option(REMOTEMO_BUILD_TESTS "Enable building the tests" OFF)
 option(REMOTEMO_BUILD_SAMPLES "Enable building the samples" OFF)
 option(REMOTEMO_BUILD_DOCS
-    "Enable generating html documentation (requires Doxygen installed)"
+    "Enable generating documentation (requires Doxygen and '--target docs')"
     OFF
 )
 set(REMOTEMO_DOXYGEN_EXTRACT_ALL YES CACHE STRING
@@ -47,13 +47,7 @@ if(REMOTEMO_BUILD_DOCS)
             "${DOXYFILE_OUT}"
             @ONLY
         )
-        #doxygen_add_docs(docs
-        #    include
-        #    ALL
-        #    COMMENT "Generating documentation"
-        #    CONFIG_FILE ${DOXYFILE_OUT}
-        #)
-        add_custom_target(docs ALL
+        add_custom_target(docs
             COMMAND Doxygen::doxygen ${DOXYFILE_OUT}
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/include
             COMMENT "Generating docs"
