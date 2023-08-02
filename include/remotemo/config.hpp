@@ -19,8 +19,9 @@ using std::string_literals::operator""s;
 
 class Engine;
 
-/**
- * \struct Window_config
+////////////////////////////////////////////////////////////////////////
+
+/** \struct Window_config
  * \brief Used for the config of the window
  *
  * \sa Config::window()
@@ -88,8 +89,9 @@ struct Window_config {
   bool is_fullscreen;
 };
 
-/**
- * \struct Texture_config
+////////////////////////////////////////////////////////////////////////
+
+/** \struct Texture_config
  * \brief Base struct for configuration of textures
  *
  * \sa Backgr_config
@@ -153,8 +155,9 @@ struct Texture_config {
   std::string file_path;
 };
 
-/**
- * \struct Backgr_config
+////////////////////////////////////////////////////////////////////////
+
+/** \struct Backgr_config
  * \brief Used for the config of the background texture
  *
  * \sa Texture_config
@@ -190,8 +193,9 @@ struct Backgr_config : Texture_config {
   Rect<float> text_area;
 };
 
-/**
- * \struct Font_config
+////////////////////////////////////////////////////////////////////////
+
+/** \struct Font_config
  * \brief Used for the config of the font-bitmap texture
  *
  * \sa Texture_config
@@ -212,8 +216,9 @@ struct Font_config : Texture_config {
   int height;
 };
 
-/**
- * \struct Text_area_config
+////////////////////////////////////////////////////////////////////////
+
+/** \struct Text_area_config
  * \brief Used for the config of the text area
  *
  * \sa Config::text_area_size()
@@ -249,8 +254,9 @@ struct Text_area_config {
   Color color;
 };
 
-/**
- * \brief Class containing the config used when creating a \c
+////////////////////////////////////////////////////////////////////////
+
+/** \brief Class containing the config used when creating a \c
  * remotemo::Remotemo object
  *
  * An object of this class will initially contain the default configuration,
@@ -261,6 +267,30 @@ struct Text_area_config {
  *
  * Those few getters that are there are probably of no use to anyone except
  * those writing unit tests for the library itself.
+ *
+ * \note
+ * This should be obvious to all those familiar with how returned constant
+ * references works, but anyway:
+ * \note
+ * Regarding most of those getters, the returned struct is constant in the
+ * sence that \b you can not change it but being a reference to a part of the
+ * \c Config object, it can still be changed through the setters of said
+ * object.
+ * \note
+ * Also, being a reference to a part of that object, it is only valid as long
+ * as the object itself.
+ * \note
+ * Of course, if you copy that struct:
+ * \code{.cpp}
+ * auto backgr_conf = conf.background();
+ * \endcode
+ * instead of creating a reference to it:
+ * \code{.cpp}
+ * auto& backgr_conf = conf.background();
+ * \endcode
+ * then that copy is neither a constant nor a reference and therefore just
+ * contains the status of that part of the config as it was at the point in
+ * time when it was copied.
  */
 class Config {
   friend Engine;
@@ -269,8 +299,9 @@ public:
   /// \brief The default constructor.
   constexpr Config() = default;
 
-  /**
-   * \brief Sets the \c cleanup_all property.
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the \c cleanup_all property.
    *
    * - (\b default) If set to \c true, then the destructor of the
    *   remotemo::Remotemo object will handle cleaning up all its resources and
@@ -294,8 +325,9 @@ public:
    */
   Config& cleanup_all(bool cleanup_all);
 
-  /**
-   * \brief Get the setting of the \c cleanup_all property
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Get the setting of the \c cleanup_all property
    *
    * \return The \c cleanup_all property
    *
@@ -304,8 +336,9 @@ public:
   [[nodiscard]] bool cleanup_all() const { return m_cleanup_all; }
 
 
-  /**
-   * \brief Sets the raw C-style pointer to an optional window
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the raw C-style pointer to an optional window
    *
    * - (\b default) If \c nullptr then a new window will be created.
    * - If pointing to a valid \c SDL_Window, then that one will be used.
@@ -321,8 +354,9 @@ public:
    */
   Config& window(SDL_Window* window);
 
-  /**
-   * \brief Sets the title of the window to be created
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the title of the window to be created
    *
    * \b Default: \c "Retro Monochrome Text Monitor"
    *
@@ -334,8 +368,9 @@ public:
    */
   Config& window_title(const std::string& title);
 
-  /**
-   * \brief Sets the original size of the window to be created
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the original size of the window to be created
    *
    * - **Default width:** \c 1280 pixels
    * - **Default height:** \c 720 pixels
@@ -350,8 +385,9 @@ public:
    */
   Config& window_size(int width, int height);
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * \param size New setting of the property
    *
@@ -362,8 +398,9 @@ public:
    */
   Config& window_size(const Size& size);
 
-  /**
-   * \brief Sets the original position of the window to be created
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the original position of the window to be created
    *
    * - **Default x position:** \c SDL_WINDOWPOS_UNDEFINED
    * - **Default y position:** \c SDL_WINDOWPOS_UNDEFINED
@@ -378,8 +415,9 @@ public:
    */
   Config& window_position(int x, int y);
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * \param pos New setting of the property
    *
@@ -390,8 +428,9 @@ public:
    */
   Config& window_position(const Point& pos);
 
-  /**
-   * \brief Sets whether to make the window resizable or not
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets whether to make the window resizable or not
    *
    * \b Default: \c true
    *
@@ -403,8 +442,9 @@ public:
    */
   Config& window_resizable(bool is_resizable);
 
-  /**
-   * \brief Sets whether to make the window fullscreen or not
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets whether to make the window fullscreen or not
    *
    * \b Default: \c false
    *
@@ -419,8 +459,9 @@ public:
    */
   Config& window_fullscreen(bool is_fullscreen);
 
-  /**
-   * \brief Get the current config for the creation of the window
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Get the current config for the creation of the window
    *
    * \return Constant reference to the config for the window
    *
@@ -429,8 +470,9 @@ public:
   [[nodiscard]] const Window_config& window() const { return m_window; }
 
 
-  /**
-   * \brief Sets the keyboard shortcut to switch to/from fullscreen
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the keyboard shortcut to switch to/from fullscreen
    *
    * With no parameters the keyboard shortcut is set to none.
    *
@@ -440,8 +482,9 @@ public:
    */
   Config& key_fullscreen();
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * Accepts an F-key and any combination of modifier keys (including no
    * modifier keys).
@@ -456,8 +499,9 @@ public:
    */
   Config& key_fullscreen(Mod_keys modifier_keys, F_key key);
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * Accepts any "normal" key and a strict subset of the modifier key
    * combinations.
@@ -473,8 +517,9 @@ public:
   Config& key_fullscreen(Mod_keys_strict modifier_keys, Key key);
 
 
-  /**
-   * \brief Sets the keyboard shortcut to close the window.
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the keyboard shortcut to close the window.
    *
    * With no parameters the keyboard shortcut is set to none.
    *
@@ -502,8 +547,9 @@ public:
    */
   Config& key_close_window();
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * Accepts an F-key and any combination of modifier keys (including no
    * modifier keys).
@@ -521,8 +567,9 @@ public:
    */
   Config& key_close_window(Mod_keys modifier_keys, F_key key);
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * Accepts any "normal" key and a strict subset of the modifier key
    * combinations.
@@ -541,8 +588,9 @@ public:
   Config& key_close_window(Mod_keys_strict modifier_keys, Key key);
 
 
-  /**
-   * \brief Sets the keyboard shortcut to quit the application.
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the keyboard shortcut to quit the application.
    *
    * With no parameters the keyboard shortcut is set to none.
    *
@@ -567,8 +615,9 @@ public:
    */
   Config& key_quit();
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * Accepts an F-key and any combination of modifier keys (including no
    * modifier keys).
@@ -586,8 +635,9 @@ public:
    */
   Config& key_quit(Mod_keys modifier_keys, F_key key);
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * Accepts any "normal" key and a strict subset of the modifier key
    * combinations.
@@ -606,8 +656,9 @@ public:
   Config& key_quit(Mod_keys_strict modifier_keys, Key key);
 
 
-  /**
-   * \brief Sets whether closing the window and quit are the same
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets whether closing the window and quit are the same
    *
    * - (\b Default) If set to \c false, closing the window or quitting do not
    *   behave in the same way. Each one does as described in \c
@@ -643,8 +694,9 @@ public:
    */
   Config& closing_same_as_quit(bool is_closing_same_as_quit);
 
-  /**
-   * \brief Sets function to call before closing window
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets function to call before closing window
    *
    * That function must return a \c bool. If it returns \c false, closing the
    * window will be canceled.
@@ -670,8 +722,9 @@ public:
    */
   Config& function_pre_close(const std::function<bool()>& func);
 
-  /**
-   * \brief Sets function to call before quitting
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets function to call before quitting
    *
    * That function must return a \c bool. If it returns \c false, quitting
    * will be canceled.
@@ -699,8 +752,9 @@ public:
   Config& function_pre_quit(const std::function<bool()>& func);
 
 
-  /**
-   * \brief Sets the raw C-style pointer to an optional background texture.
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the raw C-style pointer to an optional background texture.
    *
    * - (\b default) If \c nullptr then the texture will be loaded from file.
    * - If pointing to a valid \c SDL_Texture, then that one will be used.
@@ -716,8 +770,9 @@ public:
    */
   Config& background(SDL_Texture* background);
 
-  /**
-   * \brief Sets the path to use if loading the background texture.
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the path to use if loading the background texture.
    *
    * \b Default: \c "res/img/terminal_screen.png"
    *
@@ -732,8 +787,9 @@ public:
    */
   Config& background_file_path(const std::string& file_path);
 
-  /**
-   * \brief Sets the area of the background that should always be visible.
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the area of the background that should always be visible.
    *
    * \b Default:
    * - \p x = 118
@@ -755,8 +811,9 @@ public:
    */
   Config& background_min_area(int x, int y, int w, int h);
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * \param area New setting of the property
    *
@@ -767,8 +824,9 @@ public:
    */
   Config& background_min_area(const Rect<int>& area);
 
-  /**
-   * \brief Sets the area of the background where the text is to be drawn
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the area of the background where the text is to be drawn
    *
    * \b Default:
    * - \p x = 188.25f
@@ -799,8 +857,9 @@ public:
    */
   Config& background_text_area(float x, float y, float w, float h);
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * \param area New setting of the property
    *
@@ -811,8 +870,9 @@ public:
    */
   Config& background_text_area(const Rect<float>& area);
 
-  /**
-   * \brief Get the current config for the creation of the background texture
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Get the current config for the creation of the background texture
    *
    * \return Constant reference to the config for the background texture
    *
@@ -825,8 +885,9 @@ public:
   }
 
 
-  /**
-   * \brief Sets the raw C-style pointer to an optional font-bitmap texture.
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the raw C-style pointer to an optional font-bitmap texture.
    *
    * - (\b default) If \c nullptr then the texture will be loaded from file.
    * - If pointing to a valid \c SDL_Texture, then that one will be used.
@@ -839,8 +900,9 @@ public:
    */
   Config& font_bitmap(SDL_Texture* font_bitmap);
 
-  /**
-   * \brief Sets the path to use if loading the font-bitmap texture.
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the path to use if loading the font-bitmap texture.
    *
    * \b Default: \c "res/img/font_bitmap.png"
    *
@@ -852,8 +914,9 @@ public:
    */
   Config& font_bitmap_file_path(const std::string& file_path);
 
-  /**
-   * \brief Sets the size of each character as they are in the font-bitmap
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the size of each character as they are in the font-bitmap
    *
    * \b Default:
    * - \p width = 7
@@ -869,8 +932,9 @@ public:
    */
   Config& font_size(int width, int height);
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * \param size New setting of the property
    *
@@ -882,8 +946,9 @@ public:
    */
   Config& font_size(const Size& size);
 
-  /**
-   * \brief Get the current config for the creation of the font-bitmap texture
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Get the config for the creation of the font-bitmap texture
    *
    * \return Constant reference to the config for the font-bitmap texture
    *
@@ -893,8 +958,9 @@ public:
   [[nodiscard]] const Font_config& font() const { return m_font; }
 
 
-  /**
-   * \brief Sets the size (in characters) of the text area
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the size (in characters) of the text area
    *
    * The content of the text area will be drawn to a texture that will then be
    * rendered on top of the background. The size of that texture, in pixels,
@@ -913,8 +979,9 @@ public:
    */
   Config& text_area_size(int columns, int lines);
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * \param size New setting of the property
    *
@@ -926,8 +993,9 @@ public:
    */
   Config& text_area_size(const Size& size);
 
-  /**
-   * \brief Sets the blend mode used to render the text onto the background
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the blend mode used to render the text onto the background
    *
    * \param mode New setting of the property
    *
@@ -937,8 +1005,9 @@ public:
    */
   Config& text_blend_mode(SDL_BlendMode mode);
 
-  /**
-   * \brief Sets the color used when rendering the text onto the background
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Sets the color used when rendering the text onto the background
    *
    * \param red New setting of the property
    * \param green New setting of the property
@@ -951,8 +1020,9 @@ public:
    */
   Config& text_color(Uint8 red, Uint8 green, Uint8 blue);
 
-  /**
-   * \overload
+  //////////////////////////////////////////////////////////////////////
+
+  /** \overload
    *
    * \param color New setting of the property
    *
@@ -962,8 +1032,9 @@ public:
    */
   Config& text_color(const Color& color);
 
-  /**
-   * \brief Get the current config for the setup of the text area
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Get the current config for the setup of the text area
    *
    * \return Constant reference to the config for the text area
    *

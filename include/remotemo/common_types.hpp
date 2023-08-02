@@ -12,8 +12,9 @@
 
 namespace remotemo {
 
-/**
- * \struct Version
+////////////////////////////////////////////////////////////////////////
+
+/** \struct Version
  * \brief Used for representing the version number of the library.
  *
  * \sa version()
@@ -43,8 +44,9 @@ struct Version {
   std::string full;
 };
 
-/**
- * \enum Wrapping
+////////////////////////////////////////////////////////////////////////
+
+/** \enum Wrapping
  * \brief Used to set/get how wrapping of text behaves.
  *
  * \sa Remotemo::set_wrapping()
@@ -64,8 +66,9 @@ struct Version {
  */
 enum class Wrapping { off, character, word };
 
-/**
- * \enum Do_reset
+////////////////////////////////////////////////////////////////////////
+
+/** \enum Do_reset
  * \brief Used to control behaviour of Remotemo::clear()
  *
  * \sa Remotemo::clear()
@@ -84,8 +87,9 @@ enum class Wrapping { off, character, word };
  */
 enum class Do_reset { none, cursor, inverse, all };
 
-/**
- * \brief Error codes for when move_cursor() tries to go past any border.
+////////////////////////////////////////////////////////////////////////
+
+/** \brief Error codes for when move_cursor() tries to go past any border.
  *
  * When trying to go past more than one border, the values are added together
  *
@@ -98,8 +102,9 @@ enum class Move_cursor_error {
   past_top_edge = -8     ///< Trying to move cursor past the top edge.
 };
 
-/**
- * \brief Used to store the size (as opposed to a position) of an object
+////////////////////////////////////////////////////////////////////////
+
+/** \brief Used to store the size (as opposed to a position) of an object
  *        (or a movement).
  */
 struct Size {
@@ -107,8 +112,9 @@ struct Size {
   int height; ///< &nbsp:
 };
 
-/**
- * \struct Point
+////////////////////////////////////////////////////////////////////////
+
+/** \struct Point
  * \brief Used to store a position.
  *
  * \var Point::x
@@ -122,8 +128,9 @@ struct Point {
   int y;
 };
 
-/**
- * \struct Rect
+////////////////////////////////////////////////////////////////////////
+
+/** \struct Rect
  * \brief Used to store the position and size of an object.
  *
  * \var Rect::x
@@ -139,8 +146,9 @@ template<class T> struct Rect {
   T height; ///< &nbsp:
 };
 
-/**
- * \brief Used to store the rgb-values of a color.
+////////////////////////////////////////////////////////////////////////
+
+/** \brief Used to store the rgb-values of a color.
  *
  * Each value is an integer in the range 0 to 255 (0x00 to 0xff).
  */
@@ -150,8 +158,9 @@ struct Color {
   Uint8 blue {};  ///< &nbsp:
 };
 
-/**
- * \enum Mod_keys_strict
+////////////////////////////////////////////////////////////////////////
+
+/** \enum Mod_keys_strict
  * \brief Modifier key combos that can not result in a character.
  *
  * I.e. when pressing any key with one of those modifier combo, you will not
@@ -176,8 +185,9 @@ enum class Mod_keys_strict {
       (KMOD_CTRL | KMOD_ALT | KMOD_SHIFT) ///< \c Ctrl + \c Alt + \c Shift
 };
 
-/**
- * \enum Mod_keys
+////////////////////////////////////////////////////////////////////////
+
+/** \enum Mod_keys
  * \brief All possible modifier key combos (including none pressed).
  *
  * Used only to set shortcuts that include the 'F'-keys.
@@ -197,6 +207,8 @@ enum class Mod_keys {
       (KMOD_CTRL | KMOD_ALT | KMOD_SHIFT) ///< \c Ctrl + \c Alt + \c Shift
 };
 
+////////////////////////////////////////////////////////////////////////
+
 /// \brief The 'F'-keys (i.e. F1 - F12).
 enum class F_key {
   F1 = SDL_SCANCODE_F1,   ///< &nbsp;
@@ -213,8 +225,9 @@ enum class F_key {
   F12 = SDL_SCANCODE_F12  ///< &nbsp;
 };
 
-/**
- * \enum Key
+////////////////////////////////////////////////////////////////////////
+
+/** \enum Key
  * \brief All keys of a compact keyboard (except modifier keys).
  *
  * The following keys of a regular keyboard are not included:
@@ -315,8 +328,9 @@ enum class Key {
   K_right = SDL_SCANCODE_RIGHT ///< Right arrow key
 };
 
-/**
- * \brief Used for keyboard shortcuts (consist of modifier keys + a key)
+////////////////////////////////////////////////////////////////////////
+
+/** \brief Used for keyboard shortcuts (consist of modifier keys + a key)
  *
  * To restrict the shortcuts to being only combinations that do not result in
  * input that needs to be handled as normal input, the constructors and the
@@ -348,8 +362,9 @@ enum class Key {
  */
 class Key_combo {
 public:
-  /**
-   * \brief Constructor that accept an F-key and any modifier keys.
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Constructor that accepts an F-key and any modifier keys.
    *
    * \param modifier The modifier keys to be used
    * \param f_key    The key to be used
@@ -358,9 +373,10 @@ public:
       : m_modifier_keys {static_cast<SDL_Keymod>(modifier)},
         m_key {static_cast<SDL_Scancode>(f_key)}
   {}
-  /**
-   * \brief Constructor that accept a "normal" key and a strict subset of the
-   *        modifier key combinations.
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Constructor that accepts a "normal" key and a strict subset of
+   *  the modifier key combinations.
    *
    * \param modifier The modifier keys to be used
    * \param a_key    The key to be used
@@ -369,8 +385,9 @@ public:
       : m_modifier_keys {static_cast<SDL_Keymod>(modifier)},
         m_key {static_cast<SDL_Scancode>(a_key)}
   {}
-  /**
-   * \brief Setter that accept an F-key and any modifier keys
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Setter that accepts an F-key and any modifier keys
    *
    * \param modifier The modifier keys to be used
    * \param f_key    The key to be used
@@ -380,8 +397,9 @@ public:
     m_modifier_keys = static_cast<SDL_Keymod>(modifier);
     m_key = static_cast<SDL_Scancode>(f_key);
   }
-  /**
-   * \brief Setter that accept a "normal" key and a strict subset of the
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Setter that accepts a "normal" key and a strict subset of the
    *        modifier key combinations.
    *
    * \param modifier The modifier keys to be used
@@ -392,16 +410,18 @@ public:
     m_modifier_keys = static_cast<SDL_Keymod>(modifier);
     m_key = static_cast<SDL_Scancode>(a_key);
   }
-  /**
-   * \brief Getter that returns the modifier keys of the shortcut
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Getter that returns the modifier keys of the shortcut
    * \return The modifier keys of the shortcut.
    */
   [[nodiscard]] const SDL_Keymod& modifier_keys() const
   {
     return m_modifier_keys;
   }
-  /**
-   * \brief Getter that returns the "key" part of the shortcut
+  //////////////////////////////////////////////////////////////////////
+
+  /** \brief Getter that returns the "key" part of the shortcut
    * \return The "key" part of the shortcut.
    */
   [[nodiscard]] const SDL_Scancode& key() const { return m_key; }
