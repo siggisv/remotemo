@@ -41,10 +41,9 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 
 (To setup the project for an IDE of your choice, add the appropriate flags.
 E.g. `-G "Visual Studio 15 2017" -A Win64`. See the [CMake
-docs](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id13)
-)
+docs](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id13))
 
-**TODO**
+**TODO:**
 - Change `CMakeLists.txt` to take into account that `SDL` and `SDL_image`
   might be installed in a non-default place.
 - Add instructions here on how to set the path to those, if needed.
@@ -64,13 +63,13 @@ Finally make sure your own project can find the header files (in
 `include/remotemo`) and the binary file (in the `build` directory:
 `remotemo.a` or `remotemo.lib`, depending on operating system).
 
-**Note**
+**Note:**
 Unless you want to use your own resources for the background image and
 font-bitmap, you would want to copy the `res` folder to your own project.
 
 ## For building the tests
 
-### Dependencies
+### Dependencies of the tests
 
 On top of what is needed for the building of the library itself, you also need
 `Catch2` and `trompeloeil`. Both are provided as git submodules. To fetch
@@ -85,7 +84,7 @@ them, either:
   git submodule update
   ```
 
-### Setup and build
+### Setup, build and run
 
 Generate the project in the same way as for the library itself (and optionally
 the samples also), except you also need to specify `-DREMOTEMO_BUILD_TESTS=ON`
@@ -114,12 +113,8 @@ test_io --help
 
 ## For generating local `html` documentation of the public API
 
-### Dependencies
-
-- `doxygen` - has been tested with version 1.8.17. Older versions might work.
-  Newer versions should work.
-
-### Setup and generate
+`doxygen` needs to be installed. Has been tested with version 1.8.17. Older
+versions might work. Newer versions should work.
 
 Generate the project in the same way as for the library itself (and optionally
 the samples or/and tests also), except you also need to specify

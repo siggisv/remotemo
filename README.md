@@ -38,10 +38,6 @@ Then use `git` to clone this repository (`--depth 1` can be skipped if you do
 want the whole commit history instead of just the latest commit in the main
 branch):
 
-**Note**
-Unless you want to use your own resources for the background image and
-font-bitmap, you would want to copy the `res` folder to your own project.
-
 ```sh
 git clone --depth 1 https://github.com/siggisv/remotemo.git
 ```
@@ -57,6 +53,10 @@ cmake --build release --config Release
 Finally make sure your own project can find the header files (in
 `include/remotemo`) and the binary file (in the `release` directory:
 `remotemo.a` or `remotemo.lib`, depending on operating system).
+
+**Note:**
+Unless you want to use your own resources for the background image and
+font-bitmap, you would want to copy the `res` folder to your own project.
 
 [Further instructions](docs/compiling.md)
 
