@@ -232,7 +232,7 @@ struct Font_config : Texture_config {
  * \brief Height of the text area, in characters.
  *
  * \note
- * Does not include the extra "hidden" row that the cursor can move down to.
+ * Does not include the extra "hidden" line that the cursor can move down to.
  *
  * \var Text_area_config::blend_mode
  * \brief Blend mode used to render the text onto the background.
