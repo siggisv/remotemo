@@ -2,16 +2,19 @@
 Retro Monochrome Text Monitor - a library for building applications with a
 really old-school looking user interface.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)][mit]
 [![GitHub Super-Linter](https://github.com/siggisv/remotemo/actions/workflows/super-linter.yml/badge.svg?branch=main)](https://github.com/siggisv/remotemo/actions/workflows/super-linter.yml)
 [![Build](https://github.com/siggisv/remotemo/actions/workflows/cmake.yml/badge.svg?branch=main)](https://github.com/siggisv/remotemo/actions/workflows/cmake.yml)
+
+<sup>Media files:</sup>
+[![Media license: CC BY-SA 4.0][cc-by-sa-shield]][cc-by-sa]
 
 By really old-school, we mean late 70s - beginning of the 80s. A monochrome,
 fixed size, text-only monitor with keyboard-only user input (and restricted to
 ASCII only, not even extended ASCII).
 
 By default the text gets displayed at a slow rate to recreate the feeling of
-being on a dumb terminal, connected over a slow connection to a mainframe.
+being on a dumb terminal, connected over a slow connection to a mainframe:
 
 [remotemo_simple_sample.webm](https://github.com/siggisv/remotemo/assets/5704941/bf79a37e-5e7b-4056-abe0-69efb158f183)
 
@@ -20,6 +23,12 @@ This is still work-in-progress.
 
 Although those parts that are needed to run the following sample have been
 implemented and are working, anything might get changed at any time.
+
+## Licenses
+
+The library itself is distributed under [the MIT license][mit] while any media
+(e.g. the content of `res/img/`) is licensed under a
+[Creative Commons Attribution-ShareAlike 4.0 International License][cc-by-sa].
 
 ## Building from source
 
@@ -95,3 +104,7 @@ int main(int argc, char* argv[])
 ```
 
 For further instruction check out [the API design](docs/API_design.md).
+
+[mit]: https://opensource.org/licenses/MIT
+[cc-by-sa]: http://creativecommons.org/licenses/by-sa/4.0/
+[cc-by-sa-shield]: https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg
