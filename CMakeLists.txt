@@ -4,7 +4,7 @@ project(remotemo
     VERSION 0.1.0
     LANGUAGES CXX
 )
-set(remotemo_PRE_RELEASE_LABEL beta.2)
+set(remotemo_PRE_RELEASE_LABEL beta.4)
 
 if(NOT remotemo_PRE_RELEASE_LABEL STREQUAL "")
     set(remotemo_VERSION
@@ -27,6 +27,35 @@ configure_file(
 
 option(REMOTEMO_BUILD_TESTS "Enable building the tests" OFF)
 option(REMOTEMO_BUILD_SAMPLES "Enable building the samples" OFF)
+option(REMOTEMO_BUILD_DOCS
+    "Enable generating documentation (requires Doxygen and '--target docs')"
+    OFF
+)
+set(REMOTEMO_DOXYGEN_EXTRACT_ALL YES CACHE STRING
+    "Treat undocumented members as being documented (Note: disables warnings)"
+)
+set_property(CACHE REMOTEMO_DOXYGEN_EXTRACT_ALL PROPERTY STRINGS YES NO)
+
+if(REMOTEMO_BUILD_DOCS)
+    message("Trying to generate documentation")
+    find_package(Doxygen)
+    if(DOXYGEN_FOUND)
+        set(DOXYGEN_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/docs)
+        set(DOXYFILE_OUT ${DOXYGEN_OUTPUT_DIRECTORY}/Doxyfile)
+        configure_file(
+            "${PROJECT_SOURCE_DIR}/Doxyfile.in"
+            "${DOXYFILE_OUT}"
+            @ONLY
+        )
+        add_custom_target(docs
+            COMMAND Doxygen::doxygen ${DOXYFILE_OUT}
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/include
+            COMMENT "Generating docs"
+        )
+    else(DOXYGEN_FOUND)
+        message("Doxygen needs to be installed to generate the documentation")
+    endif(DOXYGEN_FOUND)
+endif(REMOTEMO_BUILD_DOCS)
 
 set(is_gcc $<CXX_COMPILER_ID:GNU>)
 set(is_clang $<CXX_COMPILER_ID:Clang,AppleClang>)

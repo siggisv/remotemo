@@ -3,6 +3,10 @@
 #include <SDL_image.h>
 
 namespace remotemo {
+// This is a private static member variable. That makes it **NOT** globally
+// accessible but clang-tidy has a bug that makes it report it anyway
+// See https://github.com/llvm/llvm-project/issues/47384
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 std::optional<std::filesystem::path> Texture::m_base_path {};
 
 bool Texture::set_base_path()
