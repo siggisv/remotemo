@@ -118,10 +118,10 @@ struct Size {
  * \brief Used to store a position.
  *
  * \var Point::x
- * \brief position along the x-axis (or column)
+ * \brief position along the x-axis (or column number)
  *
  * \var Point::y
- * \brief position along the y-axis (or row)
+ * \brief position along the y-axis (or line number)
  */
 struct Point {
   int x;
@@ -134,10 +134,11 @@ struct Point {
  * \brief Used to store the position and size of an object.
  *
  * \var Rect::x
- * \brief position along the x-axis (or column) of the upper left corner.
+ * \brief position along the x-axis (or column number) of the upper left
+ * corner.
  *
  * \var Rect::y
- * \brief position along the y-axis (or row) of the upper left corner.
+ * \brief position along the y-axis (or line number) of the upper left corner.
  */
 template<class T> struct Rect {
   T x;

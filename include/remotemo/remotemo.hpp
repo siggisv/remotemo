@@ -94,19 +94,19 @@ public:
    * If trying to move the cursor outside of the text area, it will move as
    * far as it can get without leaving the area and return an error code.
    *
-   * E.g. if trying to make a move that would end at a row that is within the
+   * E.g. if trying to make a move that would end at a line that is within the
    * area but at a column to the right of the right edge, then it would be
-   * move to that row but the column would be the rightmost one within the
+   * move to that line but the column would be the rightmost one within the
    * area.
    *
    * \note
    * When it comes to the cursor position, the text area is considered to have
-   * one extra, empty, hidden row below the bottom one shown on screen. The
+   * one extra, empty, hidden line below the bottom one shown on screen. The
    * cursor can be moved there.
    *
    * \param width  Number of columns to move to the right (negative value to
    *               move left)
-   * \param height Number of rows to move down (negative value to move up)
+   * \param height Number of lines to move down (negative value to move up)
    * \retval 0 on success.
    * \return On error, the total value of one or two \c
    *         remotemo::Move_cursor_error, depending on which edge(s) it tried
@@ -142,13 +142,11 @@ public:
    *
    * \note
    * When it comes to the cursor position, the text area is considered to have
-   * one extra, empty, hidden row below the bottom one shown on screen. The
+   * one extra, empty, hidden line below the bottom one shown on screen. The
    * cursor can be moved there.
    *
-   * \todo Replace \p line with the more correct term: \c row
-   *
    * \param column Desired column
-   * \param line   Desired row
+   * \param line   Desired line
    * \retval 0 on success.
    * \retval -1 on error
    */
@@ -161,7 +159,7 @@ public:
 
   /** \overload
    * \param position \c remotemo::Point containing the desired position, \c x
-   *        for \c column and \c y for \c row.
+   *        for \c column and \c y for \c line.
    * \retval 0 on success.
    * \retval -1 on error
    */
@@ -169,7 +167,7 @@ public:
 
   //////////////////////////////////////////////////////////////////////
 
-  /** \brief Moves the cursor to the given column (without changing its row)
+  /** \brief Moves the cursor to the given column (while staying on same line)
    * \param column Desired column
    * \retval 0 on success.
    * \retval -1 on error
@@ -180,9 +178,8 @@ public:
 
   //////////////////////////////////////////////////////////////////////
 
-  /** \brief Moves the cursor to the given row (without changing its column)
-   * \todo Replace \p line with the more correct term: \c row
-   * \param line   Desired row
+  /** \brief Moves the cursor to the given line (while staying in same column)
+   * \param line   Desired line
    * \retval 0 on success.
    * \retval -1 on error
    *
@@ -335,7 +332,7 @@ public:
 
   /** \overload
    * \param position \c remotemo::Point containing the position to move the
-   * cursor to before printing, \c x for \c column and \c y for \c row.
+   * cursor to before printing, \c x for \c column and \c y for \c line.
    * \param text The string to be displayed
    * \retval 0 on success.
    * \retval -1 (without moving cursor nor printing anything) if the given
@@ -364,7 +361,7 @@ public:
 
   /** \overload
    * \param pos \c remotemo::Point containing the desired position, \c x
-   * for \c column and \c y for \c row.
+   * for \c column and \c y for \c line.
    *
    * \retval 0 ('\\0') if the given position is outside the text area.
    * \return The character that is displayed at the given position.
@@ -392,7 +389,7 @@ public:
 
   /** \overload
    * \param pos \c remotemo::Point containing the desired position, \c x
-   * for \c column and \c y for \c row.
+   * for \c column and \c y for \c line.
    *
    * \retval true if the colors are inversed at the given position.
    * \retval false if not inversed OR if the given position is outside the
@@ -450,14 +447,14 @@ public:
   /** \brief Set the \c scrolling property
    *
    * If the cursor moves down (because of wrapping or the \c newline
-   * character) while it's already at the bottom visible row, it will move
-   * down to the extra, hidden row below the visible area.
+   * character) while it's already at the bottom visible line, it will move
+   * down to the extra, hidden line below the visible area.
    *
-   * Then when trying to print any text to the hidden row, depending on the
+   * Then when trying to print any text to the hidden line, depending on the
    * 'scrolling' settings:
    *   - If set to \c true then the whole content of the screen moves up one
-   *     row (moving the cursor up to the bottom visible row at the same time)
-   *     before continuing printing the rest of the text.
+   *     line (moving the cursor up to the bottom visible line at the same
+   *     time) before continuing printing the rest of the text.
    *   - If set to \c false then the rest of the string is lost.
    *
    *
