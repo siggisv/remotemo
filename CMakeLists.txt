@@ -78,6 +78,8 @@ set(w_compile_options
     $<${is_werror}:${werror_compile_option}>
 )
 
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/sdl2")
+
 find_package(SDL2 REQUIRED)
 
 # TODO: This is working as it is on Linux Mint 20.3 but we might want to
@@ -91,8 +93,8 @@ find_package(SDL2 REQUIRED)
 #   that the config files provided by newer versions of the lib will be
 #   prefered).
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
-set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
+# set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
+# set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
 
 find_package(SDL2_image REQUIRED)
 message(${SDL2_image_FOUND})
