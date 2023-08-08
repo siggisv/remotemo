@@ -81,30 +81,7 @@ set(w_compile_options
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/sdl2")
 
 find_package(SDL2 REQUIRED)
-
-# TODO: This is working as it is on Linux Mint 20.3 but we might want to
-# improve it so it should work on most systems:
-# - Add variables to cache (empty by default) that when set by the user, will
-#   be used for the [...]_INCLUDE_DIRS and the [...]_LIBRARIES variables.
-# - Add FindSDL2[_module].cmake to a cmake directory and set its path:
-#   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${SDL2_test_SOURCE_DIR}/cmake")
-#   Can e.g. be found at https://github.com/tcbrindle/sdl2-cmake-scripts
-# - Use find_packages (but set CMAKE_FIND_PACKAGE_PREFER_CONFIG to true so
-#   that the config files provided by newer versions of the lib will be
-#   prefered).
-
-# set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
-# set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
-
 find_package(SDL2_image REQUIRED)
-message(${SDL2_image_FOUND})
-message(${SDL2_IMAGE_INCLUDE_DIRS})
-message(${SDL2_IMAGE_LIBRARIES})
-# if(NOT SDL2_image_FOUND)
-#     message("SDL2_image not found. Trying find_library() and SDL2 include")
-#     find_library(SDL2_IMAGE_LIBRARIES SDL2_image REQUIRED)
-#     set(SDL2_IMAGE_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
-# endif()
 
 add_library(remotemo
     src/remotemo.cpp
@@ -124,13 +101,9 @@ add_library(remotemo
 target_include_directories(remotemo PRIVATE
     include/
     "${PROJECT_BINARY_DIR}/src"
-    #    ${SDL2_INCLUDE_DIRS}
-    #    ${SDL2_IMAGE_INCLUDE_DIRS}
 )
 target_include_directories(remotemo SYSTEM INTERFACE
     include/
-#    ${SDL2_INCLUDE_DIRS}
-#    ${SDL2_IMAGE_INCLUDE_DIRS}
 )
 
 # Note. Since CMake 3.19, the following can be set in a preset
@@ -140,11 +113,9 @@ target_compile_options(remotemo PRIVATE
 )
 target_compile_definitions(remotemo PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 
-target_link_libraries(remotemo
-    # PRIVATE
-    SDL2::Main SDL2::Image
-#    ${SDL2_LIBRARIES}
-#    ${SDL2_IMAGE_LIBRARIES}
+target_link_libraries(remotemo PRIVATE
+    SDL2::Core
+    SDL2::Image
 )
 
 add_custom_target(copy_resources ALL
@@ -156,13 +127,13 @@ add_custom_target(copy_resources ALL
 
 IF (REMOTEMO_BUILD_SAMPLES)
     add_executable(hello_sample samples/hello_sample.cpp)
-    target_link_libraries(hello_sample PRIVATE remotemo)
+    target_link_libraries(hello_sample PRIVATE remotemo SDL2::Main)
     target_compile_options(hello_sample PRIVATE ${w_compile_options})
     target_compile_definitions(hello_sample PRIVATE $<$<CONFIG:Debug>:DEBUG>)
     add_dependencies(hello_sample copy_resources)
 
     add_executable(wrap_n_scroll_test samples/wrap_n_scroll_test.cpp)
-    target_link_libraries(wrap_n_scroll_test PRIVATE remotemo)
+    target_link_libraries(wrap_n_scroll_test PRIVATE remotemo SDL2::Main)
     target_compile_options(wrap_n_scroll_test PRIVATE ${w_compile_options})
     target_compile_definitions(wrap_n_scroll_test PRIVATE
         $<$<CONFIG:Debug>:DEBUG>

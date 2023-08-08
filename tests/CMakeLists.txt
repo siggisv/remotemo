@@ -28,6 +28,7 @@ add_executable(test_init
 )
 target_link_libraries(test_init PRIVATE
     remotemo
+    SDL2::Main
     Catch2::Catch2WithMain
     trompeloeil::trompeloeil
 )
@@ -38,6 +39,7 @@ add_executable(test_io
 )
 target_link_libraries(test_io PRIVATE
     remotemo
+    SDL2::Main
     Catch2::Catch2WithMain
     trompeloeil::trompeloeil
     Threads::Threads
