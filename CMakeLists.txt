@@ -91,10 +91,12 @@ find_package(SDL2 REQUIRED)
 # - Use find_packages (but set CMAKE_FIND_PACKAGE_PREFER_CONFIG to true so
 #   that the config files provided by newer versions of the lib will be
 #   prefered).
-#   E.g.:
-#   find_package(SDL2_image REQUIRED)
-find_library(SDL2_IMAGE_LIBRARIES SDL2_image REQUIRED)
-set(SDL2_IMAGE_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
+
+find_package(SDL2_image)
+if(NOT SDL2_image_FOUND)
+    find_library(SDL2_IMAGE_LIBRARIES SDL2_image REQUIRED)
+    set(SDL2_IMAGE_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
+endif()
 
 add_library(remotemo
     src/remotemo.cpp
