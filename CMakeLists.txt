@@ -100,11 +100,11 @@ find_package(SDL2_image REQUIRED)
 message(${SDL2_image_FOUND})
 message(${SDL2_IMAGE_INCLUDE_DIRS})
 message(${SDL2_IMAGE_LIBRARIES})
-if(NOT SDL2_image_FOUND)
-    message("SDL2_image not found. Trying find_library() and SDL2 include")
-    find_library(SDL2_IMAGE_LIBRARIES SDL2_image REQUIRED)
-    set(SDL2_IMAGE_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
-endif()
+# if(NOT SDL2_image_FOUND)
+#     message("SDL2_image not found. Trying find_library() and SDL2 include")
+#     find_library(SDL2_IMAGE_LIBRARIES SDL2_image REQUIRED)
+#     set(SDL2_IMAGE_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
+# endif()
 
 add_library(remotemo
     src/remotemo.cpp
@@ -124,13 +124,13 @@ add_library(remotemo
 target_include_directories(remotemo PRIVATE
     include/
     "${PROJECT_BINARY_DIR}/src"
-    ${SDL2_INCLUDE_DIRS}
-    ${SDL2_IMAGE_INCLUDE_DIRS}
+    #    ${SDL2_INCLUDE_DIRS}
+    #    ${SDL2_IMAGE_INCLUDE_DIRS}
 )
 target_include_directories(remotemo SYSTEM INTERFACE
     include/
-    ${SDL2_INCLUDE_DIRS}
-    ${SDL2_IMAGE_INCLUDE_DIRS}
+#    ${SDL2_INCLUDE_DIRS}
+#    ${SDL2_IMAGE_INCLUDE_DIRS}
 )
 
 # Note. Since CMake 3.19, the following can be set in a preset
@@ -140,9 +140,11 @@ target_compile_options(remotemo PRIVATE
 )
 target_compile_definitions(remotemo PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 
-target_link_libraries(remotemo PRIVATE
-    ${SDL2_LIBRARIES}
-    ${SDL2_IMAGE_LIBRARIES}
+target_link_libraries(remotemo
+    # PRIVATE
+    SDL2::Main SDL2::Image
+#    ${SDL2_LIBRARIES}
+#    ${SDL2_IMAGE_LIBRARIES}
 )
 
 add_custom_target(copy_resources ALL
