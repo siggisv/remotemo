@@ -92,6 +92,9 @@ find_package(SDL2 REQUIRED)
 #   that the config files provided by newer versions of the lib will be
 #   prefered).
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
+
 find_package(SDL2_image)
 if(NOT SDL2_image_FOUND)
     find_library(SDL2_IMAGE_LIBRARIES SDL2_image REQUIRED)
