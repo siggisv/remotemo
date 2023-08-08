@@ -72,7 +72,7 @@ Finally make sure your own project:
   operating system).
 - can find the header files for `SDL2` and that the source file containing
   your `main()` function includes `SDL.h` (either directly or indirectly
-  through including `remotemo/remotemo.hpp`). 
+  through including `remotemo/remotemo.hpp`).
 - links correctly to `SDL2_main` (if using `CMake`, link your target to
   `SDL2::Main`. If your version of SDL2 does not provide `SDL2::Main` as a
   target, you could e.g. use the same [CMake modules to find
