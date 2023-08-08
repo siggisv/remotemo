@@ -49,12 +49,13 @@ branch):
 
 ```sh
 git clone --depth 1 https://github.com/siggisv/remotemo.git
+cd remotemo
+git submodule update --init cmake/sdl2
 ```
 
 Now use `CMake` to generate the project and build:
 
 ```sh
-cd remotemo
 cmake -S . -B release -DCMAKE_BUILD_TYPE=Release
 cmake --build release --config Release
 ```

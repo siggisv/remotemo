@@ -7,11 +7,12 @@ commit in the main branch):
 
 ```sh
 git clone --depth 1 https://github.com/siggisv/remotemo.git
+cd remotemo # Note all further instructions assume you are in this directory
 ```
 
 or [download as
 ZIP](https://github.com/siggisv/remotemo/archive/refs/heads/main.zip)
-(submodules needed for the tests probably not included).
+(submodules probably not included).
 
 `CMake`, version 3.16 or newer, is needed both for the setup of the project
 and for the setup of documentation generation.
@@ -29,13 +30,18 @@ libraries to link to, etc.)
   work. Newer versions (at least up to 3.0) should work.
 - `SDL_image` - has been tested with 2.0.5. Older versions for SDL2 might
   work. Newer versions (at least up to 3.0) should work.
+- The submodule `gitlab.com/aminosbh/sdl2-cmake-modules` in the `cmake/sdl2`
+  directory is needed for most versions of SDL2 to correcly find it.
+  To only get that submodule:
+  ```sh
+  git submodule update --init cmake/sdl2
+  ```
 
 ### Setup and build
 
 Use `CMake` to generate the project:
 
 ```sh
-cd remotemo
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 ```
 
@@ -43,10 +49,11 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 E.g. `-G "Visual Studio 15 2017" -A Win64`. See the [CMake
 docs](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id13))
 
-**TODO:**
-- Change `CMakeLists.txt` to take into account that `SDL` and `SDL_image`
-  might be installed in a non-default place.
-- Add instructions here on how to set the path to those, if needed.
+**Note:**
+If you've installed `SDL2` in a non-standard directory, you might have to
+follow the instructions of [the CMake modules we use to find
+SDL2](https://gitlab.com/aminosbh/sdl2-cmake-modules#special-customization-variables)
+on how to specify a different path to search.
 
 If you want to also build the samples, specify `-DREMOTEMO_BUILD_SAMPLES=ON`
 (or change that setting using `ccmake` or the CMake GUI).
@@ -59,13 +66,22 @@ cmake --build build --config Release
 
 or build using your IDE of choice.
 
-Finally make sure your own project can find the header files (in
-`include/remotemo`) and the binary file (in the `build` directory:
-`remotemo.a` or `remotemo.lib`, depending on operating system).
+Finally make sure your own project:
+- can find the header files (in `include/remotemo`) and the binary file (in
+  the `build` directory: `remotemo.a` or `remotemo.lib`, depending on
+  operating system).
+- can find the header files for `SDL2` and that the source file containing
+  your `main()` function includes `SDL.h` (either directly or indirectly
+  through including `remotemo/remotemo.hpp`).
+- links correctly to `SDL2_main` (if using `CMake`, link your target to
+  `SDL2::Main`. If your version of SDL2 does not provide `SDL2::Main` as a
+  target, you could e.g. use the same [CMake modules to find
+  SDL2](https://github.com/aminosbh/sdl2-cmake-modules/) as this project uses.
 
 **Note:**
 Unless you want to use your own resources for the background image and
-font-bitmap, you would want to copy the `res` folder to your own project.
+font-bitmap, you would want to copy the `res` folder to your own project. Do
+note the [license](../res/img/README.md) for the media files in that directory.
 
 ## For building the tests
 
@@ -80,8 +96,7 @@ them, either:
 - or run the following commands within the directory where you cloned this
   repository:
   ```sh
-  git submodule init
-  git submodule update
+  git submodule update --init
   ```
 
 ### Setup, build and run
