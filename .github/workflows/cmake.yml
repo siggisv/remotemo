@@ -45,13 +45,13 @@ jobs:
           submodules: true
 
       - name: Install dependencies on Linux
-        if: runner.os == "Linux"
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install libsdl2-dev libsdl2-image-dev
 
       - name: Install dependencies on macOS
-        if: runner.os == "macOS"
+        if: runner.os == 'macOS'
         run: |
           # `brew install sdl2 sdl2_image` when run after `brew update`
           # triggers upgrade of python which fails unless conflicting
@@ -71,7 +71,7 @@ jobs:
           brew install sdl2 sdl2_image
 
       - name: Install dependencies on Windows
-        if: runner.os == "Windows"
+        if: runner.os == 'Windows'
         run: |
           echo "Not implemented yet"
           exit 1
