@@ -34,38 +34,26 @@ env:
 
 jobs:
   test-matrix:
-    env:
-      LINUX_LONG_COMMAND: |
-          echo "This os is a linux variant"
-          echo "This is a test"
-          echo "Can we do this?"
-          echo "I hope so"
-      MACOS_LONG_COMMAND: |
-          echo "This os is a MacOS variant"
-          echo "This is a test"
-          echo "Can we do this?"
-          echo "I hope so"
     strategy:
       fail-fast: false
       matrix:
-        # os_is: [linux, mac]
-        # os_variant: [1, 2]
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
-        include:
-          - os: ubuntu-20.04
-            LONG_COMMAND: ${{ env.LINUX_LONG_COMMAND }}
-          - os: ubuntu-22.04
-            LONG_COMMAND: ${{ env.LINUX_LONG_COMMAND }}
-          - os: macos-11
-            LONG_COMMAND: ${{ env.MACOS_LONG_COMMAND }}
-          - os: macos-12
-            LONG_COMMAND: ${{ env.MACOS_LONG_COMMAND }}
-            
+        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Echo OS
         run: |
           echo ${{ matrix.os }}
-#          ${{ matrix.TEST_COMMAND }}
-      - name: test long command
-        run: ${{ matrix.LONG_COMMAND }}
+          echo $RUNNER_OS
+          if [[ $RUNNER_OS == "Linux" ]]; then
+            echo "This OS is a linux variant"
+            echo $PATH
+          elif [[ $RUNNER_OS == "macOS" ]]; then
+            echo "This is a Mac"
+            echo $PATH
+          elif [[ $RUNNER_OS == "Windows" ]]; then
+            echo "Ohh!... A Windows box"
+            echo "Good for you"
+          else
+            echo "WHAT??? :O"
+          fi
+        shell: bash
