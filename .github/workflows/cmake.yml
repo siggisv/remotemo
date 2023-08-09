@@ -6,22 +6,16 @@ on:
     paths-ignore:
       - 'docs/**'
       - '.gitignore'
-      - '*.md'
+      - '**.md'
       - 'LICENSE'
-      - '.github/workflow/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/cmake.yml'
       
   pull_request:
     branches: ["main"]
     paths-ignore:
       - 'docs/**'
       - '.gitignore'
-      - '*.md'
+      - '**.md'
       - 'LICENSE'
-      - '.github/workflow/*.yml'
-      # re-include current file to not be excluded
-      - '!.github/workflows/cmake.yml'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -33,11 +27,11 @@ env:
   REMOTEMO_TESTS_COLOR: ON
 
 jobs:
-  build-Ubuntu:
+  build-and-test:
     strategy:
       fail-fast: false # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
         # os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
 
@@ -47,9 +41,35 @@ jobs:
           submodules: true
 
       - name: Install SDL2
+        shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install libsdl2-dev libsdl2-image-dev
+          if [[ $RUNNER_OS == "Linux" ]]; then
+            sudo apt-get update
+            sudo apt-get install libsdl2-dev libsdl2-image-dev
+          elif [[ $RUNNER_OS == "macOS" ]]; then
+            # `brew install sdl2 sdl2_image` when run after `brew update`
+            # triggers upgrade of python which fails unless conflicting
+            # symlinks are deleted. See:
+            # https://github.com/actions/setup-python/issues/577
+            brew update
+            rm '/usr/local/bin/2to3'
+            rm '/usr/local/bin/idle3'
+            rm '/usr/local/bin/pydoc3'
+            rm '/usr/local/bin/python3'
+            rm '/usr/local/bin/python3-config'
+            rm '/usr/local/bin/2to3-3.11'
+            rm '/usr/local/bin/idle3.11'
+            rm '/usr/local/bin/pydoc3.11'
+            rm '/usr/local/bin/python3.11'
+            rm '/usr/local/bin/python3.11-config'
+            brew install sdl2 sdl2_image
+          elif [[ $RUNNER_OS == "Windows" ]]; then
+            echo "Not implemented yet"
+            exit 1
+          else
+            echo "Unexpected OS"
+            exit 2
+          fi
 
       - name: Configure CMake
         run: >
@@ -73,53 +93,3 @@ jobs:
         # more detail
         run: ctest -C ${{env.BUILD_TYPE}} -VV
 
-  build-MacOS:
-    strategy:
-      fail-fast: false # if a particular matrix build fails, don't skip the rest
-      matrix:
-        #os: [macos-10.15, macos-11, macos-12]
-        os: [macos-11, macos-12]
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      # `brew install sdl2 sdl2_image` when run after `brew update` triggers
-      # upgrade of python which fails unless conflicting symlinks are deleted.
-      # See:
-      # https://github.com/actions/setup-python/issues/577
-      - name: Install SDL2
-        run: |
-          brew update
-          rm '/usr/local/bin/2to3'
-          rm '/usr/local/bin/idle3'
-          rm '/usr/local/bin/pydoc3'
-          rm '/usr/local/bin/python3'
-          rm '/usr/local/bin/python3-config'
-          rm '/usr/local/bin/2to3-3.11'
-          rm '/usr/local/bin/idle3.11'
-          rm '/usr/local/bin/pydoc3.11'
-          rm '/usr/local/bin/python3.11'
-          rm '/usr/local/bin/python3.11-config'
-          brew install sdl2 sdl2_image
-
-      - name: Configure CMake
-        run: >
-          cmake -B ${{github.workspace}}/build
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-          -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
-          -DREMOTEMO_BUILD_SAMPLES=${{env.REMOTEMO_BUILD_SAMPLES}}
-          -DREMOTEMO_BUILD_TESTS=${{env.REMOTEMO_BUILD_TESTS}}
-          -DREMOTEMO_VERBOSE_TESTS=${{env.REMOTEMO_VERBOSE_TESTS}}
-          -DREMOTEMO_TESTS_COLOR=${{env.REMOTEMO_TESTS_COLOR}}
-
-      - name: Build
-        run: >
-          cmake --build ${{github.workspace}}/build
-          --config ${{env.BUILD_TYPE}}
-
-      - name: Test
-        working-directory: ${{github.workspace}}/build/tests
-        run: ctest -C ${{env.BUILD_TYPE}} -VV
