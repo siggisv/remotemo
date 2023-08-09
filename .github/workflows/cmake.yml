@@ -33,6 +33,31 @@ env:
   REMOTEMO_TESTS_COLOR: ON
 
 jobs:
+  test-matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        include:
+          - os: ubuntu-20.04
+            os_is: linux
+          - os: ubuntu-22.04
+            os_is: linux
+          - os: macos-11
+            os_is: mac
+          - os: macos-12
+            os_is: mac
+          - os_is: linux
+            TEST_COMMAND: echo "This os is a linux variant"
+          - os_is: mac
+            TEST_COMMAND: echo "This os is a MacOS variant"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Echo OS
+        run: |
+          echo ${{ matrix.os }}
+          ${{ matrix.TEST_COMMAND }}
+    
   build-Ubuntu:
     strategy:
       fail-fast: false # if a particular matrix build fails, don't skip the rest
