@@ -3,19 +3,23 @@ name: Build
 on:
   push:
     branches: ["main"]
-    paths-ignore:
-      - 'docs/**'
-      - '.gitignore'
-      - '**.md'
-      - 'LICENSE'
-      
+    paths:
+      - '**.cp?p?'
+      - '**.hp?p?'
+      - '**.*.in'
+      - '.gitmodules'
+      - '**/CMakeLists.txt'
+      - '.github/workflows/**'
+
   pull_request:
     branches: ["main"]
-    paths-ignore:
-      - 'docs/**'
-      - '.gitignore'
-      - '**.md'
-      - 'LICENSE'
+    paths:
+      - '**.cp?p?'
+      - '**.hp?p?'
+      - '**.*.in'
+      - '.gitmodules'
+      - '**/CMakeLists.txt'
+      - '.github/workflows/**'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -31,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-latest]
         # os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
 
@@ -40,36 +44,37 @@ jobs:
         with:
           submodules: true
 
-      - name: Install SDL2
-        shell: bash
+      - name: Install dependencies on Linux
+        if: runner.os == "Linux"
         run: |
-          if [[ $RUNNER_OS == "Linux" ]]; then
-            sudo apt-get update
-            sudo apt-get install libsdl2-dev libsdl2-image-dev
-          elif [[ $RUNNER_OS == "macOS" ]]; then
-            # `brew install sdl2 sdl2_image` when run after `brew update`
-            # triggers upgrade of python which fails unless conflicting
-            # symlinks are deleted. See:
-            # https://github.com/actions/setup-python/issues/577
-            brew update
-            rm '/usr/local/bin/2to3'
-            rm '/usr/local/bin/idle3'
-            rm '/usr/local/bin/pydoc3'
-            rm '/usr/local/bin/python3'
-            rm '/usr/local/bin/python3-config'
-            rm '/usr/local/bin/2to3-3.11'
-            rm '/usr/local/bin/idle3.11'
-            rm '/usr/local/bin/pydoc3.11'
-            rm '/usr/local/bin/python3.11'
-            rm '/usr/local/bin/python3.11-config'
-            brew install sdl2 sdl2_image
-          elif [[ $RUNNER_OS == "Windows" ]]; then
-            echo "Not implemented yet"
-            exit 1
-          else
-            echo "Unexpected OS"
-            exit 2
-          fi
+          sudo apt-get update
+          sudo apt-get install libsdl2-dev libsdl2-image-dev
+
+      - name: Install dependencies on macOS
+        if: runner.os == "macOS"
+        run: |
+          # `brew install sdl2 sdl2_image` when run after `brew update`
+          # triggers upgrade of python which fails unless conflicting
+          # symlinks are deleted. See:
+          # https://github.com/actions/setup-python/issues/577
+          brew update
+          rm '/usr/local/bin/2to3'
+          rm '/usr/local/bin/idle3'
+          rm '/usr/local/bin/pydoc3'
+          rm '/usr/local/bin/python3'
+          rm '/usr/local/bin/python3-config'
+          rm '/usr/local/bin/2to3-3.11'
+          rm '/usr/local/bin/idle3.11'
+          rm '/usr/local/bin/pydoc3.11'
+          rm '/usr/local/bin/python3.11'
+          rm '/usr/local/bin/python3.11-config'
+          brew install sdl2 sdl2_image
+
+      - name: Install dependencies on Windows
+        if: runner.os == "Windows"
+        run: |
+          echo "Not implemented yet"
+          exit 1
 
       - name: Configure CMake
         run: >
