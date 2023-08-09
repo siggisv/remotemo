@@ -37,16 +37,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os_is: [linux, mac]
+        os_variant: [1, 2]
+        # [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
         include:
-          - os: ubuntu-20.04
-            os_is: linux
-          - os: ubuntu-22.04
-            os_is: linux
-          - os: macos-11
-            os_is: mac
-          - os: macos-12
-            os_is: mac
+          - os_is: linux
+            os_variant: 1
+            os: ubuntu-20.04
+          - os_is: linux
+            os_variant: 2
+            os: ubuntu-22.04
+          - os_is: mac
+            os_variant: 1
+            os: macos-11
+          - os_is: mac
+            os_variant: 2
+            os: macos-12
           - os_is: linux
             TEST_COMMAND: echo "This os is a linux variant"
           - os_is: mac
@@ -57,94 +63,3 @@ jobs:
         run: |
           echo ${{ matrix.os }}
           ${{ matrix.TEST_COMMAND }}
-    
-  build-Ubuntu:
-    strategy:
-      fail-fast: false # if a particular matrix build fails, don't skip the rest
-      matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
-        # os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - name: Install SDL2
-        run: |
-          sudo apt-get update
-          sudo apt-get install libsdl2-dev libsdl2-image-dev
-
-      - name: Configure CMake
-        run: >
-          cmake -B ${{github.workspace}}/build
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-          -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
-          -DREMOTEMO_BUILD_SAMPLES=${{env.REMOTEMO_BUILD_SAMPLES}}
-          -DREMOTEMO_BUILD_TESTS=${{env.REMOTEMO_BUILD_TESTS}}
-          -DREMOTEMO_VERBOSE_TESTS=${{env.REMOTEMO_VERBOSE_TESTS}}
-          -DREMOTEMO_TESTS_COLOR=${{env.REMOTEMO_TESTS_COLOR}}
-
-      - name: Build
-        run: >
-          cmake --build ${{github.workspace}}/build
-          --config ${{env.BUILD_TYPE}}
-
-      - name: Test
-        working-directory: ${{github.workspace}}/build/tests
-        # Execute tests defined by the CMake configuration.
-        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for
-        # more detail
-        run: ctest -C ${{env.BUILD_TYPE}} -VV
-
-  build-MacOS:
-    strategy:
-      fail-fast: false # if a particular matrix build fails, don't skip the rest
-      matrix:
-        #os: [macos-10.15, macos-11, macos-12]
-        os: [macos-11, macos-12]
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      # `brew install sdl2 sdl2_image` when run after `brew update` triggers
-      # upgrade of python which fails unless conflicting symlinks are deleted.
-      # See:
-      # https://github.com/actions/setup-python/issues/577
-      - name: Install SDL2
-        run: |
-          brew update
-          rm '/usr/local/bin/2to3'
-          rm '/usr/local/bin/idle3'
-          rm '/usr/local/bin/pydoc3'
-          rm '/usr/local/bin/python3'
-          rm '/usr/local/bin/python3-config'
-          rm '/usr/local/bin/2to3-3.11'
-          rm '/usr/local/bin/idle3.11'
-          rm '/usr/local/bin/pydoc3.11'
-          rm '/usr/local/bin/python3.11'
-          rm '/usr/local/bin/python3.11-config'
-          brew install sdl2 sdl2_image
-
-      - name: Configure CMake
-        run: >
-          cmake -B ${{github.workspace}}/build
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-          -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
-          -DREMOTEMO_BUILD_SAMPLES=${{env.REMOTEMO_BUILD_SAMPLES}}
-          -DREMOTEMO_BUILD_TESTS=${{env.REMOTEMO_BUILD_TESTS}}
-          -DREMOTEMO_VERBOSE_TESTS=${{env.REMOTEMO_VERBOSE_TESTS}}
-          -DREMOTEMO_TESTS_COLOR=${{env.REMOTEMO_TESTS_COLOR}}
-
-      - name: Build
-        run: >
-          cmake --build ${{github.workspace}}/build
-          --config ${{env.BUILD_TYPE}}
-
-      - name: Test
-        working-directory: ${{github.workspace}}/build/tests
-        run: ctest -C ${{env.BUILD_TYPE}} -VV
