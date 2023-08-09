@@ -55,11 +55,24 @@ jobs:
             os: macos-12
           - os_is: linux
             TEST_COMMAND: echo "This os is a linux variant"
+            LONG_COMMAND: |
+              echo "This is a test"
+              echo "Can we do this?"
+              ls
+              echo "I hope so"
           - os_is: mac
             TEST_COMMAND: echo "This os is a MacOS variant"
+            LONG_COMMAND: |
+              echo "This is a test"
+              echo "Can we do this?"
+              ls
+              echo "I hope so"
+            
     runs-on: ${{ matrix.os }}
     steps:
       - name: Echo OS
         run: |
           echo ${{ matrix.os }}
           ${{ matrix.TEST_COMMAND }}
+      - name: test long command
+        run: ${{ matrix.LONG_COMMAND }}
