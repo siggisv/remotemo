@@ -34,45 +34,38 @@ env:
 
 jobs:
   test-matrix:
+    env:
+      LINUX_LONG_COMMAND: |
+          echo "This os is a linux variant"
+          echo "This is a test"
+          echo "Can we do this?"
+          echo "I hope so"
+      MACOS_LONG_COMMAND: |
+          echo "This os is a MacOS variant"
+          echo "This is a test"
+          echo "Can we do this?"
+          echo "I hope so"
     strategy:
       fail-fast: false
       matrix:
-        os_is: [linux, mac]
-        os_variant: [1, 2]
-        # [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        # os_is: [linux, mac]
+        # os_variant: [1, 2]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
         include:
-          - os_is: linux
-            os_variant: 1
-            os: ubuntu-20.04
-          - os_is: linux
-            os_variant: 2
-            os: ubuntu-22.04
-          - os_is: mac
-            os_variant: 1
-            os: macos-11
-          - os_is: mac
-            os_variant: 2
-            os: macos-12
-          - os_is: linux
-            TEST_COMMAND: echo "This os is a linux variant"
-            LONG_COMMAND: |
-              echo "This is a test"
-              echo "Can we do this?"
-              ls
-              echo "I hope so"
-          - os_is: mac
-            TEST_COMMAND: echo "This os is a MacOS variant"
-            LONG_COMMAND: |
-              echo "This is a test"
-              echo "Can we do this?"
-              ls
-              echo "I hope so"
+          - os: ubuntu-20.04
+            LONG_COMMAND: ${{ env.LINUX_LONG_COMMAND }}
+          - os: ubuntu-22.04
+            LONG_COMMAND: ${{ env.LINUX_LONG_COMMAND }}
+          - os: macos-11
+            LONG_COMMAND: ${{ env.MACOS_LONG_COMMAND }}
+          - os: macos-12
+            LONG_COMMAND: ${{ env.MACOS_LONG_COMMAND }}
             
     runs-on: ${{ matrix.os }}
     steps:
       - name: Echo OS
         run: |
           echo ${{ matrix.os }}
-          ${{ matrix.TEST_COMMAND }}
+#          ${{ matrix.TEST_COMMAND }}
       - name: test long command
         run: ${{ matrix.LONG_COMMAND }}
