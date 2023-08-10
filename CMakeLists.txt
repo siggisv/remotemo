@@ -113,10 +113,17 @@ target_compile_options(remotemo PRIVATE
 )
 target_compile_definitions(remotemo PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 
-target_link_libraries(remotemo PRIVATE
-    SDL2::Core
-    SDL2::Image
-)
+if (TARGET SDL2::Core)
+    target_link_libraries(remotemo PRIVATE
+        SDL2::Core
+        SDL2::Image
+    )
+else()
+    target_link_libraries(remotemo PRIVATE
+        SDL2::SDL2
+        SDL2_image::SDL2_image
+    )
+endif()
 
 add_custom_target(copy_resources ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -127,13 +134,23 @@ add_custom_target(copy_resources ALL
 
 IF (REMOTEMO_BUILD_SAMPLES)
     add_executable(hello_sample samples/hello_sample.cpp)
-    target_link_libraries(hello_sample PRIVATE remotemo SDL2::Main)
+    if (TARGET SDL2::Main)
+        target_link_libraries(hello_sample PRIVATE remotemo SDL2::Main)
+    else()
+        target_link_libraries(hello_sample PRIVATE remotemo SDL2::SDL2main)
+    endif()
     target_compile_options(hello_sample PRIVATE ${w_compile_options})
     target_compile_definitions(hello_sample PRIVATE $<$<CONFIG:Debug>:DEBUG>)
     add_dependencies(hello_sample copy_resources)
 
     add_executable(wrap_n_scroll_test samples/wrap_n_scroll_test.cpp)
-    target_link_libraries(wrap_n_scroll_test PRIVATE remotemo SDL2::Main)
+    if (TARGET SDL2::Main)
+        target_link_libraries(wrap_n_scroll_test PRIVATE remotemo SDL2::Main)
+    else()
+        target_link_libraries(wrap_n_scroll_test PRIVATE
+            remotemo
+            SDL2::SDL2main)
+    endif()
     target_compile_options(wrap_n_scroll_test PRIVATE ${w_compile_options})
     target_compile_definitions(wrap_n_scroll_test PRIVATE
         $<$<CONFIG:Debug>:DEBUG>

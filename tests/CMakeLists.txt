@@ -26,9 +26,13 @@ add_executable(test_init
     src/test_init_validate_conf_res.cpp
     src/test_init_setup.cpp
 )
+if (TARGET SDL2::Main)
+    target_link_libraries(test_init PRIVATE SDL2::Main)
+else()
+    target_link_libraries(test_init PRIVATE SDL2::SDL2main)
+endif()
 target_link_libraries(test_init PRIVATE
     remotemo
-    SDL2::Main
     Catch2::Catch2WithMain
     trompeloeil::trompeloeil
 )
@@ -37,9 +41,13 @@ add_test(test_init test_init ${TEST_ARG})
 add_executable(test_io
     src/test_io.cpp
 )
+if (TARGET SDL2::Main)
+    target_link_libraries(test_io PRIVATE SDL2::Main)
+else()
+    target_link_libraries(test_io PRIVATE SDL2::SDL2main)
+endif()
 target_link_libraries(test_io PRIVATE
     remotemo
-    SDL2::Main
     Catch2::Catch2WithMain
     trompeloeil::trompeloeil
     Threads::Threads

@@ -38,10 +38,8 @@ jobs:
         os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-latest]
         # os: [ubuntu-latest, windows-latest, macos-latest]
         include:
-          - sdl2: -DDUMMY
-            sdl2_img: -DDUMMY
-          - sdl2: -DSDL2_PATH
-            sdl2_img: -DSDL2_IMAGE_PATH
+          - toolch: -DDUMMY
+          - toolch: -DCMAKE_TOOLCHAIN_FILE
             os: windows-latest
     runs-on: ${{ matrix.os }}
 
@@ -98,8 +96,7 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{github.workspace}}/build
-          ${{ matrix.sdl2 }}=${{github.workspace}}/build
-          ${{ matrix.sdl2_img }}=${{github.workspace}}/build/
+          ${{matrix.toolch}}=${{github.workspace}}/build/conan_toolchain.cmake
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
           -DREMOTEMO_BUILD_SAMPLES=${{env.REMOTEMO_BUILD_SAMPLES}}
