@@ -37,6 +37,11 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-latest]
         # os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - toolchain: ' '
+          - toolchain: >
+            -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/build/conan_toolchain.cmake
+            os: windows-latest
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -92,7 +97,7 @@ jobs:
       - name: Configure CMake
         run: >
           cmake -B ${{github.workspace}}/build
-          -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/build/conan_toolchain.cmake
+          ${{ matrix.toolchain }}
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
           -DREMOTEMO_BUILD_SAMPLES=${{env.REMOTEMO_BUILD_SAMPLES}}
