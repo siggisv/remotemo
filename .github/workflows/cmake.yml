@@ -39,8 +39,7 @@ jobs:
         # os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - toolchain: ' '
-          - toolchain: >
-            -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/build/conan_toolchain.cmake
+          - toolchain: -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/build/conan_toolchain.cmake
             os: windows-latest
     runs-on: ${{ matrix.os }}
 
