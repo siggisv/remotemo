@@ -96,45 +96,15 @@ add_library(remotemo
     src/background.cpp
     src/text_display.cpp
 )
-if (TARGET SDL2::Core)
-    get_target_property(sdl2_include
-        SDL2::Core
-        INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(sdl2img_include
-        SDL2::Image
-        INTERFACE_INCLUDE_DIRECTORIES)
-else()
-    get_target_property(sdl2_include
-        SDL2::SDL2
-        INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(sdl2img_include
-        SDL2_image::SDL2_image
-        INTERFACE_INCLUDE_DIRECTORIES)
-endif()
-message(STATUS
-    "TEST: ${sdl2_include}/SDL2  ${sdl2img_include}/SDL2"
-    )
 # How to prevent warnings in header files (when used in other projects):
 # https://www.foonathan.net/2018/10/cmake-warnings
 target_include_directories(remotemo PRIVATE
     include/
     "${PROJECT_BINARY_DIR}/src"
 )
-if (TARGET SDL2::SDL2)
-    target_include_directories(remotemo PRIVATE
-        "${sdl2_include}/SDL2"
-        "${sdl2img_include}/SDL2"
-    )
-endif()
 target_include_directories(remotemo SYSTEM INTERFACE
     include/
 )
-if (TARGET SDL2::SDL2)
-    target_include_directories(remotemo SYSTEM INTERFACE
-        "${sdl2_include}/SDL2"
-        "${sdl2img_include}/SDL2"
-    )
-endif()
 
 # Note. Since CMake 3.19, the following can be set in a preset
 # file (i.e. CMakePresets.json)
