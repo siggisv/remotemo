@@ -1,6 +1,6 @@
 [requires]
 sdl/[~2]
-sdl_image/[~2
+sdl_image/[~2]
 
 [generators]
 CMakeToolchain
