@@ -70,11 +70,24 @@ jobs:
           rm '/usr/local/bin/python3.11-config'
           brew install sdl2 sdl2_image
 
-      - name: Install dependencies on Windows
+      - name: Get Conan on Windows
+        if: runner.os == 'Windows'
+        id: conan
+        uses: turtlebrowser/get-conan@v1.2
+
+      - name: Set up Conan on Windows
         if: runner.os == 'Windows'
         run: |
-          echo "Not implemented yet"
-          exit 1
+          echo "${{ steps.conan.outputs.version }}"
+          conan profile new default --detect
+          conan profile update settings.compiler.cppstd=++17
+
+      - name: Install dependencies on Windows
+        if: runner.os == 'Windows'
+        run: >
+          conan install .
+          --install-folder=${{github.workspace}}/build
+          --build=missing
 
       - name: Configure CMake
         run: >
@@ -97,4 +110,3 @@ jobs:
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for
         # more detail
         run: ctest -C ${{env.BUILD_TYPE}} -VV
-
