@@ -79,14 +79,14 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           echo "${{ steps.conan.outputs.version }}"
-          conan profile new default --detect
-          conan profile update settings.compiler.cppstd=++17
+          conan profile detect --force
+          # conan profile update settings.compiler.cppstd=++17
 
       - name: Install dependencies on Windows
         if: runner.os == 'Windows'
         run: >
           conan install .
-          --install-folder=${{github.workspace}}/build
+          --output-folder=${{github.workspace}}/build
           --build=missing
 
       - name: Configure CMake
