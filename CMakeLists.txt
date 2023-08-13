@@ -59,7 +59,7 @@ endif(REMOTEMO_BUILD_DOCS)
 set(is_gcc $<CXX_COMPILER_ID:GNU>)
 set(is_clang $<CXX_COMPILER_ID:Clang,AppleClang>)
 set(is_msvc $<CXX_COMPILER_ID:MSVC>)
-set(debug_compile_options
+set(main_compile_options
     $<${is_gcc}:-Wall -Wextra -pedantic-errors>
     $<${is_clang}:-Wall -Wextra -pedantic-errors>
     $<${is_msvc}:/W4 /wd4455>
@@ -70,7 +70,7 @@ set(werror_compile_option
     $<${is_msvc}:/WX>
 )
 set(w_compile_options
-    $<$<CONFIG:Debug>:${debug_compile_options}>
+    ${main_compile_options}
     $<$<BOOL:${REMOTEMO_WERROR}>:${werror_compile_option}>
 )
 
