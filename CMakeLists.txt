@@ -62,20 +62,16 @@ set(is_msvc $<CXX_COMPILER_ID:MSVC>)
 set(debug_compile_options
     $<${is_gcc}:-Wall -Wextra -pedantic-errors>
     $<${is_clang}:-Wall -Wextra -pedantic-errors>
-    $<${is_msvc}:/W4>
+    $<${is_msvc}:/W4 /wd4455>
 )
-option(REMOTEMO_WERROR
-    "Treat warning as errors (ignored if CMAKE_BUILD_TYPE is not Debug)"
-    OFF
-)
-set(is_werror $<AND:$<CONFIG:Debug>,$<BOOL:${REMOTEMO_WERROR}>>)
+option(REMOTEMO_WERROR "Treat warning as errors" OFF)
 set(werror_compile_option
     $<$<OR:${is_gcc},${is_clang}>:-Werror>
     $<${is_msvc}:/WX>
 )
 set(w_compile_options
     $<$<CONFIG:Debug>:${debug_compile_options}>
-    $<${is_werror}:${werror_compile_option}>
+    $<$<BOOL:${REMOTEMO_WERROR}>:${werror_compile_option}>
 )
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/sdl2")

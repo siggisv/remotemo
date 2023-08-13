@@ -92,7 +92,7 @@ jobs:
         if: runner.os == 'Windows'
         run: >
           conan install .
-           -s build_type=${{matrix.build_type}}
+          -s build_type=${{matrix.build_type}}
           --output-folder=${{github.workspace}}/build
           --build=missing
 
