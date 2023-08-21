@@ -27,9 +27,15 @@ add_executable(test_init
     src/test_init_setup.cpp
 )
 if (TARGET SDL2::Main)
-    target_link_libraries(test_init PRIVATE SDL2::Main)
+    target_link_libraries(test_init PRIVATE
+        SDL2::Main
+        SDL2::Image
+    )
 else()
-    target_link_libraries(test_init PRIVATE SDL2::SDL2main)
+    target_link_libraries(test_init PRIVATE
+        SDL2::SDL2main
+        SDL2_image::SDL2_image
+    )
 endif()
 target_link_libraries(test_init PRIVATE
     remotemo
@@ -42,9 +48,15 @@ add_executable(test_io
     src/test_io.cpp
 )
 if (TARGET SDL2::Main)
-    target_link_libraries(test_io PRIVATE SDL2::Main)
+    target_link_libraries(test_io PRIVATE
+        SDL2::Main
+        SDL2::Image
+    )
 else()
-    target_link_libraries(test_io PRIVATE SDL2::SDL2main)
+    target_link_libraries(test_io PRIVATE
+        SDL2::SDL2main
+        SDL2_image::SDL2_image
+    )
 endif()
 target_link_libraries(test_io PRIVATE
     remotemo
