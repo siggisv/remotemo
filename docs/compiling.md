@@ -49,7 +49,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 E.g. `-G "Visual Studio 15 2017" -A x64`. See the [CMake
 docs](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html#id13))
 to find how to specify your IDE and what tatget platforms names can be
-specified with the `-A` flag for that IDE. 
+specified with the `-A` flag for that IDE.
 
 **Note:**
 If you've installed `SDL2` in a non-standard directory, you might have to
