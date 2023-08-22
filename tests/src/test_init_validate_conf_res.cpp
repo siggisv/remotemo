@@ -28,14 +28,14 @@ TEST_CASE("create() - config resources invalid - invalid window", "[init]")
 
     REQUIRE_CALL(mock_SDL, mock_GetWindowID(conf.res.win))
         .RETURN(conf_winID)
-        .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr);
+        .IN_SEQUENCE((seqs.main, seqs.font, seqs.backgr));
     ALLOW_CALL(mock_SDL, mock_GetRenderer(conf.res.win))
         .RETURN(conf.res.render);
     if (do_cleanup_all) {
       conf.expected_cleanup(&exps, &seqs);
     }
     REQUIRE_CALL(dummy_t, func())
-        .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr);
+        .IN_SEQUENCE((seqs.main, seqs.font, seqs.backgr));
 
     bool success = try_running_create(do_cleanup_all, conf);
     REQUIRE(success == false);
@@ -71,7 +71,7 @@ TEST_CASE("create() - config resources invalid - texture(s) but no renderer",
       conf.expected_cleanup(&exps, &seqs);
     }
     REQUIRE_CALL(dummy_t, func())
-        .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr);
+        .IN_SEQUENCE((seqs.main, seqs.font, seqs.backgr));
 
     bool success = try_running_create(do_cleanup_all, conf);
     REQUIRE(success == false);
@@ -103,7 +103,7 @@ TEST_CASE("create() - config resources invalid - can't get renderer settings",
       conf.expected_cleanup(&exps, &seqs);
     }
     REQUIRE_CALL(dummy_t, func())
-        .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr);
+        .IN_SEQUENCE((seqs.main, seqs.font, seqs.backgr));
 
     bool success = try_running_create(do_cleanup_all, conf);
     REQUIRE(success == false);
@@ -139,7 +139,7 @@ TEST_CASE("create() - config resources invalid - incorrect renderer settings",
       conf.expected_cleanup(&exps, &seqs);
     }
     REQUIRE_CALL(dummy_t, func())
-        .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr);
+        .IN_SEQUENCE((seqs.main, seqs.font, seqs.backgr));
 
     bool success = try_running_create(do_cleanup_all, conf);
     REQUIRE(success == false);
@@ -217,7 +217,7 @@ TEST_CASE(
       conf.expected_cleanup(&exps, &seqs);
     }
     REQUIRE_CALL(dummy_t, func())
-        .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr);
+        .IN_SEQUENCE((seqs.main, seqs.font, seqs.backgr));
 
     bool success = try_running_create(do_cleanup_all, conf);
     REQUIRE(success == false);
