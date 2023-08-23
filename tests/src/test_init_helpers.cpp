@@ -169,12 +169,12 @@ void Resources::expected_cleanup(
   }
   if (render != nullptr) {
     exps->push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyRenderer(render))
-                        .IN_SEQUENCE((seqs->main, seqs->font, seqs->backgr,
-                            seqs->t_area)));
+                        .IN_SEQUENCE(seqs->main, seqs->font, seqs->backgr,
+                            seqs->t_area));
   }
   if (win != nullptr) {
     exps->push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyWindow(win))
-                        .IN_SEQUENCE((seqs->main, seqs->font, seqs->backgr)));
+                        .IN_SEQUENCE(seqs->main, seqs->font, seqs->backgr));
   }
 }
 
@@ -206,7 +206,7 @@ void Conf_resources::expected_cleanup(
   res.expected_cleanup(exps, seqs);
   exps->push_back(
       NAMED_REQUIRE_CALL(mock_SDL, mock_Quit())
-          .IN_SEQUENCE((seqs->main, seqs->font, seqs->backgr, seqs->opt)));
+          .IN_SEQUENCE(seqs->main, seqs->font, seqs->backgr, seqs->opt));
 }
 
 void Conf_resources::check_win_has_renderer(
@@ -215,7 +215,7 @@ void Conf_resources::check_win_has_renderer(
   exps->push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_GetRenderer(res.win))
                       .TIMES(AT_LEAST(1))
                       .RETURN(res.render)
-                      .IN_SEQUENCE((seqs->main, seqs->font, seqs->backgr)));
+                      .IN_SEQUENCE(seqs->main, seqs->font, seqs->backgr));
 }
 
 void check_renderer_settings(std::list<tr_exp>* exps, SDL_Renderer* renderer,
@@ -415,8 +415,8 @@ void Init_status::attempt_init(bool should_success)
   exps.push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_Init(ANY(Uint32)))
                      .SIDE_EFFECT(init_flags = _1)
                      .RETURN(init_ret)
-                     .IN_SEQUENCE((seqs.main, seqs.font, seqs.backgr,
-                         seqs.t_area, seqs.opt)));
+                     .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr,
+                         seqs.t_area, seqs.opt));
   init_did_succeed = should_success;
 }
 
@@ -447,7 +447,7 @@ void Init_status::attempt_create_window(
       NAMED_REQUIRE_CALL(mock_SDL, mock_CreateWindow(re(regex_title), pos.x,
                                        pos.y, size.width, size.height, flags))
           .RETURN(create_win_ret)
-          .IN_SEQUENCE((seqs.main, seqs.font, seqs.backgr, seqs.t_area)));
+          .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr, seqs.t_area));
   ready_res.win = create_win_ret;
   to_be_cleaned_up.win = create_win_ret;
 }
@@ -459,7 +459,7 @@ void Init_status::attempt_create_renderer(bool should_success)
       NAMED_REQUIRE_CALL(mock_SDL,
           mock_CreateRenderer(ready_res.win, -1, SDL_RENDERER_TARGETTEXTURE))
           .RETURN(create_render_ret)
-          .IN_SEQUENCE((seqs.main, seqs.font, seqs.backgr, seqs.t_area)));
+          .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr, seqs.t_area));
   ready_res.render = create_render_ret;
   to_be_cleaned_up.render = create_render_ret;
 }
@@ -473,7 +473,7 @@ void Init_status::attempt_setup_textures(
         NAMED_REQUIRE_CALL(mock_SDL, mock_GetBasePath())
             .TIMES(0, 1)
             .RETURN(exp_results.basepath)
-            .IN_SEQUENCE((seqs.font, seqs.backgr, seqs.opt));
+            .IN_SEQUENCE(seqs.font, seqs.backgr, seqs.opt);
     exps_basepath.cleanup = NAMED_REQUIRE_CALL(
         mock_SDL, mock_free(static_cast<void*>(exp_results.basepath)))
                                 .TIMES(0, 1)
@@ -564,8 +564,8 @@ void Init_status::expected_cleanup()
   to_be_cleaned_up.expected_cleanup(&exps, &seqs);
   if (do_cleanup_all) {
     exps.push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_Quit())
-                       .IN_SEQUENCE((seqs.main, seqs.font, seqs.backgr,
-                           seqs.t_area, seqs.opt)));
+                       .IN_SEQUENCE(seqs.main, seqs.font, seqs.backgr,
+                           seqs.t_area, seqs.opt));
   } else if (init_did_succeed) {
     exps.push_back(
         NAMED_REQUIRE_CALL(mock_SDL, mock_QuitSubSystem(ANY(Uint32)))
@@ -622,6 +622,6 @@ void Init_status::check_texture_cleanup() const
 void require_init_has_ended(std::list<tr_exp>* exps, Test_seqs* seqs)
 {
   exps->push_back(NAMED_REQUIRE_CALL(dummy_t, func())
-                      .IN_SEQUENCE((seqs->main, seqs->font, seqs->backgr,
-                          seqs->t_area, seqs->opt)));
+                      .IN_SEQUENCE(seqs->main, seqs->font, seqs->backgr,
+                          seqs->t_area, seqs->opt));
 }

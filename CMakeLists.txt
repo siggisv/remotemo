@@ -4,7 +4,7 @@ project(remotemo
     VERSION 0.1.0
     LANGUAGES CXX
 )
-set(remotemo_PRE_RELEASE_LABEL beta.5)
+set(remotemo_PRE_RELEASE_LABEL beta.6)
 
 if(NOT remotemo_PRE_RELEASE_LABEL STREQUAL "")
     set(remotemo_VERSION
@@ -64,7 +64,10 @@ set(main_compile_options
     $<${is_clang}:-Wall -Wextra -pedantic-errors>
     $<${is_msvc}:/W4 /wd4455>
 )
-option(REMOTEMO_WERROR "Treat warning as errors" OFF)
+option(REMOTEMO_WERROR
+    "Treat warning as errors (Note: MSVC warns about stuff in SDL2, etc)"
+    OFF
+)
 set(werror_compile_option
     $<$<OR:${is_gcc},${is_clang}>:-Werror>
     $<${is_msvc}:/WX>

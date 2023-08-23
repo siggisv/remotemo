@@ -24,7 +24,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   # BUILD_TYPE: Debug
-  REMOTEMO_WERROR: ON
+  # REMOTEMO_WERROR: ON
   REMOTEMO_BUILD_SAMPLES: ON
   REMOTEMO_BUILD_TESTS: ON
   REMOTEMO_VERBOSE_TESTS: OFF
@@ -40,10 +40,19 @@ jobs:
         include:
           - toolch: -DDUMMY
             build_type: Debug
+            werror: ON
             conanrun: echo ""
             deact_conanrun: echo ""
+          # On Windows, build_type needs to be the same for the build itself
+          # as it is for conan install (and conan doesn't seem to have the
+          # debug version of SDL2 as binaries, resulting in longer builds,
+          # unless set to Release).
+          # Also on Windows, MSVC throws some warnings about SDL2, etc. which
+          # would result in all builds to fail if WERROR were allowed to be
+          # ON like in the other builds.
           - toolch: -DCMAKE_TOOLCHAIN_FILE
             build_type: Release
+            werror: OFF
             os: windows-latest
             conanrun: ..\conanrun.ps1
             deact_conanrun: ..\deactivate_conanrun.ps1
@@ -106,7 +115,7 @@ jobs:
           cmake -B ${{github.workspace}}/build
           ${{matrix.toolch}}=${{github.workspace}}/build/conan_toolchain.cmake
           -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
-          -DREMOTEMO_WERROR=${{env.REMOTEMO_WERROR}}
+          -DREMOTEMO_WERROR=${{matrix.werror}}
           -DREMOTEMO_BUILD_SAMPLES=${{env.REMOTEMO_BUILD_SAMPLES}}
           -DREMOTEMO_BUILD_TESTS=${{env.REMOTEMO_BUILD_TESTS}}
           -DREMOTEMO_VERBOSE_TESTS=${{env.REMOTEMO_VERBOSE_TESTS}}
