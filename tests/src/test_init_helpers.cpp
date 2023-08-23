@@ -168,9 +168,9 @@ void Resources::expected_cleanup(
                         .IN_SEQUENCE(seqs->backgr));
   }
   if (render != nullptr) {
-    exps->push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyRenderer(render))
-                        .IN_SEQUENCE(seqs->main, seqs->font, seqs->backgr,
-                            seqs->t_area));
+    exps->push_back(
+        NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyRenderer(render))
+            .IN_SEQUENCE(seqs->main, seqs->font, seqs->backgr, seqs->t_area));
   }
   if (win != nullptr) {
     exps->push_back(NAMED_REQUIRE_CALL(mock_SDL, mock_DestroyWindow(win))
@@ -469,11 +469,10 @@ void Init_status::attempt_setup_textures(
 {
   exp_results = expected_results;
   if (ready_res.backgr == nullptr || ready_res.font == nullptr) {
-    exps_basepath.setup =
-        NAMED_REQUIRE_CALL(mock_SDL, mock_GetBasePath())
-            .TIMES(0, 1)
-            .RETURN(exp_results.basepath)
-            .IN_SEQUENCE(seqs.font, seqs.backgr, seqs.opt);
+    exps_basepath.setup = NAMED_REQUIRE_CALL(mock_SDL, mock_GetBasePath())
+                              .TIMES(0, 1)
+                              .RETURN(exp_results.basepath)
+                              .IN_SEQUENCE(seqs.font, seqs.backgr, seqs.opt);
     exps_basepath.cleanup = NAMED_REQUIRE_CALL(
         mock_SDL, mock_free(static_cast<void*>(exp_results.basepath)))
                                 .TIMES(0, 1)

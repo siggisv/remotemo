@@ -1,5 +1,8 @@
 [requires]
-sdl/[~2]
+# Let's see if sdl_image depending on sdl is enough to get it installed
+# without its version being in conflict with the one specified by sdl_image
+# (and hopefully it will respect the shared flag)
+# sdl/[~2]
 sdl_image/[~2]
 
 [generators]
