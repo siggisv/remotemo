@@ -1,5 +1,6 @@
 #include <sstream>
 #include <filesystem>
+#include <regex>
 
 #include "remotemo/remotemo.hpp"
 #include "../../src/texture.hpp"
@@ -480,11 +481,16 @@ void Init_status::attempt_setup_textures(
   }
   if (exp_results.basepath != nullptr) {
     std::filesystem::path base_path {exp_results.basepath};
+    std::regex backslash_re("\\\\");
     if (ready_res.font == nullptr) {
       auto font_full_path =
-          base_path / texture_conf.font_bitmap_file_path.value_or(
-                          "res/img/font_bitmap.png");
-      std::string regex_path = "^"s + font_full_path.string() + "$";
+          (base_path / texture_conf.font_bitmap_file_path.value_or(
+                           "res/img/font_bitmap.png"))
+              .lexically_normal();
+      std::string regex_path =
+          "^"s +
+          std::regex_replace(font_full_path.string(), backslash_re, "\\\\") +
+          "$";
       exps_font.setup = NAMED_REQUIRE_CALL(
           mock_SDL, mock_LoadTexture(ready_res.render, re(regex_path)))
                             .TIMES(0, 1)
@@ -495,9 +501,13 @@ void Init_status::attempt_setup_textures(
     }
     if (ready_res.backgr == nullptr) {
       auto backgr_full_path =
-          base_path / texture_conf.backgr_file_path.value_or(
-                          "res/img/terminal_screen.png");
-      std::string regex_path = "^"s + backgr_full_path.string() + "$";
+          (base_path / texture_conf.backgr_file_path.value_or(
+                           "res/img/terminal_screen.png"))
+              .lexically_normal();
+      std::string regex_path = "^"s +
+                               std::regex_replace(backgr_full_path.string(),
+                                   backslash_re, "\\\\") +
+                               "$";
       exps_backgr.setup = NAMED_REQUIRE_CALL(
           mock_SDL, mock_LoadTexture(ready_res.render, re(regex_path)))
                               .TIMES(0, 1)

@@ -26,6 +26,15 @@ add_executable(test_init
     src/test_init_validate_conf_res.cpp
     src/test_init_setup.cpp
 )
+# It is enough for all the tests that the following runs for a single
+# one of them:
+add_custom_command(
+    TARGET test_init POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${PROJECT_SOURCE_DIR}/res
+            $<TARGET_FILE_DIR:test_init>/res
+    COMMENT "Copying resources into tests build directory"
+)
 if (TARGET SDL2::Main)
     target_link_libraries(test_init PRIVATE
         SDL2::Main

@@ -30,7 +30,7 @@ bool Texture::load(SDL_Renderer* renderer, const std::string& file_path)
       return false;
     }
   }
-  auto texture_path = *m_base_path / file_path;
+  auto texture_path = (*m_base_path / file_path).lexically_normal();
 #ifdef _WIN32
   auto texure_path_utf8 = texture_path.u8string();
 #else // On non-Windows systems the native encoding is already utf8
