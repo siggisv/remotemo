@@ -101,8 +101,6 @@ remotemo::Config setup(int columns = 0, int lines = 0)
   putenv(&env_string[0]);
 
   remotemo::Config config {};
-  //config.background_file_path("../res/img/terminal_screen.png")
-  //    .font_bitmap_file_path("../res/img/font_bitmap.png");
   if (columns <= 0 && lines <= 0) {
     return config; // Use default text area size (40, 24)
   }
