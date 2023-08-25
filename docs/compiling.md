@@ -43,9 +43,9 @@ libraries to link to, etc.)
 > ```sh
 > conan install . --output-folder=build --build=missing
 > ```
-> 
+>
 > Optionally add the following flags to that command:
-> 
+>
 > ```sh
 > # IF also building the tests, they NEED the shared library version:
 > --options=sdl*:shared=True
