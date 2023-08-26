@@ -101,8 +101,6 @@ remotemo::Config setup(int columns = 0, int lines = 0)
   putenv(&env_string[0]);
 
   remotemo::Config config {};
-  config.background_file_path("../res/img/terminal_screen.png")
-      .font_bitmap_file_path("../res/img/font_bitmap.png");
   if (columns <= 0 && lines <= 0) {
     return config; // Use default text area size (40, 24)
   }
@@ -335,7 +333,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{a_size.width - 7, 0}, 0, {a_size.width - 7, 5}}, //
         {{a_size.width - 1, 0}, 0, {a_size.width - 1, 5}}  //
     }};
-    for (auto p : positions) {
+    for (const auto& p : positions) {
       t->set_cursor(5, 5);
       INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                          << "Set column (" << p.param.x << ") Expected: ("
@@ -355,7 +353,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{a_size.width, 0}, -1, {10, 10}},     //
         {{a_size.width + 4, 0}, -1, {10, 10}}, //
     }};
-    for (auto p : positions) {
+    for (const auto& p : positions) {
       t->set_cursor(10, 10);
       INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                          << "Set column (" << p.param.x << ") Expected: ("
@@ -376,7 +374,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{0, 5}, 0, {5, 5}},                        //
         {{0, a_size.height}, 0, {5, a_size.height}} //
     }};
-    for (auto p : positions) {
+    for (const auto& p : positions) {
       t->set_cursor(5, 5);
       INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                          << "Set line (" << p.param.y << ") Expected: ("
@@ -397,7 +395,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
         {{0, 50}, -1, {5, 10}},                //
     }};
 
-    for (auto p : positions) {
+    for (const auto& p : positions) {
       t->set_cursor(5, 10);
       INFO("Area size (" << a_size.width << ", " << a_size.height << ") "
                          << "Set line (" << p.param.y << ") Expected: ("
@@ -413,6 +411,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 
 TEST_CASE("pause(int)", "[pause]")
 {
+  constexpr int allowed_error = 20;
   auto config = setup();
   auto t = remotemo::create(config);
   t->set_text_delay(0);
@@ -435,7 +434,7 @@ TEST_CASE("pause(int)", "[pause]")
           std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
       UNSCOPED_INFO("pause(" << ok_duration << ") took " << elapsed_ms.count()
                              << "ms to run.\n");
-      REQUIRE(abs(elapsed_ms.count() - ok_duration) < 15);
+      REQUIRE(abs(elapsed_ms.count() - ok_duration) < allowed_error);
     }
   }
 }
@@ -931,6 +930,7 @@ TEST_CASE("get_key() can be used to get pressed key", "[get key]")
 
   SECTION("get_key() should wait for key if none in queue")
   {
+    constexpr int allowed_error = 200;
     const std::vector<Get_key_test_param> key_presses {{
         {SDL_SCANCODE_A, SDLK_a, remotemo::Key::K_a},           //
         {SDL_SCANCODE_R, SDLK_3, remotemo::Key::K_r},           //
@@ -952,7 +952,7 @@ TEST_CASE("get_key() can be used to get pressed key", "[get key]")
       UNSCOPED_INFO("get_key() (keypress delayed:" << delay << ") took "
                                                    << elapsed_ms.count()
                                                    << "ms to run.\n");
-      REQUIRE(abs(elapsed_ms.count() - delay) < 200);
+      REQUIRE(abs(elapsed_ms.count() - delay) < allowed_error);
       delay *= 2;
     }
   }

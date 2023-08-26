@@ -4,7 +4,7 @@ project(remotemo
     VERSION 0.1.0
     LANGUAGES CXX
 )
-set(remotemo_PRE_RELEASE_LABEL beta.5)
+set(remotemo_PRE_RELEASE_LABEL beta.6)
 
 if(NOT remotemo_PRE_RELEASE_LABEL STREQUAL "")
     set(remotemo_VERSION
@@ -59,23 +59,22 @@ endif(REMOTEMO_BUILD_DOCS)
 set(is_gcc $<CXX_COMPILER_ID:GNU>)
 set(is_clang $<CXX_COMPILER_ID:Clang,AppleClang>)
 set(is_msvc $<CXX_COMPILER_ID:MSVC>)
-set(debug_compile_options
+set(main_compile_options
     $<${is_gcc}:-Wall -Wextra -pedantic-errors>
     $<${is_clang}:-Wall -Wextra -pedantic-errors>
-    $<${is_msvc}:/W4>
+    $<${is_msvc}:/W4 /wd4455>
 )
 option(REMOTEMO_WERROR
-    "Treat warning as errors (ignored if CMAKE_BUILD_TYPE is not Debug)"
+    "Treat warning as errors (Note: MSVC warns about stuff in SDL2, etc)"
     OFF
 )
-set(is_werror $<AND:$<CONFIG:Debug>,$<BOOL:${REMOTEMO_WERROR}>>)
 set(werror_compile_option
     $<$<OR:${is_gcc},${is_clang}>:-Werror>
     $<${is_msvc}:/WX>
 )
 set(w_compile_options
-    $<$<CONFIG:Debug>:${debug_compile_options}>
-    $<${is_werror}:${werror_compile_option}>
+    ${main_compile_options}
+    $<$<BOOL:${REMOTEMO_WERROR}>:${werror_compile_option}>
 )
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/sdl2")
@@ -113,32 +112,49 @@ target_compile_options(remotemo PRIVATE
 )
 target_compile_definitions(remotemo PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 
-target_link_libraries(remotemo PRIVATE
-    SDL2::Core
-    SDL2::Image
-)
-
-add_custom_target(copy_resources ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/res
-            ${CMAKE_CURRENT_BINARY_DIR}/res
-    COMMENT "Copying resources into build directory"
-)
+if (TARGET SDL2::Core)
+    target_link_libraries(remotemo PRIVATE
+        SDL2::Core
+        SDL2::Image
+    )
+else()
+    target_link_libraries(remotemo PRIVATE
+        SDL2::SDL2
+        SDL2_image::SDL2_image
+    )
+endif()
 
 IF (REMOTEMO_BUILD_SAMPLES)
     add_executable(hello_sample samples/hello_sample.cpp)
-    target_link_libraries(hello_sample PRIVATE remotemo SDL2::Main)
+    # It is enough for all the samples that the following runs for a single
+    # one of them:
+    add_custom_command(
+        TARGET hello_sample POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${CMAKE_CURRENT_SOURCE_DIR}/res
+                $<TARGET_FILE_DIR:hello_sample>/res
+        COMMENT "Copying resources into samples build directory"
+    )
+    if (TARGET SDL2::Main)
+        target_link_libraries(hello_sample PRIVATE remotemo SDL2::Main)
+    else()
+        target_link_libraries(hello_sample PRIVATE remotemo SDL2::SDL2main)
+    endif()
     target_compile_options(hello_sample PRIVATE ${w_compile_options})
     target_compile_definitions(hello_sample PRIVATE $<$<CONFIG:Debug>:DEBUG>)
-    add_dependencies(hello_sample copy_resources)
 
     add_executable(wrap_n_scroll_test samples/wrap_n_scroll_test.cpp)
-    target_link_libraries(wrap_n_scroll_test PRIVATE remotemo SDL2::Main)
+    if (TARGET SDL2::Main)
+        target_link_libraries(wrap_n_scroll_test PRIVATE remotemo SDL2::Main)
+    else()
+        target_link_libraries(wrap_n_scroll_test PRIVATE
+            remotemo
+            SDL2::SDL2main)
+    endif()
     target_compile_options(wrap_n_scroll_test PRIVATE ${w_compile_options})
     target_compile_definitions(wrap_n_scroll_test PRIVATE
         $<$<CONFIG:Debug>:DEBUG>
     )
-    add_dependencies(wrap_n_scroll_test copy_resources)
 endif()
 
 if (REMOTEMO_BUILD_TESTS)

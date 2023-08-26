@@ -27,17 +27,9 @@ extern SDL_Texture* const d_new_backgr;
 extern SDL_Texture* const d_new_text_area;
 
 #ifdef _WIN32
-constexpr char d_basepath[] = "\\dummy\\base\\path\\";
-constexpr char dummy_font_path[] = "\\dummy\\base\\path\\"
-                                   "res\\img\\font_bitmap.png";
-constexpr char dummy_backgr_path[] = "\\dummy\\base\\path\\"
-                                     "res\\img\\terminal_screen.png";
+constexpr char d_basepath[] = "C:\\dummy\\base\\path\\";
 #else
 constexpr char d_basepath[] = "/dummy/base/path/";
-constexpr char dummy_font_path[] = "/dummy/base/path/"
-                                   "res/img/font_bitmap.png";
-constexpr char dummy_backgr_path[] = "/dummy/base/path/"
-                                     "res/img/terminal_screen.png";
 #endif
 
 struct Test_seqs {
