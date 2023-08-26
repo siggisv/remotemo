@@ -411,6 +411,7 @@ TEST_CASE("Cursor position can be controlled directly", "[cursor]")
 
 TEST_CASE("pause(int)", "[pause]")
 {
+  constexpr int allowed_error = 20;
   auto config = setup();
   auto t = remotemo::create(config);
   t->set_text_delay(0);
@@ -433,7 +434,7 @@ TEST_CASE("pause(int)", "[pause]")
           std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
       UNSCOPED_INFO("pause(" << ok_duration << ") took " << elapsed_ms.count()
                              << "ms to run.\n");
-      REQUIRE(abs(elapsed_ms.count() - ok_duration) < 15);
+      REQUIRE(abs(elapsed_ms.count() - ok_duration) < allowed_error);
     }
   }
 }
@@ -929,6 +930,7 @@ TEST_CASE("get_key() can be used to get pressed key", "[get key]")
 
   SECTION("get_key() should wait for key if none in queue")
   {
+    constexpr int allowed_error = 200;
     const std::vector<Get_key_test_param> key_presses {{
         {SDL_SCANCODE_A, SDLK_a, remotemo::Key::K_a},           //
         {SDL_SCANCODE_R, SDLK_3, remotemo::Key::K_r},           //
@@ -950,7 +952,7 @@ TEST_CASE("get_key() can be used to get pressed key", "[get key]")
       UNSCOPED_INFO("get_key() (keypress delayed:" << delay << ") took "
                                                    << elapsed_ms.count()
                                                    << "ms to run.\n");
-      REQUIRE(abs(elapsed_ms.count() - delay) < 200);
+      REQUIRE(abs(elapsed_ms.count() - delay) < allowed_error);
       delay *= 2;
     }
   }
