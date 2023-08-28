@@ -335,6 +335,7 @@ Key Engine::get_key()
       continue;
     }
     if (handle_standard_event(event)) {
+      render_window();
       continue;
     }
     if (event.type == SDL_KEYDOWN) {
