@@ -16,7 +16,7 @@ ASCII only, not even extended ASCII).
 By default the text gets displayed at a slow rate to recreate the feeling of
 being on a dumb terminal, connected over a slow connection to a mainframe:
 
-[remotemo_simple_sample.webm](https://github.com/siggisv/remotemo/assets/5704941/bf79a37e-5e7b-4056-abe0-69efb158f183)
+[remotemo_simple_sample.webm](https://github.com/siggisv/remotemo/assets/5704941/3d65cdda-461b-4b3f-99c6-a28896c4f669)
 
 ## WARNING
 This is still work-in-progress.
