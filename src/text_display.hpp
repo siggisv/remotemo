@@ -67,6 +67,7 @@ private:
   bool m_is_output_inversed {false};
   static constexpr int max_ascii_value {127};
   static constexpr int bitmap_char_per_line {16};
+  static constexpr Point space_position {0, 2};
   static constexpr int bitmap_lines_per_mode {8};
   static constexpr char not_ascii_symbol {1};
   static constexpr char cursor_symbol {0};
