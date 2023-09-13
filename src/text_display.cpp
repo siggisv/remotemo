@@ -9,8 +9,7 @@ std::optional<Text_display> Text_display::create(Font&& font,
   // screen, then the outer border of the content gets the same look as the
   // rest of the content:
   Size area_size {(font.char_width() * text_area_config.columns) + 2,
-      // + 1 line to make scrolling simpler:
-      (font.char_height() * (text_area_config.lines + 1)) + 2};
+      (font.char_height() * (text_area_config.lines)) + 2};
   auto* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
       SDL_TEXTUREACCESS_TARGET, area_size.width, area_size.height);
   if (texture == nullptr) {
@@ -90,25 +89,21 @@ void Text_display::set_char_at_cursor(int character)
 
 void Text_display::clear_line(int line)
 {
-  constexpr Color white {255, 255, 255};
   SDL_SetRenderTarget(m_renderer, res());
-  SDL_SetTextureBlendMode(res(), SDL_BLENDMODE_NONE);
-  SDL_SetTextureColorMod(res(), white.red, white.green, white.blue);
 
   int line_length = texture_size().width - 2;
   int line_height = m_font.char_height();
-  SDL_Rect area_to_be_copied = {
-      1, texture_size().height - line_height, line_length, line_height};
+  // NOTE Following can easily be changed to take 'is_inverse' into account:
+  SDL_Rect space_bitmap = {space_position.x * m_font.char_width(),
+      space_position.y * m_font.char_height(), m_font.char_width(),
+      m_font.char_height()};
   SDL_Rect target_area = {
       1, 1 + (line * line_height), line_length, line_height};
-  SDL_RenderCopy(m_renderer, res(), &area_to_be_copied, &target_area);
+  SDL_RenderCopy(m_renderer, m_font.res(), &space_bitmap, &target_area);
 
   m_display_content[line] = m_empty_line;
 
   SDL_SetRenderTarget(m_renderer, nullptr);
-  SDL_SetTextureBlendMode(res(), m_blend_to_screen_mode);
-  SDL_SetTextureColorMod(res(), m_text_to_screen_color.red,
-      m_text_to_screen_color.green, m_text_to_screen_color.blue);
 }
 
 void Text_display::scroll_up_one_line()
@@ -128,6 +123,8 @@ void Text_display::scroll_up_one_line()
 
   m_display_content.pop_front();
   m_display_content.push_back(m_empty_line);
+
+  clear_line(m_lines - 1);
 
   SDL_SetRenderTarget(m_renderer, nullptr);
   SDL_SetTextureBlendMode(res(), m_blend_to_screen_mode);

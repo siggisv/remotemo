@@ -524,7 +524,7 @@ void Init_status::attempt_setup_textures(
   exps_t_area.setup = NAMED_REQUIRE_CALL(mock_SDL,
       mock_CreateTexture(ready_res.render, SDL_PIXELFORMAT_RGBA32,
           SDL_TEXTUREACCESS_TARGET, (t_area_size.width * font_size.width) + 2,
-          ((t_area_size.height + 1) * font_size.height) + 2))
+          (t_area_size.height * font_size.height) + 2))
                           .TIMES(0, 1)
                           .RETURN(exp_results.t_area)
                           .IN_SEQUENCE(seqs.main, seqs.t_area);
