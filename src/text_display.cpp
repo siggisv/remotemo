@@ -132,6 +132,19 @@ void Text_display::scroll_up_one_line()
       m_text_to_screen_color.green, m_text_to_screen_color.blue);
 }
 
+void Text_display::refresh_display()
+{
+  for (int line = 0; line < m_lines; line++) {
+    for (int column = 0; column < m_columns; column++) {
+      auto& content = m_display_content[line][column];
+      display_char_at(
+          content.character, content.is_inversed, Point {column, line});
+    }
+  }
+  m_is_cursor_updated = false;
+  update_cursor();
+}
+
 void Text_display::display_char_at(
     int character, bool is_output_inversed, const Point& pos)
 {

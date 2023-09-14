@@ -111,6 +111,7 @@ protected:
   void refresh_screen_display_settings();
   void throw_if_window_closed() const;
   void user_closes_window();
+  void unminimize_window();
 
 private:
   Main_SDL_handler m_main_sdl_handler;

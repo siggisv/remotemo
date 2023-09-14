@@ -402,18 +402,43 @@ bool Engine::handle_window_event(const SDL_Event& event)
       }
       break;
     case SDL_WINDOWEVENT:
+      if (m_window->is_minimized()) {
+        SDL_Log("Minimized is <<<true>>>");
+      } else {
+        SDL_Log("Minimized is FALSE");
+      }
+      SDL_Log("Window event: %d", event.window.event);
       switch (event.window.event) {
         case SDL_WINDOWEVENT_SIZE_CHANGED:
           m_window->refresh_local_size();
           refresh_screen_display_settings();
+          SDL_Log("Size changed");
+          return true;
+        case SDL_WINDOWEVENT_MINIMIZED:
+          m_window->set_minimized(true);
+          SDL_Log("Minimized set to true");
+          return true;
+        case SDL_WINDOWEVENT_SHOWN:
+          unminimize_window();
+          SDL_Log("SHOWN. Minimized set to false");
           return true;
         default:
+          SDL_Log("Unhandled window event: %d", event.window.event);
           break;
       }
     default:
       break;
   }
   return false;
+}
+
+void Engine::unminimize_window()
+{
+  if (!m_window->is_minimized()) {
+    return;
+  }
+  m_window->set_minimized(false);
+  m_text_display->refresh_display();
 }
 
 void Engine::user_closes_window()
@@ -440,6 +465,9 @@ void Engine::close_window()
 void Engine::render_window()
 {
   m_text_display->update_cursor();
+  if (m_window->is_minimized()) {
+    return;
+  }
   auto* renderer = m_renderer->res();
   ::SDL_SetRenderTarget(renderer, nullptr);
   ::SDL_RenderClear(renderer);
