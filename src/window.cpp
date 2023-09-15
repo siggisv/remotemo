@@ -39,6 +39,8 @@ void Window::refresh_local_flags()
 {
   auto window_flags = SDL_GetWindowFlags(res());
   m_is_fullscreen = ((window_flags & SDL_WINDOW_FULLSCREEN) != 0);
+  m_is_visible =
+      ((window_flags & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED)) == 0);
 }
 
 void Window::set_fullscreen(bool do_make_fullscreen)

@@ -48,7 +48,23 @@ public:
   void set_char_at_cursor(int character);
   void scroll_up_one_line();
   void clear_line(int line);
-  void refresh_display();
+  void refresh_texture();
+  void set_texture_refresh_needed(bool refresh_needed)
+  {
+    m_is_texture_refresh_needed = refresh_needed;
+  }
+  [[nodiscard]] bool is_texture_refresh_needed() const
+  {
+    return m_is_texture_refresh_needed;
+  }
+  void set_texture_changed(bool has_changed)
+  {
+    m_has_texture_changed = has_changed;
+  }
+  [[nodiscard]] bool has_texture_changed() const
+  {
+    return m_has_texture_changed;
+  }
 
 private:
   void display_char_at(
@@ -66,6 +82,8 @@ private:
   bool m_is_cursor_visible {true};
   bool m_is_cursor_updated {false};
   bool m_is_output_inversed {false};
+  bool m_is_texture_refresh_needed {false};
+  bool m_has_texture_changed {false};
   static constexpr int max_ascii_value {127};
   static constexpr int bitmap_char_per_line {16};
   static constexpr Point space_position {0, 2};

@@ -369,7 +369,7 @@ bool Engine::handle_standard_event(const SDL_Event& event)
   if (handle_window_event(event)) {
     return true;
   }
-  // TODO Add other event handlers?
+  // TODO Add other event handlers? See issue #62
 
   return false;
 }
@@ -402,12 +402,16 @@ bool Engine::handle_window_event(const SDL_Event& event)
       }
       break;
     case SDL_WINDOWEVENT:
-      if (m_window->is_minimized()) {
-        SDL_Log("Minimized is <<<true>>>");
-      } else {
-        SDL_Log("Minimized is FALSE");
-      }
       SDL_Log("Window event: %d", event.window.event);
+      switch (event.window.event) {
+        case SDL_WINDOWEVENT_LEAVE:
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+        case SDL_WINDOWEVENT_CLOSE:
+          return false;
+        default:
+          m_window->set_had_window_event(true);
+          break;
+      }
       switch (event.window.event) {
         case SDL_WINDOWEVENT_SIZE_CHANGED:
           m_window->refresh_local_size();
@@ -415,30 +419,16 @@ bool Engine::handle_window_event(const SDL_Event& event)
           SDL_Log("Size changed");
           return true;
         case SDL_WINDOWEVENT_MINIMIZED:
-          m_window->set_minimized(true);
-          SDL_Log("Minimized set to true");
-          return true;
-        case SDL_WINDOWEVENT_SHOWN:
-          unminimize_window();
-          SDL_Log("SHOWN. Minimized set to false");
+          SDL_Log("-----Minimized-----");
           return true;
         default:
           SDL_Log("Unhandled window event: %d", event.window.event);
-          break;
+          return true;
       }
     default:
       break;
   }
   return false;
-}
-
-void Engine::unminimize_window()
-{
-  if (!m_window->is_minimized()) {
-    return;
-  }
-  m_window->set_minimized(false);
-  m_text_display->refresh_display();
 }
 
 void Engine::user_closes_window()
@@ -464,10 +454,29 @@ void Engine::close_window()
 
 void Engine::render_window()
 {
-  m_text_display->update_cursor();
-  if (m_window->is_minimized()) {
+  if (m_window->had_window_event()) {
+    SDL_Log("== window had event ==");
+    m_text_display->set_texture_refresh_needed(true);
+    m_window->set_had_window_event(false);
+    m_window->refresh_local_flags();
+    if (m_window->is_visible()) {
+      SDL_Log("Window is <<<VISIBLE>>>");
+    }
+  }
+  if (!m_window->is_visible()) {
+    SDL_Log("Window is ===HIDDEN=== (or minimized)");
     return;
   }
+  if (m_text_display->is_texture_refresh_needed()) {
+    SDL_Log("++++ testure refresh needed +++");
+    m_text_display->refresh_texture();
+  }
+  m_text_display->update_cursor();
+  if (!m_text_display->has_texture_changed()) {
+    SDL_Log("|||| No change to texture ||||");
+    return;
+  }
+  SDL_Log(">>>>>>>>>>>>>>>>>>> rendering .....");
   auto* renderer = m_renderer->res();
   ::SDL_SetRenderTarget(renderer, nullptr);
   ::SDL_RenderClear(renderer);
@@ -477,6 +486,7 @@ void Engine::render_window()
   ::SDL_RenderCopyF(renderer, m_text_display->res(), nullptr, &m_text_target);
 
   ::SDL_RenderPresent(renderer);
+  m_text_display->set_texture_changed(false);
 }
 
 void Engine::throw_if_window_closed() const
