@@ -127,7 +127,6 @@ void Text_display::refresh_texture()
   }
   m_is_texture_refresh_needed = false;
   m_is_cursor_updated = false;
-  //update_cursor();
 }
 
 void Text_display::display_char_at(

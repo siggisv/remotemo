@@ -24,8 +24,6 @@ public:
       const Text_area_config& text_area_config) noexcept
       : Texture(texture, true), m_renderer(renderer), m_font(std::move(font)),
         m_columns(text_area_config.columns), m_lines(text_area_config.lines),
-        m_blend_to_screen_mode(text_area_config.blend_mode),
-        m_text_to_screen_color(text_area_config.color),
         m_empty_line(m_columns), m_display_content(m_lines, m_empty_line)
   {}
 
@@ -74,8 +72,6 @@ private:
   Font m_font;
   int m_columns;
   int m_lines;
-  SDL_BlendMode m_blend_to_screen_mode;
-  Color m_text_to_screen_color;
   std::vector<Display_square> m_empty_line;
   std::deque<std::vector<Display_square>> m_display_content;
   Point m_cursor_pos {0, 0};
