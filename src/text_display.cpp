@@ -118,6 +118,8 @@ void Text_display::scroll_up_one_line()
 
 void Text_display::refresh_texture()
 {
+  SDL_SetRenderTarget(m_renderer, res());
+  SDL_RenderClear(m_renderer);
   for (int line = 0; line < m_lines; line++) {
     for (int column = 0; column < m_columns; column++) {
       auto& content = m_display_content[line][column];
