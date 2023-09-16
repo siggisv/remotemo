@@ -340,10 +340,12 @@ Key Engine::get_key()
     }
     if (event.type == SDL_KEYDOWN) {
       // TODO remove this debugging logging:
+      /*
       SDL_Log("Physical %s key (%d) acting as %s key (%d)",
           SDL_GetScancodeName(event.key.keysym.scancode),
           event.key.keysym.scancode, SDL_GetKeyName(event.key.keysym.sym),
           event.key.keysym.sym);
+      */
       auto key = Keyboard::scancode_to_key(event.key.keysym.scancode);
       if (!key) {
         continue;
@@ -356,7 +358,6 @@ Key Engine::get_key()
 void Engine::main_loop_once()
 {
   throw_if_window_closed();
-  // SDL_Log("Main loop once!");
   SDL_Event event;
   while (SDL_PollEvent(&event) != 0) {
     handle_standard_event(event);
@@ -369,7 +370,7 @@ bool Engine::handle_standard_event(const SDL_Event& event)
   if (handle_window_event(event)) {
     return true;
   }
-  // TODO Add other event handlers?
+  // TODO Add other event handlers? See issue #62
 
   return false;
 }
@@ -403,12 +404,21 @@ bool Engine::handle_window_event(const SDL_Event& event)
       break;
     case SDL_WINDOWEVENT:
       switch (event.window.event) {
+        case SDL_WINDOWEVENT_LEAVE:
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+        case SDL_WINDOWEVENT_CLOSE:
+          return false;
+        default:
+          m_window->set_had_window_event(true);
+          break;
+      }
+      switch (event.window.event) {
         case SDL_WINDOWEVENT_SIZE_CHANGED:
           m_window->refresh_local_size();
           refresh_screen_display_settings();
           return true;
         default:
-          break;
+          return true;
       }
     default:
       break;
@@ -439,7 +449,21 @@ void Engine::close_window()
 
 void Engine::render_window()
 {
+  if (m_window->had_window_event()) {
+    m_text_display->set_texture_refresh_needed(true);
+    m_window->set_had_window_event(false);
+    m_window->refresh_local_flags();
+  }
+  if (!m_window->is_visible()) {
+    return;
+  }
+  if (m_text_display->is_texture_refresh_needed()) {
+    m_text_display->refresh_texture();
+  }
   m_text_display->update_cursor();
+  if (!m_text_display->has_texture_changed()) {
+    return;
+  }
   auto* renderer = m_renderer->res();
   ::SDL_SetRenderTarget(renderer, nullptr);
   ::SDL_RenderClear(renderer);
@@ -449,6 +473,7 @@ void Engine::render_window()
   ::SDL_RenderCopyF(renderer, m_text_display->res(), nullptr, &m_text_target);
 
   ::SDL_RenderPresent(renderer);
+  m_text_display->set_texture_changed(false);
 }
 
 void Engine::throw_if_window_closed() const

@@ -102,34 +102,33 @@ void Text_display::clear_line(int line)
   SDL_RenderCopy(m_renderer, m_font.res(), &space_bitmap, &target_area);
 
   m_display_content[line] = m_empty_line;
-
+  m_has_texture_changed = true;
+  if (line == m_cursor_pos.y) {
+    m_is_cursor_updated = false;
+  }
   SDL_SetRenderTarget(m_renderer, nullptr);
 }
 
 void Text_display::scroll_up_one_line()
 {
-  constexpr Color white {255, 255, 255};
-  SDL_SetRenderTarget(m_renderer, res());
-  SDL_SetTextureBlendMode(res(), SDL_BLENDMODE_NONE);
-  SDL_SetTextureColorMod(res(), white.red, white.green, white.blue);
-
-  int line_length = texture_size().width - 2;
-  int line_height = m_font.char_height();
-  int scrolling_lines_height = texture_size().height - 2 - line_height;
-  SDL_Rect area_to_be_moved = {
-      1, 1 + line_height, line_length, scrolling_lines_height};
-  SDL_Rect target_area = {1, 1, line_length, scrolling_lines_height};
-  SDL_RenderCopy(m_renderer, res(), &area_to_be_moved, &target_area);
-
-  m_display_content.pop_front();
   m_display_content.push_back(m_empty_line);
+  m_display_content.pop_front();
+  m_is_texture_refresh_needed = true;
+}
 
-  clear_line(m_lines - 1);
-
-  SDL_SetRenderTarget(m_renderer, nullptr);
-  SDL_SetTextureBlendMode(res(), m_blend_to_screen_mode);
-  SDL_SetTextureColorMod(res(), m_text_to_screen_color.red,
-      m_text_to_screen_color.green, m_text_to_screen_color.blue);
+void Text_display::refresh_texture()
+{
+  SDL_SetRenderTarget(m_renderer, res());
+  SDL_RenderClear(m_renderer);
+  for (int line = 0; line < m_lines; line++) {
+    for (int column = 0; column < m_columns; column++) {
+      auto& content = m_display_content[line][column];
+      display_char_at(
+          content.character, content.is_inversed, Point {column, line});
+    }
+  }
+  m_is_texture_refresh_needed = false;
+  m_is_cursor_updated = false;
 }
 
 void Text_display::display_char_at(
@@ -152,6 +151,7 @@ void Text_display::display_char_at(
       m_font.char_height()};
   SDL_RenderCopy(
       m_renderer, m_font.res(), &bitmap_char_area, &display_target_area);
+  m_has_texture_changed = true;
   SDL_SetRenderTarget(m_renderer, nullptr);
 }
 
