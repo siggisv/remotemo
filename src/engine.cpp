@@ -340,10 +340,12 @@ Key Engine::get_key()
     }
     if (event.type == SDL_KEYDOWN) {
       // TODO remove this debugging logging:
+      /*
       SDL_Log("Physical %s key (%d) acting as %s key (%d)",
           SDL_GetScancodeName(event.key.keysym.scancode),
           event.key.keysym.scancode, SDL_GetKeyName(event.key.keysym.sym),
           event.key.keysym.sym);
+      */
       auto key = Keyboard::scancode_to_key(event.key.keysym.scancode);
       if (!key) {
         continue;
@@ -356,7 +358,6 @@ Key Engine::get_key()
 void Engine::main_loop_once()
 {
   throw_if_window_closed();
-  // SDL_Log("Main loop once!");
   SDL_Event event;
   while (SDL_PollEvent(&event) != 0) {
     handle_standard_event(event);
@@ -402,7 +403,6 @@ bool Engine::handle_window_event(const SDL_Event& event)
       }
       break;
     case SDL_WINDOWEVENT:
-      SDL_Log("Window event: %d", event.window.event);
       switch (event.window.event) {
         case SDL_WINDOWEVENT_LEAVE:
         case SDL_WINDOWEVENT_FOCUS_LOST:
@@ -416,13 +416,8 @@ bool Engine::handle_window_event(const SDL_Event& event)
         case SDL_WINDOWEVENT_SIZE_CHANGED:
           m_window->refresh_local_size();
           refresh_screen_display_settings();
-          SDL_Log("Size changed");
-          return true;
-        case SDL_WINDOWEVENT_MINIMIZED:
-          SDL_Log("-----Minimized-----");
           return true;
         default:
-          SDL_Log("Unhandled window event: %d", event.window.event);
           return true;
       }
     default:
@@ -455,28 +450,20 @@ void Engine::close_window()
 void Engine::render_window()
 {
   if (m_window->had_window_event()) {
-    SDL_Log("== window had event ==");
     m_text_display->set_texture_refresh_needed(true);
     m_window->set_had_window_event(false);
     m_window->refresh_local_flags();
-    if (m_window->is_visible()) {
-      SDL_Log("Window is <<<VISIBLE>>>");
-    }
   }
   if (!m_window->is_visible()) {
-    SDL_Log("Window is ===HIDDEN=== (or minimized)");
     return;
   }
   if (m_text_display->is_texture_refresh_needed()) {
-    SDL_Log("++++ testure refresh needed +++");
     m_text_display->refresh_texture();
   }
   m_text_display->update_cursor();
   if (!m_text_display->has_texture_changed()) {
-    SDL_Log("|||| No change to texture ||||");
     return;
   }
-  SDL_Log(">>>>>>>>>>>>>>>>>>> rendering .....");
   auto* renderer = m_renderer->res();
   ::SDL_SetRenderTarget(renderer, nullptr);
   ::SDL_RenderClear(renderer);
