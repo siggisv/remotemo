@@ -22,7 +22,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Enable warnings-as-error
+# Enable warnings and warnings-as-error
+option(REMOTEMO_WARNINGS
+    "Enable compiler warning flags"
+    OFF
+)
 option(REMOTEMO_WERROR
     "Treat warning as errors (Note: MSVC warns about stuff in SDL2, etc)"
     OFF
@@ -56,7 +60,7 @@ endif(REMOTEMO_BUILD_DOCS)
 set(is_gcc $<CXX_COMPILER_ID:GNU>)
 set(is_clang $<CXX_COMPILER_ID:Clang,AppleClang>)
 set(is_msvc $<CXX_COMPILER_ID:MSVC>)
-set(main_compile_options
+set(warn_compile_options
     $<${is_gcc}:-Wall -Wextra -pedantic-errors>
     $<${is_clang}:-Wall -Wextra -pedantic-errors>
     $<${is_msvc}:/W4 /wd4455>
@@ -65,8 +69,8 @@ set(werror_compile_option
     $<$<OR:${is_gcc},${is_clang}>:-Werror>
     $<${is_msvc}:/WX>
 )
-set(w_compile_options
-    ${main_compile_options}
+set(compile_options
+    $<$<BOOL:${REMOTEMO_WARNINGS}>:${warn_compile_options}>
     $<$<BOOL:${REMOTEMO_WERROR}>:${werror_compile_option}>
 )
 
@@ -100,7 +104,7 @@ target_include_directories(remotemo SYSTEM INTERFACE
 )
 
 target_compile_options(remotemo PRIVATE
-    ${w_compile_options}
+    ${compile_options}
 )
 target_compile_definitions(remotemo PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 
@@ -133,7 +137,7 @@ IF (REMOTEMO_BUILD_SAMPLES)
     else()
         target_link_libraries(hello_sample PRIVATE remotemo SDL2::SDL2main)
     endif()
-    target_compile_options(hello_sample PRIVATE ${w_compile_options})
+    target_compile_options(hello_sample PRIVATE ${compile_options})
     target_compile_definitions(hello_sample PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 
     add_executable(wrap_n_scroll_test samples/wrap_n_scroll_test.cpp)
@@ -144,7 +148,7 @@ IF (REMOTEMO_BUILD_SAMPLES)
             remotemo
             SDL2::SDL2main)
     endif()
-    target_compile_options(wrap_n_scroll_test PRIVATE ${w_compile_options})
+    target_compile_options(wrap_n_scroll_test PRIVATE ${compile_options})
     target_compile_definitions(wrap_n_scroll_test PRIVATE
         $<$<CONFIG:Debug>:DEBUG>
     )
