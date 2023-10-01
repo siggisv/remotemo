@@ -10,6 +10,7 @@ on:
       - '.gitmodules'
       - '**/CMakeLists.txt'
       - '.github/workflows/**'
+      - '**/conanfile.txt'
 
   pull_request:
     branches: ["main"]
@@ -20,6 +21,7 @@ on:
       - '.gitmodules'
       - '**/CMakeLists.txt'
       - '.github/workflows/**'
+      - '**/conanfile.txt'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
