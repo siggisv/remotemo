@@ -43,29 +43,13 @@ option(REMOTEMO_BUILD_DOCS
     OFF
 )
 set(REMOTEMO_DOXYGEN_EXTRACT_ALL YES CACHE STRING
-    "Treat undocumented members as being documented (Note: disables warnings)"
+    "Undocumented members treated as documented (disables Doxygen warnings)"
 )
 set_property(CACHE REMOTEMO_DOXYGEN_EXTRACT_ALL PROPERTY STRINGS YES NO)
 
 # Generate documents (with Doxygen)
 if(REMOTEMO_BUILD_DOCS)
-    find_package(Doxygen)
-    if(DOXYGEN_FOUND)
-        set(DOXYGEN_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/docs)
-        set(DOXYFILE_OUT ${DOXYGEN_OUTPUT_DIRECTORY}/Doxyfile)
-        configure_file(
-            "${PROJECT_SOURCE_DIR}/Doxyfile.in"
-            "${DOXYFILE_OUT}"
-            @ONLY
-        )
-        add_custom_target(docs
-            COMMAND Doxygen::doxygen ${DOXYFILE_OUT}
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/include
-            COMMENT "Generating docs"
-        )
-    else(DOXYGEN_FOUND)
-        message("Doxygen needs to be installed to generate the documentation")
-    endif(DOXYGEN_FOUND)
+    include(cmake/Doxygen.cmake)
 endif(REMOTEMO_BUILD_DOCS)
 
 # Set compiler options enabling warnings and warnings-as-error:
