@@ -1,8 +1,0 @@
-[requires]
-libwebp/[1.3.1]
-sdl/[~2.26]
-sdl_image/[~2]
-
-[generators]
-CMakeToolchain
-CMakeDeps
