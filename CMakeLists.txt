@@ -119,6 +119,7 @@ else()
         SDL2_image::SDL2_image
     )
 endif()
+add_library(remotemo::remotemo ALIAS remotemo)
 
 # Build samples
 IF (REMOTEMO_BUILD_SAMPLES)
@@ -133,19 +134,25 @@ IF (REMOTEMO_BUILD_SAMPLES)
         COMMENT "Copying resources into samples build directory"
     )
     if (TARGET SDL2::Main)
-        target_link_libraries(hello_sample PRIVATE remotemo SDL2::Main)
+        target_link_libraries(hello_sample PRIVATE
+            remotemo::remotemo
+            SDL2::Main)
     else()
-        target_link_libraries(hello_sample PRIVATE remotemo SDL2::SDL2main)
+        target_link_libraries(hello_sample PRIVATE
+            remotemo::remotemo
+            SDL2::SDL2main)
     endif()
     target_compile_options(hello_sample PRIVATE ${compile_options})
     target_compile_definitions(hello_sample PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 
     add_executable(wrap_n_scroll_test samples/wrap_n_scroll_test.cpp)
     if (TARGET SDL2::Main)
-        target_link_libraries(wrap_n_scroll_test PRIVATE remotemo SDL2::Main)
+        target_link_libraries(wrap_n_scroll_test PRIVATE
+            remotemo::remotemo
+            SDL2::Main)
     else()
         target_link_libraries(wrap_n_scroll_test PRIVATE
-            remotemo
+            remotemo::remotemo
             SDL2::SDL2main)
     endif()
     target_compile_options(wrap_n_scroll_test PRIVATE ${compile_options})

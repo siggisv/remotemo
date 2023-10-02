@@ -47,7 +47,7 @@ else()
     )
 endif()
 target_link_libraries(test_init PRIVATE
-    remotemo
+    remotemo::remotemo
     Catch2::Catch2WithMain
     trompeloeil::trompeloeil
 )
@@ -68,7 +68,7 @@ else()
     )
 endif()
 target_link_libraries(test_io PRIVATE
-    remotemo
+    remotemo::remotemo
     Catch2::Catch2WithMain
     trompeloeil::trompeloeil
     Threads::Threads
