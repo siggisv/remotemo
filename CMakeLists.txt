@@ -4,6 +4,7 @@ project(remotemo
     VERSION 0.1.0
     LANGUAGES CXX
 )
+include(cmake/No_in_source_builds.cmake)
 
 # Add pre-release label to version number and define in header file
 set(remotemo_PRE_RELEASE_LABEL "rc.1")
