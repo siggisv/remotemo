@@ -27,6 +27,7 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   # BUILD_TYPE: Debug
   # REMOTEMO_WERROR: ON
+  REMOTEMO_WARNINGS: ON
   REMOTEMO_BUILD_SAMPLES: ON
   REMOTEMO_BUILD_TESTS: ON
   REMOTEMO_VERBOSE_TESTS: OFF
@@ -117,6 +118,7 @@ jobs:
           cmake -B ${{github.workspace}}/build
           ${{matrix.toolch}}=${{github.workspace}}/build/conan_toolchain.cmake
           -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+          -DREMOTEMO_WARNINGS=${{env.REMOTEMO_WARNINGS}}
           -DREMOTEMO_WERROR=${{matrix.werror}}
           -DREMOTEMO_BUILD_SAMPLES=${{env.REMOTEMO_BUILD_SAMPLES}}
           -DREMOTEMO_BUILD_TESTS=${{env.REMOTEMO_BUILD_TESTS}}
